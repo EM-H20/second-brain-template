@@ -55,7 +55,7 @@ Type-specific keys:
   `resolution: "[[ISS-NNNN-...]]" | null` (link to completion report)
 - completion-report: `id: ISS-NNNN` (same id as the issue it closes),
   `resolves: "[[ISS-NNNN-...]]"`
-- cluster: `topic: <topic-slug>`, `members: n`
+- cluster: `topic: <topic-slug>`, `members: n` (core-`topics` notes only; `topics_ref` 참고 항목은 세지 않음)
 - doc: `id: DOC-NNNN`, `doc_type: spec | prd | design | research | article | other`,
   `authority: official | internal | external`, `source: <path or URL>`,
   `topics_ref: [...]` (참고 연관 — 검색 후순위), `decisions: [DEC-NNNN, ...]`,
@@ -115,8 +115,8 @@ When asked to implement something based on meeting agendas/decisions:
 3. Run similar-issue detection (W6) — if a past issue looks related, surface
    it before writing code.
 4. Write a **Context Brief** (in chat, not a file): goal, constraints from
-   decisions (cite DEC ids), relevant past issues (cite ISS ids), open
-   questions.
+   decisions (cite DEC ids), relevant docs (cite DOC ids + authority),
+   relevant past issues (cite ISS ids), open questions.
 5. THEN proceed to implementation. If a development-methodology harness
    (e.g. Superpowers, ECC) is installed in this project, let its normal
    workflow take over from the Context Brief — do not bypass it. The vault's
@@ -195,7 +195,9 @@ into `docs/`:
 6. Add `related` wikilinks to earlier meetings/decisions/issues on the
    same topics. If the new document replaces an older one, use the
    supersede chain (`status: superseded`, `superseded_by`) — never delete
-   or edit the old document's content.
+   or edit the old document's content. Superseding a document does NOT
+   supersede the decisions extracted from it — decisions change only
+   through W4.
 
 ## General rules
 

@@ -185,7 +185,7 @@ knowledge/
 ├── reports/      생성된 보고서
 ├── clusters/     주제별 인덱스 + _topics.md (통제 어휘)
 └── _templates/   노트 양식 (frontmatter 규격 포함)
-SECOND-BRAIN.md   워크플로우 규칙 (W1~W6) — 시스템의 심장
+SECOND-BRAIN.md   워크플로우 규칙 (W1~W7) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
 .claude/commands/ 슬래시 커맨드 9개
 .codex/prompts/   같은 커맨드의 Codex 버전
