@@ -1,6 +1,6 @@
 {
   "name": "second-brain-template",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "프로젝트 세컨드 브레인 템플릿 설치 스크립트 — 회의록에서 지식 볼트까지",
   "bin": {
     "second-brain-template": "bin/init.js"
