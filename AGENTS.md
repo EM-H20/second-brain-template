@@ -1,7 +1,7 @@
 # Agent Rules
 
-**The single source of truth for all rules in this repository is `CLAUDE.md`.**
-Read `CLAUDE.md` in full at the start of every session and follow it exactly.
+**The single source of truth for all rules in this repository is `SECOND-BRAIN.md`.**
+Read `SECOND-BRAIN.md` in full at the start of every session and follow it exactly.
 It is written tool-neutrally: everything in it applies to Codex, Gemini,
 Cursor, and any other agent working in this repo, not just Claude Code.
 
@@ -20,7 +20,7 @@ For Codex, the same prompts are provided in `.codex/prompts/` (if your Codex
 version only reads global prompts, copy them to `~/.codex/prompts/`).
 
 If no command mechanism is available, plain natural language works: the
-workflows in CLAUDE.md are triggered by intent, not by command names.
+workflows in SECOND-BRAIN.md are triggered by intent, not by command names.
 "이 회의 전사체 볼트에 넣어줘" must execute workflow W1 fully — including
 automatic conflict detection — exactly as `/ingest-meeting` would.
 
