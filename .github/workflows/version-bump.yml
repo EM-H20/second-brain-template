@@ -1,0 +1,35 @@
+name: version-bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine bump level
+        id: level
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          case "$MSG" in
+            feat:*|"feat("*) echo "level=minor" >> "$GITHUB_OUTPUT" ;;
+            *)               echo "level=patch" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Bump, commit, tag, push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          NEW="$(npm version "${{ steps.level.outputs.level }}" --no-git-tag-version)"
+          git add package.json
+          git commit -m "chore(release): $NEW"
+          git tag "$NEW"
+          git push origin main --follow-tags
