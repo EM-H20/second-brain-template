@@ -2,7 +2,7 @@
 description: 현재 문제와 유사한 과거 이슈를 볼트에서 찾아 원인·해결책을 제시
 ---
 
-Find similar past issues, per CLAUDE.md workflow W6 recurrence detection.
+Find similar past issues, per SECOND-BRAIN.md workflow W6 recurrence detection.
 
 Input: $ARGUMENTS (description of the current problem / error message;
 if empty, ask).

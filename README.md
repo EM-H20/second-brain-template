@@ -73,7 +73,7 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 - Claude Code: `.claude/commands/` (자동 인식)
 - Codex: `.codex/prompts/` (버전에 따라 `~/.codex/prompts/` 로 복사 필요)
 
-커맨드가 없는 CLI 에서도 자연어로 동작한다 — 워크플로우가 CLAUDE.md 에
+커맨드가 없는 CLI 에서도 자연어로 동작한다 — 워크플로우가 SECOND-BRAIN.md 에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
 
 

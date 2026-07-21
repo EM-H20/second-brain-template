@@ -2,7 +2,7 @@
 description: 새 의견/결정이 과거 활성 결정과 충돌하는지 검사하고, 충돌 시 선택지를 제시
 ---
 
-Check a new opinion/decision against the vault, per CLAUDE.md workflow W4.
+Check a new opinion/decision against the vault, per SECOND-BRAIN.md workflow W4.
 
 Input: $ARGUMENTS (the new opinion/decision; if empty, ask).
 

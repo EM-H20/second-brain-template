@@ -2,7 +2,7 @@
 description: 회의 전사체(.md/텍스트)를 구조화해 볼트에 저장하고, 결정 분리·클러스터 갱신·충돌 검사를 수행
 ---
 
-Ingest a meeting transcript into the knowledge vault. Follow CLAUDE.md
+Ingest a meeting transcript into the knowledge vault. Follow SECOND-BRAIN.md
 workflow W1 exactly.
 
 Input: $ARGUMENTS (a file path, or if empty, ask the user to paste the

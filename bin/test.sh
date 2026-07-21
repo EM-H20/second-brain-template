@@ -36,6 +36,9 @@ grep -q 'build.md' out.log || fail "스킵 경고 미출력"
 grep -q 'SECOND-BRAIN.md' AGENTS.md || fail "AGENTS.md 포인터 미추가"
 grep -q '# My agents doc' AGENTS.md || fail "기존 AGENTS.md 내용 유실"
 [ -f .claude/commands/report.md ] || fail "다른 커맨드 미설치"
+node "$ROOT/bin/init.js" > out2.log
+[ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "append 재실행 시 import 줄 중복"
+[ "$(grep -c 'SECOND-BRAIN.md' AGENTS.md)" = "1" ] || fail "append 재실행 시 AGENTS 포인터 중복"
 echo "케이스 2 OK"
 
 # ── 케이스 3: 재실행 (업데이트) ────────────────────────

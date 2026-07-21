@@ -7,4 +7,4 @@
     cp .codex/prompts/*.md ~/.codex/prompts/
 
 호출: Codex 에서 `/ingest-meeting` 등 프롬프트 이름으로 실행.
-규칙 원본은 CLAUDE.md (AGENTS.md 참조).
+규칙 원본은 SECOND-BRAIN.md (AGENTS.md 참조).

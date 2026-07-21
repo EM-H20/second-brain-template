@@ -1,5 +1,5 @@
 
-Ingest an issue or a completion report, per CLAUDE.md workflow W6.
+Ingest an issue or a completion report, per SECOND-BRAIN.md workflow W6.
 
 Input: $ARGUMENTS (file path or pasted content; if empty, ask. Also determine:
 is this a NEW issue, or a COMPLETION report closing an existing one?).

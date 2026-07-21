@@ -1,5 +1,5 @@
 
-Generate a report per CLAUDE.md workflow W5.
+Generate a report per SECOND-BRAIN.md workflow W5.
 
 Input: $ARGUMENTS (format file path and/or scope, e.g. period or topics;
 if unclear, ask for BOTH the format and the scope).

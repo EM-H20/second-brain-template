@@ -2,7 +2,7 @@
 description: 사용자가 준 양식에 맞춰 볼트 내용을 근거로 보고서를 작성해 reports/에 저장
 ---
 
-Generate a report per CLAUDE.md workflow W5.
+Generate a report per SECOND-BRAIN.md workflow W5.
 
 Input: $ARGUMENTS (format file path and/or scope, e.g. period or topics;
 if unclear, ask for BOTH the format and the scope).

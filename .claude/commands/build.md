@@ -2,7 +2,7 @@
 description: 볼트의 결정·회의·이슈를 컨텍스트로 모아 브리프를 만들고, 설치된 하네스 워크플로우로 구현을 진행
 ---
 
-Implement based on vault knowledge, per CLAUDE.md workflow W3.
+Implement based on vault knowledge, per SECOND-BRAIN.md workflow W3.
 
 Input: $ARGUMENTS (what to build; if empty, ask).
 

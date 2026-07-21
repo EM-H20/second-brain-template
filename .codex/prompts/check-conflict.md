@@ -1,5 +1,5 @@
 
-Check a new opinion/decision against the vault, per CLAUDE.md workflow W4.
+Check a new opinion/decision against the vault, per SECOND-BRAIN.md workflow W4.
 
 Input: $ARGUMENTS (the new opinion/decision; if empty, ask).
 

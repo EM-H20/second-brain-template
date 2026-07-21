@@ -2,7 +2,7 @@
 description: 이슈 또는 완료 리포트 파일을 지식화해 issues/에 저장 (재발 탐지의 재료)
 ---
 
-Ingest an issue or a completion report, per CLAUDE.md workflow W6.
+Ingest an issue or a completion report, per SECOND-BRAIN.md workflow W6.
 
 Input: $ARGUMENTS (file path or pasted content; if empty, ask. Also determine:
 is this a NEW issue, or a COMPLETION report closing an existing one?).

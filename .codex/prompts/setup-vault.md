@@ -7,7 +7,7 @@ Steps:
 2. Update the title/placeholder lines in README.md with the answers.
 3. Verify the vault skeleton exists (knowledge/ subfolders, _templates,
    clusters/_topics.md). Recreate anything missing.
-4. Confirm CLAUDE.md is present and remind the user of the available
+4. Confirm SECOND-BRAIN.md is present and remind the user of the available
    commands: /ingest-meeting, /cluster, /build, /check-conflict, /report,
    /ingest-issue, /find-similar-issue.
 5. Tell the user to open the `knowledge/` folder in Obsidian via

@@ -1,5 +1,5 @@
 
-Run a FULL clustering pass per CLAUDE.md workflow W2.
+Run a FULL clustering pass per SECOND-BRAIN.md workflow W2.
 
 Steps:
 1. Grep the YAML frontmatter of every note under `knowledge/` (do not read

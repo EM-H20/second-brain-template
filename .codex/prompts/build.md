@@ -1,5 +1,5 @@
 
-Implement based on vault knowledge, per CLAUDE.md workflow W3.
+Implement based on vault knowledge, per SECOND-BRAIN.md workflow W3.
 
 Input: $ARGUMENTS (what to build; if empty, ask).
 

@@ -1,5 +1,5 @@
 
-Find similar past issues, per CLAUDE.md workflow W6 recurrence detection.
+Find similar past issues, per SECOND-BRAIN.md workflow W6 recurrence detection.
 
 Input: $ARGUMENTS (description of the current problem / error message;
 if empty, ask).

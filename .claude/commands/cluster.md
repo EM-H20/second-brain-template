@@ -2,7 +2,7 @@
 description: 볼트 전체를 재스캔해 주제 클러스터를 재구성하고 중복 토픽을 병합
 ---
 
-Run a FULL clustering pass per CLAUDE.md workflow W2.
+Run a FULL clustering pass per SECOND-BRAIN.md workflow W2.
 
 Steps:
 1. Grep the YAML frontmatter of every note under `knowledge/` (do not read

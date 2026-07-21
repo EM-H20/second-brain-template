@@ -1,5 +1,5 @@
 
-Ingest a meeting transcript into the knowledge vault. Follow CLAUDE.md
+Ingest a meeting transcript into the knowledge vault. Follow SECOND-BRAIN.md
 workflow W1 exactly.
 
 Input: $ARGUMENTS (a file path, or if empty, ask the user to paste the
