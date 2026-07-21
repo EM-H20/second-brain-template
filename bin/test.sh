@@ -15,6 +15,8 @@ grep -q 'second-brain-template' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 마�
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
 head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
 [ -f .codex/prompts/ingest-meeting.md ] || fail "codex 프롬프트 없음"
+[ -f .claude/commands/ingest-doc.md ] || fail "ingest-doc 커맨드 미설치"
+[ -f .codex/prompts/ingest-doc.md ] || fail "ingest-doc codex 프롬프트 미설치"
 [ -f knowledge/clusters/_topics.md ] || fail "knowledge 스켈레톤 없음"
 [ -f knowledge/_templates/meeting-note.md ] || fail "_templates 없음"
 [ -f knowledge/docs/README.md ] || fail "docs/ 스켈레톤 없음"
