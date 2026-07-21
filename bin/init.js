@@ -34,9 +34,13 @@ function write(to, content) {
   fs.writeFileSync(to, content);
 }
 
-// 템플릿 소유 파일: 마커를 끝에 찍어서 저장 (frontmatter 보호를 위해 반드시 끝에)
+// 템플릿 소유 파일: 대상이 없거나 마커를 가진 경우에만 덮어씀 (마커는 반드시 끝에)
 function installOwned(rel) {
   const to = path.join(DEST, rel);
+  if (fs.existsSync(to) && !fs.readFileSync(to, 'utf8').includes(MARKER)) {
+    warned.push(rel + ' — 마커 없는 기존 파일, 건너뜀 (필요하면 직접 병합)');
+    return;
+  }
   const content = fs.readFileSync(path.join(SRC, rel), 'utf8');
   write(to, content.trimEnd() + '\n\n' + MARKER + '\n');
   installed.push(rel);
@@ -50,20 +54,28 @@ function installIfMissing(rel) {
   installed.push(rel);
 }
 
-// CLAUDE.md: 없으면 import 한 줄짜리 생성
+// CLAUDE.md: 없으면 import 한 줄짜리 생성, 있으면 한 줄 추가 (멱등)
 function ensureClaudeMd() {
   const to = path.join(DEST, 'CLAUDE.md');
-  if (fs.existsSync(to)) { skipped.push('CLAUDE.md'); return; }
-  write(to, IMPORT_LINE + '\n');
-  installed.push('CLAUDE.md');
+  if (!fs.existsSync(to)) { write(to, IMPORT_LINE + '\n'); installed.push('CLAUDE.md'); return; }
+  const content = fs.readFileSync(to, 'utf8');
+  if (content.includes(IMPORT_LINE)) { skipped.push('CLAUDE.md'); return; }
+  write(to, content.trimEnd() + '\n\n' + IMPORT_LINE + '\n');
+  installed.push('CLAUDE.md (import 한 줄 추가)');
 }
 
-// AGENTS.md: 없으면 템플릿 복사
+// AGENTS.md: 없으면 템플릿 복사, 있으면 포인터 한 줄 추가 (멱등)
 function ensureAgentsMd() {
   const to = path.join(DEST, 'AGENTS.md');
-  if (fs.existsSync(to)) { skipped.push('AGENTS.md'); return; }
-  write(to, fs.readFileSync(path.join(SRC, 'AGENTS.md')));
-  installed.push('AGENTS.md');
+  if (!fs.existsSync(to)) {
+    write(to, fs.readFileSync(path.join(SRC, 'AGENTS.md')));
+    installed.push('AGENTS.md');
+    return;
+  }
+  const content = fs.readFileSync(to, 'utf8');
+  if (content.includes('SECOND-BRAIN.md')) { skipped.push('AGENTS.md'); return; }
+  write(to, content.trimEnd() + '\n\n**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.\n');
+  installed.push('AGENTS.md (포인터 한 줄 추가)');
 }
 
 installOwned('SECOND-BRAIN.md');
