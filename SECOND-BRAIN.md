@@ -20,6 +20,7 @@ knowledge/
 ├── meetings/     # one note per meeting          YYYY-MM-DD-<slug>.md
 ├── decisions/    # one note per decision         DEC-NNNN-<slug>.md
 ├── issues/       # issues + completion reports   ISS-NNNN-<slug>.md
+├── docs/         # ingested documents            DOC-NNNN-<slug>.md
 ├── reports/      # generated reports             YYYY-MM-DD-<slug>.md
 ├── clusters/     # topic index notes             cluster-<topic-slug>.md
 └── _templates/   # note templates (do not edit during normal work)
@@ -37,7 +38,7 @@ blocks), then open only the notes whose frontmatter matches.
 Common keys for all notes:
 
 ```yaml
-type: meeting | decision | issue | completion-report | report | cluster
+type: meeting | decision | issue | completion-report | report | cluster | doc
 created: YYYY-MM-DD
 topics: [<topic-slug>, ...]     # lowercase kebab-case topic tags
 status: active | superseded | resolved | open   # per-type, see below
@@ -55,6 +56,11 @@ Type-specific keys:
 - completion-report: `id: ISS-NNNN` (same id as the issue it closes),
   `resolves: "[[ISS-NNNN-...]]"`
 - cluster: `topic: <topic-slug>`, `members: n`
+- doc: `id: DOC-NNNN`, `doc_type: spec | prd | design | research | article | other`,
+  `authority: official | internal | external`, `source: <path or URL>`,
+  `topics_ref: [...]` (참고 연관 — 검색 후순위), `decisions: [DEC-NNNN, ...]`,
+  `supersedes: DOC-NNNN | null`, `superseded_by: DOC-NNNN | null`,
+  `status: active | superseded`
 
 ## Topic slugs (clustering vocabulary)
 
@@ -89,7 +95,7 @@ Given a transcript (file or pasted text):
 
 A cluster note (`clusters/cluster-<topic>.md`) is a human-readable index:
 what this topic is, timeline of meetings that touched it, list of decisions
-(active vs superseded), open issues, current state summary.
+(active vs superseded), open issues, key/reference documents (핵심 문서 / 참고 문서), current state summary.
 
 - Incremental (during ingestion): update only the clusters whose topics
   appear in the new note.
@@ -102,7 +108,9 @@ what this topic is, timeline of meetings that touched it, list of decisions
 When asked to implement something based on meeting agendas/decisions:
 
 1. Identify relevant topics; collect the ACTIVE decisions, latest meeting
-   context, and any open or resolved issues on those topics.
+   context, relevant docs — `topics` matches first, ordered
+   official → internal → external; `topics_ref` matches go to a separate
+   reference section — and any open or resolved issues on those topics.
 2. Run conflict detection (W4) between the build request and active decisions.
 3. Run similar-issue detection (W6) — if a past issue looks related, surface
    it before writing code.
@@ -122,9 +130,12 @@ ACTIVE decision note.
 When detected, STOP and ask the user, in this shape:
 
 > 이전 결정과 충돌합니다.
-> - 기존: DEC-0012 (2026-06-30) — "<summary>"
-> - 신규: "<summary>"
+> - 기존: DEC-0012 (2026-06-30) — "<summary>" [출처: <회의 또는 DOC id + authority>]
+> - 신규: "<summary>" [출처: <회의 또는 DOC id + authority>]
 > 어느 쪽으로 갈까요? (기존 유지 / 신규로 대체 / 둘 다 조건부 유지)
+
+결정의 출처가 문서(DOC)면 해당 문서의 `authority`를 반드시 함께 표시한다.
+권위가 판정을 자동화하지는 않는다 — 항상 사용자가 결정한다.
 
 Resolution handling:
 - 신규로 대체 → old note `status: superseded`, `superseded_by: <new id>`;
@@ -137,7 +148,7 @@ Resolution handling:
 ### W5 — Report generation (`/report`)
 
 The user supplies a format (template file or description). Fill it using
-vault content ONLY — every claim must trace to a meeting, decision, or issue
+vault content ONLY — every claim must trace to a meeting, decision, issue, or doc
 note. Cite ids inline where the format allows. If information is missing,
 say what's missing instead of inventing it. Save to `reports/`.
 
@@ -157,6 +168,34 @@ Recurrence detection (also runs automatically whenever debugging in W3):
 4. If a plausible match exists, surface it BEFORE attempting a fresh fix:
    past issue id, its root cause, how it was resolved, and whether the same
    fix applies.
+
+### W7 — Document ingestion (`/ingest-doc`)
+
+Ingest a non-transcript document (기획서, 스펙, 설계서, 리서치, 아티클)
+into `docs/`:
+
+1. Determine `doc_type` and `authority` (official | internal | external).
+   Ask the user when ambiguous — never guess authority.
+   - official: 확정 스펙, 계약서, 벤더 공식 문서, 표준
+   - internal: 내부 기획서, 설계 초안, 내부 리서치
+   - external: 서드파티 아티클, 블로그, 외부 리서치
+2. Create a doc note from `_templates/doc.md` (next DOC-NNNN): summary,
+   key points, open questions, source reference.
+3. Decision extraction — ONLY for official/internal documents: create a
+   decision note per decision (`_templates/decision.md`), run conflict
+   detection (W4) BEFORE saving each one, link both ways
+   (doc `decisions:` ↔ decision `related:`). external documents NEVER
+   create decisions — record 논점 only.
+4. Weighting: core topics go in `topics`, peripheral ones in `topics_ref`
+   (vocabulary rules per `clusters/_topics.md` apply to both). Retrieval
+   order everywhere: `topics` matches first (official → internal →
+   external), `topics_ref` matches as reference material only.
+5. Update matching cluster notes (incremental, W2): core topics under
+   "핵심 문서", reference topics under "참고 문서".
+6. Add `related` wikilinks to earlier meetings/decisions/issues on the
+   same topics. If the new document replaces an older one, use the
+   supersede chain (`status: superseded`, `superseded_by`) — never delete
+   or edit the old document's content.
 
 ## General rules
 

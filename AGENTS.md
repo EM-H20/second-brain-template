@@ -32,6 +32,7 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Check an opinion against past decisions | W4 |
 | Generate a report from a given format | W5 |
 | Ingest an issue / completion report | W6 |
+| Ingest a document (기획서/스펙/아티클) | W7 |
 | Find similar past issues | W6 recurrence detection |
 
 ## Non-negotiables (repeated here for emphasis)
