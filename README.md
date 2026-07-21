@@ -29,13 +29,16 @@ flowchart LR
 ### 방법 A — 기존 프로젝트에 설치 (npx, 30초)
 
 ```bash
-cd my-project
 npx github:EM-H20/second-brain-template
 ```
+
+설치할 프로젝트 루트에서 실행하면 **현재 프로젝트를 먼저 분석**해서
+신규 설치/갱신/유지될 파일 내역을 보여주고, **y/n 확인 후** 진행한다.
 
 기존 `CLAUDE.md`가 있어도 안전하다 — 규칙은 `SECOND-BRAIN.md`로 들어가고
 `@SECOND-BRAIN.md` import 한 줄만 추가된다. 템플릿 업데이트를 받으려면
 같은 명령을 재실행하면 된다 (`knowledge/` 노트는 절대 건드리지 않음).
+CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 
 ### 방법 B — 템플릿으로 새 프로젝트 시작
 
