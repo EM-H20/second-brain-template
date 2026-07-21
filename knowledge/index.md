@@ -18,6 +18,7 @@ related: []
 - meetings/ — 회의노트
 - decisions/ — 결정 기록 (DEC)
 - issues/ — 이슈·완료 리포트 (ISS)
+- docs/ — 문서 요약 노트 (DOC) — 권위·연관 가중치
 - reports/ — 생성된 보고서
 - clusters/ — 주제 인덱스 + [[_topics]] 통제 어휘
 

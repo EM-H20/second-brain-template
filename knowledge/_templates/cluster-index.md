@@ -24,5 +24,11 @@ related: []
 ## 관련 회의 타임라인
 - YYYY-MM-DD [[회의노트]] — {이 회의에서 이 주제에 일어난 일}
 
+## 핵심 문서
+- [[DOC-NNNN-...]] — {요약} ({authority})
+
+## 참고 문서
+- [[DOC-NNNN-...]] — {요약}
+
 ## 관련 이슈
 - [[ISS-NNNN-...]] ({open|resolved})

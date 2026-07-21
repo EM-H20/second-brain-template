@@ -1,0 +1,29 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    { "query": "path:meetings", "color": { "a": 1, "rgb": 3900150 } },
+    { "query": "path:decisions", "color": { "a": 1, "rgb": 2278750 } },
+    { "query": "path:issues", "color": { "a": 1, "rgb": 15680580 } },
+    { "query": "path:docs", "color": { "a": 1, "rgb": 11032055 } },
+    { "query": "path:clusters", "color": { "a": 1, "rgb": 15381256 } },
+    { "query": "path:reports", "color": { "a": 1, "rgb": 10265519 } }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.5,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 1,
+  "close": false
+}
