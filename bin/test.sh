@@ -23,6 +23,7 @@ head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가
 [ -f .codex/prompts/ingest-doc.md ] || fail "ingest-doc codex 프롬프트 미설치"
 [ -f knowledge/clusters/_topics.md ] || fail "knowledge 스켈레톤 없음"
 [ -f knowledge/_templates/meeting-note.md ] || fail "_templates 없음"
+grep -q '관련 교훈' knowledge/_templates/cluster-index.md || fail "cluster 템플릿에 관련 교훈 섹션 없음"
 [ -f knowledge/docs/README.md ] || fail "docs/ 스켈레톤 없음"
 [ -f knowledge/_templates/doc.md ] || fail "doc 템플릿 없음"
 [ -f knowledge/_templates/lesson.md ] || fail "lesson 템플릿 없음"
