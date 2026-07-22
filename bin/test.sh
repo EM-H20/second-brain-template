@@ -21,6 +21,8 @@ head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가
 [ -f knowledge/_templates/meeting-note.md ] || fail "_templates 없음"
 [ -f knowledge/docs/README.md ] || fail "docs/ 스켈레톤 없음"
 [ -f knowledge/_templates/doc.md ] || fail "doc 템플릿 없음"
+[ -f knowledge/_templates/lesson.md ] || fail "lesson 템플릿 없음"
+[ -f knowledge/lessons/README.md ] || fail "lessons/ 스켈레톤 없음"
 [ -f knowledge/.obsidian/graph.json ] || fail "graph.json 미설치"
 [ -f knowledge/_sources/README.md ] || fail "_sources 스켈레톤 없음"
 [ -f knowledge/_sources/meetings/README.md ] || fail "_sources/meetings 없음"
