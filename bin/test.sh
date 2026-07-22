@@ -56,11 +56,20 @@ cd "$TMP/fresh"
 printf 'user note\n' > knowledge/meetings/2026-07-21-test.md
 printf 'edited by user\n' >> knowledge/index.md
 printf 'stale content\n' >> .claude/commands/report.md
+printf 'STALE TEMPLATE\n' > knowledge/_templates/meeting-note.md
+printf 'user log line\n' >> knowledge/log.md
+printf 'user-topic-slug\n' >> knowledge/clusters/_topics.md
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "import 줄 중복"
 grep -q 'edited by user' knowledge/index.md || fail "사용자 수정 index.md 덮어씀"
 [ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
 if grep -q 'stale content' .claude/commands/report.md; then fail "마커 있는 템플릿 파일이 갱신 안 됨"; fi
+if grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md; then fail "스캐폴딩 템플릿이 갱신 안 됨"; fi
+diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting-note.md" > /dev/null || fail "템플릿이 최신본과 불일치"
+[ -f knowledge/_templates/meeting-note.md.bak ] || fail ".bak 백업 없음"
+grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md.bak || fail ".bak에 이전 내용 없음"
+grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
+grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
 echo "케이스 3 OK"
 
 # ── 케이스 4: y/n 프롬프트 분기 ────────────────────────

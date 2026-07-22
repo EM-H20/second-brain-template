@@ -50,6 +50,21 @@ function planIfMissing(rel) {
     : { kind: 'copy', rel, label: '신규' };
 }
 
+// 스캐폴딩 판정: _templates/ 아래이거나 파일명이 README.md
+function isScaffold(rel) {
+  return rel.split(path.sep).includes('_templates') || path.basename(rel) === 'README.md';
+}
+
+// 스캐폴딩: 항상 최신본 유지. 내용이 다를 때만 .bak 백업 후 덮음
+function planScaffold(rel) {
+  const to = path.join(DEST, rel);
+  if (!fs.existsSync(to)) return { kind: 'copy', rel, label: '신규' };
+  const cur = fs.readFileSync(to, 'utf8');
+  const src = fs.readFileSync(path.join(SRC, rel), 'utf8');
+  if (cur === src) return { kind: 'keep', rel };
+  return { kind: 'scaffold-update', rel, label: '갱신(.bak)' };
+}
+
 // CLAUDE.md: 없으면 import 한 줄짜리 생성, 있으면 한 줄 추가 (멱등)
 function planClaudeMd() {
   const to = path.join(DEST, 'CLAUDE.md');
@@ -71,7 +86,10 @@ function buildPlan() {
   for (const dir of ['.claude/commands', '.codex/prompts']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
-  for (const f of listFiles(path.join(SRC, 'knowledge'))) plan.push(planIfMissing(path.relative(SRC, f)));
+  for (const f of listFiles(path.join(SRC, 'knowledge'))) {
+    const rel = path.relative(SRC, f);
+    plan.push(isScaffold(rel) ? planScaffold(rel) : planIfMissing(rel));
+  }
   plan.push(planClaudeMd());
   plan.push(planAgentsMd());
   return plan;
@@ -83,6 +101,8 @@ function printAnalysis(plan) {
   console.log('현재 프로젝트 분석: ' + DEST + '\n');
   console.log('  신규 설치: ' + count('신규') + '개');
   if (count('갱신')) console.log('  갱신(마커 확인됨): ' + count('갱신') + '개');
+  const scaffolds = plan.filter((a) => a.kind === 'scaffold-update').length;
+  if (scaffolds) console.log('  갱신(.bak 백업): ' + scaffolds + '개');
   if (keeps) console.log('  유지(기존 파일, 건드리지 않음): ' + keeps + '개');
   plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append')
     .forEach((a) => console.log('  ' + a.rel + ': ' + a.label));
@@ -111,6 +131,9 @@ function applyAction(a) {
     const content = fs.readFileSync(path.join(SRC, a.rel), 'utf8');
     write(to, content.trimEnd() + '\n\n' + MARKER + '\n');
   } else if (a.kind === 'copy' || a.kind === 'agents-copy') {
+    write(to, fs.readFileSync(path.join(SRC, a.rel)));
+  } else if (a.kind === 'scaffold-update') {
+    write(to + '.bak', fs.readFileSync(to));
     write(to, fs.readFileSync(path.join(SRC, a.rel)));
   } else if (a.kind === 'claude-create') {
     write(to, IMPORT_LINE + '\n');
