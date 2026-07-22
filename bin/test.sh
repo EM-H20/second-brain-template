@@ -70,6 +70,24 @@ diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting
 grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md.bak || fail ".bak에 이전 내용 없음"
 grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
+
+# 멱등: 바뀐 게 없으면 .bak을 다시 만들지 않는다
+rm knowledge/_templates/meeting-note.md.bak
+node "$ROOT/bin/init.js" -y > out3.log
+[ ! -f knowledge/_templates/meeting-note.md.bak ] || fail "변경 없는데 .bak 재생성됨"
+
+# README도 스캐폴딩이라 갱신 대상
+printf 'STALE README\n' > knowledge/docs/README.md
+node "$ROOT/bin/init.js" -y > out4.log
+if grep -q 'STALE README' knowledge/docs/README.md; then fail "README 스캐폴딩 갱신 안 됨"; fi
+[ -f knowledge/docs/README.md.bak ] || fail "README .bak 백업 없음"
+grep -q 'bak 백업' out4.log || fail "분석 요약에 .bak 갱신 줄 없음"
+
+# 사용자 데이터는 이 모든 재실행 후에도 무손상
+grep -q 'edited by user' knowledge/index.md || fail "index.md 덮어씀"
+[ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
+grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "_topics.md 덮어씀"
+
 echo "케이스 3 OK"
 
 # ── 케이스 4: y/n 프롬프트 분기 ────────────────────────
