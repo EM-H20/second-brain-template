@@ -184,7 +184,8 @@ knowledge/
 ├── docs/         문서 요약 노트 (DOC-NNNN) — 권위·연관 가중치
 ├── reports/      생성된 보고서
 ├── clusters/     주제별 인덱스 + _topics.md (통제 어휘)
-└── _templates/   노트 양식 (frontmatter 규격 포함)
+├── _templates/   노트 양식 (frontmatter 규격 포함)
+└── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
 SECOND-BRAIN.md   워크플로우 규칙 (W1~W7) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
 .claude/commands/ 슬래시 커맨드 9개
@@ -229,3 +230,8 @@ supersedes 체인)을 따른다. Claude는 전체 파일을 읽는 대신 frontm
 grep해서 후보를 좁힌 뒤 필요한 노트만 연다. 클러스터링 일관성은
 `clusters/_topics.md`(통제 어휘)가 잡아준다. Karpathy LLM Wiki 패턴과
 같은 철학: **잘 구조화된 마크다운은 임베딩 없이도 LLM이 직접 다룰 수 있다.**
+
+인제스트한 **원본 텍스트는 `_sources/`에 그대로(verbatim) 보존**되고 각 노트의
+`source:` 필드가 그 경로를 가리킨다. AI 요약은 손실적이라, 원본이 볼트 안에 있으면
+요약 충실도를 언제든 대조할 수 있는 ground truth가 된다. `_sources/`는 검색·그래프에서
+제외되어 볼트를 가볍게 유지한다.

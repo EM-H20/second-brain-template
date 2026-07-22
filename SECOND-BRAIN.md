@@ -34,6 +34,7 @@ folder and take max+1. Never reuse a number, even if a note was deleted.
 Frontmatter is how you find things without reading every file.
 When searching the vault, ALWAYS scan frontmatter first (grep the YAML
 blocks), then open only the notes whose frontmatter matches.
+`_sources/`는 스키마 없는 원본 보존본이므로 검색 대상이 아니다 — 절대 스캔하지 않는다.
 
 Common keys for all notes:
 
@@ -208,6 +209,12 @@ into `docs/`:
 
 ## General rules
 
+- **원본 보존.** 인제스트한 원본이 텍스트면, 노트 생성 직후 그 내용을 가공 없이
+  (verbatim) `_sources/<type>/<노트와 동일한 id-slug>.md`에 저장하고 노트의
+  `source:`를 그 경로로 설정한다 (type = meetings / docs / issues, W1·W6·W7 공통).
+  원본이 바이너리(녹음·PDF·이미지)면 저장을 건너뛰고 `source:`에 외부 URL을 적는다.
+  붙여넣은 텍스트도 원본으로 저장한다. 저장 파일명은 짝 노트의 정식 id/slug과 동일
+  (원본의 원래 이름은 쓰지 않는다 — ASCII kebab-case 규칙 재사용).
 - **Work log (append-only).** After EVERY write operation to the vault
   (create/update any note), append one line to `knowledge/log.md`:
   `- YYYY-MM-DD HH:MM | <workflow> | <action> | <files/ids>`.
