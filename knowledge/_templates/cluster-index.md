@@ -32,3 +32,6 @@ related: []
 
 ## 관련 이슈
 - [[ISS-NNNN-...]] ({open|resolved})
+
+## 관련 교훈
+- [[LSN-NNNN-...]] — {규칙 요약} (trigger: {...})

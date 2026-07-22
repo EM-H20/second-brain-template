@@ -23,6 +23,7 @@ knowledge/
 ├── docs/         # ingested documents            DOC-NNNN-<slug>.md
 ├── reports/      # generated reports             YYYY-MM-DD-<slug>.md
 ├── clusters/     # topic index notes             cluster-<topic-slug>.md
+├── lessons/      # reusable work-rules          LSN-NNNN-<slug>.md
 ├── _templates/   # note templates (do not edit during normal work)
 └── _sources/     # ingested originals, verbatim (excluded from search & graph)
 ```
@@ -40,10 +41,10 @@ blocks), then open only the notes whose frontmatter matches.
 Common keys for all notes:
 
 ```yaml
-type: meeting | decision | issue | completion-report | report | cluster | doc
+type: meeting | decision | issue | completion-report | report | cluster | doc | lesson
 created: YYYY-MM-DD
 topics: [<topic-slug>, ...]     # lowercase kebab-case topic tags
-status: active | superseded | resolved | open   # per-type, see below
+status: active | superseded | resolved | open | archived   # per-type, see below
 related: ["[[note]]", ...]      # wikilinks to related notes
 ```
 
@@ -66,6 +67,12 @@ Type-specific keys:
   `topics_ref: [...]` (참고 연관 — 검색 후순위), `decisions: [DEC-NNNN, ...]`,
   `supersedes: DOC-NNNN | null`, `superseded_by: DOC-NNNN | null`,
   `status: active | superseded`
+- lesson: `type: lesson`, `id: LSN-NNNN`, `trigger: <한 줄, 이 교훈을 소환할 상황 — grep 키>`,
+  `status: active | superseded | archived`,
+  `source: <세션 날짜 | ISS-NNNN | 회의 id>`,
+  `supersedes: LSN-NNNN | null`, `superseded_by: LSN-NNNN | null`.
+  이슈의 `symptoms`가 재발 탐지 키이듯, lesson의 `trigger`가 소환 키다.
+  파생/curated 노트라 `_sources/` 원본은 없다 (decision과 동일).
 
 `source:` (meeting/issue/completion-report/doc): 원본의 위치. 텍스트 원본을
 보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.
@@ -208,6 +215,55 @@ into `docs/`:
    or edit the old document's content. Superseding a document does NOT
    supersede the decisions extracted from it — decisions change only
    through W4.
+
+### W8 — Lesson capture & application (`/capture`, auto during work)
+
+A lesson (`lessons/LSN-NNNN-<slug>.md`) is a reusable work-rule, preference,
+or judgment heuristic that does NOT belong to a single issue or decision.
+
+Capture happens at natural moments — NOT on a session-end timer:
+
+1. **Opportunistic (in-the-moment).** When a lesson-shaped moment occurs,
+   propose right then, inside the current flow:
+   - the user corrects your approach ("아니 그건 이렇게 해")
+   - a W4 conflict is resolved
+   - a completion report is written
+   Propose in this shape:
+
+   > 이거 교훈으로 남길까요?
+   > - "<rule>" [trigger: "<...>", topics: <...>]
+   > (ㅇ 저장 / 수정 / 버림)
+
+   On approval, create the `LSN` note from `_templates/lesson.md` (next
+   LSN-NNNN). On "수정", adjust and re-confirm. Never save silently.
+2. **On-demand (during `maintain`).** A full maintain pass also sweeps the
+   current session for candidate lessons and proposes them the same way,
+   batched.
+
+**Superseding a lesson** follows the decision rule: never delete or edit the
+old lesson's body — set old `status: superseded`, `superseded_by: <new id>`;
+new `supersedes: <old id>`. Use `archived` for a lesson that no longer applies
+but has no replacement.
+
+**Application (during recall / W3).** When building a Context Brief, grep
+`lessons/` frontmatter for `trigger`/`topics` overlapping the task, open only
+matches, and include a "관련 교훈" section citing LSN ids — exactly as W6
+surfaces past issues by `symptoms`. Relevant lessons also surface
+opportunistically whenever their `trigger` matches work in progress, so the
+rule appears BEFORE you act.
+
+### Trigger routing (3 core verbs)
+
+The 9 slash commands remain as power-user aliases. Everyday interaction —
+slash or natural language — routes through three verbs:
+
+- **capture** (기억해): classify the input → route to meeting / doc / issue /
+  lesson ingestion (W1 / W7 / W6 / W8). Ambiguous type → ask, never guess.
+- **recall** (꺼내줘): gather everything on a topic — active decisions, latest
+  meeting context, relevant docs, open/resolved issues, relevant lessons,
+  conflicts — into a Context Brief (W3 + W4 + W6).
+- **maintain** (정리해): rebuild clusters and merge duplicate topics (W2 full),
+  then sweep the session for candidate lessons (W8 on-demand).
 
 ## General rules
 
