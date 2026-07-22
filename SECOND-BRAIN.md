@@ -23,7 +23,8 @@ knowledge/
 ├── docs/         # ingested documents            DOC-NNNN-<slug>.md
 ├── reports/      # generated reports             YYYY-MM-DD-<slug>.md
 ├── clusters/     # topic index notes             cluster-<topic-slug>.md
-└── _templates/   # note templates (do not edit during normal work)
+├── _templates/   # note templates (do not edit during normal work)
+└── _sources/     # ingested originals, verbatim (excluded from search & graph)
 ```
 
 `NNNN` is a zero-padded sequence number. To get the next number, list the
@@ -69,6 +70,7 @@ Type-specific keys:
 `source:` (meeting/issue/completion-report/doc): 원본의 위치. 텍스트 원본을
 보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.
 (decision·report·cluster는 파생/생성물이라 `source` 없음.)
+텍스트 원본을 로컬에 저장한 경우에도 외부 출처(예: 노션 URL)를 남기고 싶으면 노트 본문에 적는다 — frontmatter의 `source:` 키는 하나만 둔다.
 
 ## Topic slugs (clustering vocabulary)
 

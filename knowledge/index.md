@@ -21,6 +21,7 @@ related: []
 - docs/ — 문서 요약 노트 (DOC) — 권위·연관 가중치
 - reports/ — 생성된 보고서
 - clusters/ — 주제 인덱스 + [[_topics]] 통제 어휘
+- _sources/ — 인제스트한 원본 텍스트 verbatim 보존 (검색·그래프 제외)
 
 ## 최근 작업
 직전 세션 맥락은 [[log]] 끝부분 참조.

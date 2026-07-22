@@ -10,7 +10,7 @@ It defines:
 - The knowledge vault layout under `knowledge/`
 - The strict frontmatter schema (how to find notes without reading everything)
 - The topic vocabulary rules (`knowledge/clusters/_topics.md`)
-- Workflows W1–W6: meeting ingestion, clustering, context-driven build,
+- Workflows W1–W7: meeting ingestion, clustering, context-driven build,
   conflict detection, report generation, issue knowledge loop
 
 ## Command equivalents
