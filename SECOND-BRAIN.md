@@ -216,6 +216,55 @@ into `docs/`:
    supersede the decisions extracted from it — decisions change only
    through W4.
 
+### W8 — Lesson capture & application (`/capture`, auto during work)
+
+A lesson (`lessons/LSN-NNNN-<slug>.md`) is a reusable work-rule, preference,
+or judgment heuristic that does NOT belong to a single issue or decision.
+
+Capture happens at natural moments — NOT on a session-end timer:
+
+1. **Opportunistic (in-the-moment).** When a lesson-shaped moment occurs,
+   propose right then, inside the current flow:
+   - the user corrects your approach ("아니 그건 이렇게 해")
+   - a W4 conflict is resolved
+   - a completion report is written
+   Propose in this shape:
+
+   > 이거 교훈으로 남길까요?
+   > - "<rule>" [trigger: "<...>", topics: <...>]
+   > (ㅇ 저장 / 수정 / 버림)
+
+   On approval, create the `LSN` note from `_templates/lesson.md` (next
+   LSN-NNNN). On "수정", adjust and re-confirm. Never save silently.
+2. **On-demand (during `maintain`).** A full maintain pass also sweeps the
+   current session for candidate lessons and proposes them the same way,
+   batched.
+
+**Superseding a lesson** follows the decision rule: never delete or edit the
+old lesson's body — set old `status: superseded`, `superseded_by: <new id>`;
+new `supersedes: <old id>`. Use `archived` for a lesson that no longer applies
+but has no replacement.
+
+**Application (during recall / W3).** When building a Context Brief, grep
+`lessons/` frontmatter for `trigger`/`topics` overlapping the task, open only
+matches, and include a "관련 교훈" section citing LSN ids — exactly as W6
+surfaces past issues by `symptoms`. Relevant lessons also surface
+opportunistically whenever their `trigger` matches work in progress, so the
+rule appears BEFORE you act.
+
+### Trigger routing (3 core verbs)
+
+The 9 slash commands remain as power-user aliases. Everyday interaction —
+slash or natural language — routes through three verbs:
+
+- **capture** (기억해): classify the input → route to meeting / doc / issue /
+  lesson ingestion (W1 / W7 / W6 / W8). Ambiguous type → ask, never guess.
+- **recall** (꺼내줘): gather everything on a topic — active decisions, latest
+  meeting context, relevant docs, open/resolved issues, relevant lessons,
+  conflicts — into a Context Brief (W3 + W4 + W6 + W5).
+- **maintain** (정리해): rebuild clusters and merge duplicate topics (W2 full),
+  then sweep the session for candidate lessons (W8 on-demand).
+
 ## General rules
 
 - **원본 보존.** 인제스트한 원본이 텍스트면, 노트 생성 직후 그 내용을 가공 없이
