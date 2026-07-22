@@ -23,6 +23,7 @@ knowledge/
 ├── docs/         # ingested documents            DOC-NNNN-<slug>.md
 ├── reports/      # generated reports             YYYY-MM-DD-<slug>.md
 ├── clusters/     # topic index notes             cluster-<topic-slug>.md
+├── lessons/      # reusable work-rules          LSN-NNNN-<slug>.md
 ├── _templates/   # note templates (do not edit during normal work)
 └── _sources/     # ingested originals, verbatim (excluded from search & graph)
 ```
@@ -40,7 +41,7 @@ blocks), then open only the notes whose frontmatter matches.
 Common keys for all notes:
 
 ```yaml
-type: meeting | decision | issue | completion-report | report | cluster | doc
+type: meeting | decision | issue | completion-report | report | cluster | doc | lesson
 created: YYYY-MM-DD
 topics: [<topic-slug>, ...]     # lowercase kebab-case topic tags
 status: active | superseded | resolved | open   # per-type, see below
@@ -66,6 +67,12 @@ Type-specific keys:
   `topics_ref: [...]` (참고 연관 — 검색 후순위), `decisions: [DEC-NNNN, ...]`,
   `supersedes: DOC-NNNN | null`, `superseded_by: DOC-NNNN | null`,
   `status: active | superseded`
+- lesson: `type: lesson`, `id: LSN-NNNN`, `trigger: <한 줄, 이 교훈을 소환할 상황 — grep 키>`,
+  `status: active | superseded | archived`,
+  `source: <세션 날짜 | ISS-NNNN | 회의 id>`,
+  `supersedes: LSN-NNNN | null`, `superseded_by: LSN-NNNN | null`.
+  이슈의 `symptoms`가 재발 탐지 키이듯, lesson의 `trigger`가 소환 키다.
+  파생/curated 노트라 `_sources/` 원본은 없다 (decision과 동일).
 
 `source:` (meeting/issue/completion-report/doc): 원본의 위치. 텍스트 원본을
 보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.

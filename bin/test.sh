@@ -10,6 +10,8 @@ mkdir "$TMP/fresh" && cd "$TMP/fresh"
 node "$ROOT/bin/init.js" -y > out.log
 [ -f SECOND-BRAIN.md ] || fail "SECOND-BRAIN.md 없음"
 grep -q 'second-brain-template' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 마커 없음"
+grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 미기재"
+grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 [ "$(cat CLAUDE.md)" = "@SECOND-BRAIN.md" ] || fail "CLAUDE.md가 import 한 줄이 아님"
 [ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
