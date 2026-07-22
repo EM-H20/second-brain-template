@@ -38,7 +38,10 @@ npx github:EM-H20/second-brain-template
 
 기존 `CLAUDE.md`가 있어도 안전하다 — 규칙은 `SECOND-BRAIN.md`로 들어가고
 `@SECOND-BRAIN.md` import 한 줄만 추가된다. 템플릿 업데이트를 받으려면
-같은 명령을 재실행하면 된다 (`knowledge/` 노트는 절대 건드리지 않음).
+같은 명령을 재실행하면 된다 — `_templates/`와 각 폴더의 `README.md`(스캐폴딩)는
+최신본으로 갱신되고, 내용이 달랐던 파일은 `<파일>.bak`으로 직전 버전 1개만
+백업된다(다음 재실행 시 교체). 실제 노트·`index.md`·`log.md`·
+`clusters/_topics.md`·`_sources/` 저장 원본은 절대 건드리지 않는다.
 CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 
 ### 방법 B — 템플릿으로 새 프로젝트 시작

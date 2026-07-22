@@ -56,11 +56,50 @@ cd "$TMP/fresh"
 printf 'user note\n' > knowledge/meetings/2026-07-21-test.md
 printf 'edited by user\n' >> knowledge/index.md
 printf 'stale content\n' >> .claude/commands/report.md
+printf 'STALE TEMPLATE\n' > knowledge/_templates/meeting-note.md
+printf 'user log line\n' >> knowledge/log.md
+printf 'user-topic-slug\n' >> knowledge/clusters/_topics.md
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "import 줄 중복"
 grep -q 'edited by user' knowledge/index.md || fail "사용자 수정 index.md 덮어씀"
 [ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
 if grep -q 'stale content' .claude/commands/report.md; then fail "마커 있는 템플릿 파일이 갱신 안 됨"; fi
+if grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md; then fail "스캐폴딩 템플릿이 갱신 안 됨"; fi
+diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting-note.md" > /dev/null || fail "템플릿이 최신본과 불일치"
+[ -f knowledge/_templates/meeting-note.md.bak ] || fail ".bak 백업 없음"
+grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md.bak || fail ".bak에 이전 내용 없음"
+grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
+grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
+
+# 멱등: 바뀐 게 없으면 .bak을 다시 만들지 않는다
+rm knowledge/_templates/meeting-note.md.bak
+node "$ROOT/bin/init.js" -y > out3.log
+[ ! -f knowledge/_templates/meeting-note.md.bak ] || fail "변경 없는데 .bak 재생성됨"
+
+# README도 스캐폴딩이라 갱신 대상
+printf 'STALE README\n' > knowledge/docs/README.md
+node "$ROOT/bin/init.js" -y > out4.log
+if grep -q 'STALE README' knowledge/docs/README.md; then fail "README 스캐폴딩 갱신 안 됨"; fi
+[ -f knowledge/docs/README.md.bak ] || fail "README .bak 백업 없음"
+grep -q 'STALE README' knowledge/docs/README.md.bak || fail "README .bak에 이전 내용 없음"
+grep -q 'bak 백업' out4.log || fail "분석 요약에 .bak 갱신 줄 없음"
+grep -q 'knowledge/docs/README.md.bak' out4.log || fail "완료 메시지에 .bak 백업 목록 없음"
+
+# 사용자 데이터는 이 모든 재실행 후에도 무손상
+grep -q 'edited by user' knowledge/index.md || fail "index.md 덮어씀"
+[ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
+grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "_topics.md 덮어씀"
+
+# .obsidian/graph.json은 SRC에 있는 파일이라 planIfMissing을 타므로,
+# isScaffold가 넓어져 이걸 삼키면 아래 assertion이 잡는다.
+# _sources 저장 원본은 SRC에 없어 buildPlan(=SRC 순회)의 plan에 애초에 안 들어간다.
+# 지금은 실패할 수 없는 구조적 보장이며, buildPlan이 DEST를 훑도록 바뀌면 그때 잡는 가드다.
+printf 'verbatim original\n' > knowledge/_sources/meetings/2026-07-21-test.md
+printf '{"scale": 2}\n' > knowledge/.obsidian/graph.json
+node "$ROOT/bin/init.js" -y > out5.log
+grep -q 'verbatim original' knowledge/_sources/meetings/2026-07-21-test.md || fail "_sources 저장 원본 덮어씀"
+grep -q '"scale": 2' knowledge/.obsidian/graph.json || fail ".obsidian 사용자 설정 덮어씀"
+
 echo "케이스 3 OK"
 
 # ── 케이스 4: y/n 프롬프트 분기 ────────────────────────

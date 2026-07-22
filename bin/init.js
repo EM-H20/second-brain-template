@@ -50,6 +50,25 @@ function planIfMissing(rel) {
     : { kind: 'copy', rel, label: '신규' };
 }
 
+// 스캐폴딩 판정: _templates/ 아래이거나 파일명이 README.md
+// 마커 방식(planOwned) 대신 경로로 판정하는 이유: _templates/*는 새 노트를
+// 만들 때 내용이 그대로 복사되는 원본이라, 파일에 마커를 심으면 그 마커가
+// 생성된 노트로 새어나간다. 새 knowledge/ 하위 폴더를 추가할 때도 이 규칙을
+// 따를 것 — 마커를 붙이면 다시 그 오염이 재현된다.
+function isScaffold(rel) {
+  return rel.split(path.sep).includes('_templates') || path.basename(rel) === 'README.md';
+}
+
+// 스캐폴딩: 항상 최신본 유지. 내용이 다를 때만 .bak 백업 후 덮음
+function planScaffold(rel) {
+  const to = path.join(DEST, rel);
+  if (!fs.existsSync(to)) return { kind: 'copy', rel, label: '신규' };
+  const cur = fs.readFileSync(to, 'utf8');
+  const src = fs.readFileSync(path.join(SRC, rel), 'utf8');
+  if (cur === src) return { kind: 'keep', rel };
+  return { kind: 'scaffold-update', rel, label: '갱신(.bak)' };
+}
+
 // CLAUDE.md: 없으면 import 한 줄짜리 생성, 있으면 한 줄 추가 (멱등)
 function planClaudeMd() {
   const to = path.join(DEST, 'CLAUDE.md');
@@ -71,7 +90,10 @@ function buildPlan() {
   for (const dir of ['.claude/commands', '.codex/prompts']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
-  for (const f of listFiles(path.join(SRC, 'knowledge'))) plan.push(planIfMissing(path.relative(SRC, f)));
+  for (const f of listFiles(path.join(SRC, 'knowledge'))) {
+    const rel = path.relative(SRC, f);
+    plan.push(isScaffold(rel) ? planScaffold(rel) : planIfMissing(rel));
+  }
   plan.push(planClaudeMd());
   plan.push(planAgentsMd());
   return plan;
@@ -83,6 +105,8 @@ function printAnalysis(plan) {
   console.log('현재 프로젝트 분석: ' + DEST + '\n');
   console.log('  신규 설치: ' + count('신규') + '개');
   if (count('갱신')) console.log('  갱신(마커 확인됨): ' + count('갱신') + '개');
+  const scaffolds = plan.filter((a) => a.kind === 'scaffold-update').length;
+  if (scaffolds) console.log('  갱신(.bak 백업): ' + scaffolds + '개');
   if (keeps) console.log('  유지(기존 파일, 건드리지 않음): ' + keeps + '개');
   plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append')
     .forEach((a) => console.log('  ' + a.rel + ': ' + a.label));
@@ -112,6 +136,9 @@ function applyAction(a) {
     write(to, content.trimEnd() + '\n\n' + MARKER + '\n');
   } else if (a.kind === 'copy' || a.kind === 'agents-copy') {
     write(to, fs.readFileSync(path.join(SRC, a.rel)));
+  } else if (a.kind === 'scaffold-update') {
+    write(to + '.bak', fs.readFileSync(to));
+    write(to, fs.readFileSync(path.join(SRC, a.rel)));
   } else if (a.kind === 'claude-create') {
     write(to, IMPORT_LINE + '\n');
   } else if (a.kind === 'claude-append') {
@@ -132,6 +159,12 @@ confirm((ok) => {
   plan.forEach(applyAction);
   const done = plan.filter((a) => a.kind !== 'keep' && a.kind !== 'warn').length;
   console.log('\nsecond-brain-template 설치 완료 — ' + done + '개 파일 처리\n');
+  const backups = plan.filter((a) => a.kind === 'scaffold-update');
+  if (backups.length) {
+    console.log('직전 버전으로 백업된 파일 (.bak, 다음 재실행 시 최신본으로 교체됨):');
+    backups.forEach((a) => console.log('  ' + a.rel + '.bak'));
+    console.log('');
+  }
   console.log('다음 단계:');
   console.log('  1. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
   console.log('  2. Claude Code에서 /ingest-meeting 으로 첫 회의록 넣기');
