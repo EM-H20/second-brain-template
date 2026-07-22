@@ -44,7 +44,7 @@ Common keys for all notes:
 type: meeting | decision | issue | completion-report | report | cluster | doc | lesson
 created: YYYY-MM-DD
 topics: [<topic-slug>, ...]     # lowercase kebab-case topic tags
-status: active | superseded | resolved | open   # per-type, see below
+status: active | superseded | resolved | open | archived   # per-type, see below
 related: ["[[note]]", ...]      # wikilinks to related notes
 ```
 
@@ -261,7 +261,7 @@ slash or natural language — routes through three verbs:
   lesson ingestion (W1 / W7 / W6 / W8). Ambiguous type → ask, never guess.
 - **recall** (꺼내줘): gather everything on a topic — active decisions, latest
   meeting context, relevant docs, open/resolved issues, relevant lessons,
-  conflicts — into a Context Brief (W3 + W4 + W6 + W5).
+  conflicts — into a Context Brief (W3 + W4 + W6).
 - **maintain** (정리해): rebuild clusters and merge duplicate topics (W2 full),
   then sweep the session for candidate lessons (W8 on-demand).
 
