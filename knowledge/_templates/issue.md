@@ -8,6 +8,7 @@ root_cause: ""        # 한 줄. 해결 후 채움
 status: open          # open | resolved
 resolution: null      # "[[ISS-NNNN-...-report]]" 완료 리포트 링크
 related: []
+source: ""            # _sources/issues/<id>.md (텍스트 보존 시) 또는 외부 URL
 ---
 
 # ISS-NNNN: {이슈 한 줄 요약}

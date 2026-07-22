@@ -7,6 +7,7 @@ decisions: []        # [DEC-0001, ...]
 action_items: 0
 status: active
 related: []          # ["[[2026-07-01-kickoff]]", ...]
+source: ""           # _sources/meetings/<id>.md (텍스트 보존 시) 또는 외부 URL
 ---
 
 # 회의: {제목}
@@ -30,4 +31,5 @@ related: []          # ["[[2026-07-01-kickoff]]", ...]
 - {다음 회의로 넘어간 것들}
 
 ## 원본 전사체
-> 원본 파일: {경로 또는 "채팅으로 붙여넣음"}
+> 원본은 `_sources/meetings/<이 노트와 같은 파일명>.md`에 verbatim 보존됨
+> (frontmatter `source:` 참조).

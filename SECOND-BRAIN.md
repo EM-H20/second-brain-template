@@ -47,20 +47,27 @@ related: ["[[note]]", ...]      # wikilinks to related notes
 
 Type-specific keys:
 
-- meeting: `attendees: []`, `decisions: [DEC-NNNN, ...]`, `action_items: n`
+- meeting: `attendees: []`, `decisions: [DEC-NNNN, ...]`, `action_items: n`,
+  `source: "_sources/meetings/<id>.md" | "<external URL>"`
 - decision: `id: DEC-NNNN`, `supersedes: DEC-NNNN | null`,
   `superseded_by: DEC-NNNN | null`, `status: active | superseded`
 - issue: `id: ISS-NNNN`, `symptoms: [<keyword>, ...]`,
   `root_cause: <one line>`, `status: open | resolved`,
-  `resolution: "[[ISS-NNNN-...]]" | null` (link to completion report)
+  `resolution: "[[ISS-NNNN-...]]" | null` (link to completion report),
+  `source: "_sources/issues/<id>.md" | "<external URL>"`
 - completion-report: `id: ISS-NNNN` (same id as the issue it closes),
-  `resolves: "[[ISS-NNNN-...]]"`
+  `resolves: "[[ISS-NNNN-...]]"`, `source: "_sources/issues/<id>.md" | "<external URL>"`
 - cluster: `topic: <topic-slug>`, `members: n` (core-`topics` notes only; `topics_ref` 참고 항목은 세지 않음)
 - doc: `id: DOC-NNNN`, `doc_type: spec | prd | design | research | article | other`,
-  `authority: official | internal | external`, `source: <path or URL>`,
+  `authority: official | internal | external`,
+  `source: "_sources/docs/<id>.md" (local, 텍스트 저장 시) | "<external URL>"`,
   `topics_ref: [...]` (참고 연관 — 검색 후순위), `decisions: [DEC-NNNN, ...]`,
   `supersedes: DOC-NNNN | null`, `superseded_by: DOC-NNNN | null`,
   `status: active | superseded`
+
+`source:` (meeting/issue/completion-report/doc): 원본의 위치. 텍스트 원본을
+보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.
+(decision·report·cluster는 파생/생성물이라 `source` 없음.)
 
 ## Topic slugs (clustering vocabulary)
 

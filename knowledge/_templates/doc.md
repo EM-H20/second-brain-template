@@ -4,7 +4,7 @@ id: DOC-NNNN
 doc_type: other       # spec | prd | design | research | article | other
 authority: internal   # official | internal | external
 created: YYYY-MM-DD
-source: ""            # 원본 파일 경로 또는 URL
+source: ""            # _sources/docs/<id>.md (텍스트 보존 시) 또는 외부 URL
 topics: []            # 핵심 연관 토픽 (검색 우선)
 topics_ref: []        # 참고 연관 토픽 (검색 후순위)
 decisions: []         # 이 문서에서 추출된 DEC-NNNN

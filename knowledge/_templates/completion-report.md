@@ -5,6 +5,7 @@ created: YYYY-MM-DD
 topics: []
 resolves: ""           # "[[ISS-NNNN-...]]" 원 이슈 링크
 related: []
+source: ""             # _sources/issues/<id>.md (텍스트 보존 시) 또는 외부 URL
 ---
 
 # ISS-NNNN 완료 리포트: {한 줄 요약}
