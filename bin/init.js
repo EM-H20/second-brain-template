@@ -51,6 +51,10 @@ function planIfMissing(rel) {
 }
 
 // 스캐폴딩 판정: _templates/ 아래이거나 파일명이 README.md
+// 마커 방식(planOwned) 대신 경로로 판정하는 이유: _templates/*는 새 노트를
+// 만들 때 내용이 그대로 복사되는 원본이라, 파일에 마커를 심으면 그 마커가
+// 생성된 노트로 새어나간다. 새 knowledge/ 하위 폴더를 추가할 때도 이 규칙을
+// 따를 것 — 마커를 붙이면 다시 그 오염이 재현된다.
 function isScaffold(rel) {
   return rel.split(path.sep).includes('_templates') || path.basename(rel) === 'README.md';
 }
@@ -155,6 +159,12 @@ confirm((ok) => {
   plan.forEach(applyAction);
   const done = plan.filter((a) => a.kind !== 'keep' && a.kind !== 'warn').length;
   console.log('\nsecond-brain-template 설치 완료 — ' + done + '개 파일 처리\n');
+  const backups = plan.filter((a) => a.kind === 'scaffold-update');
+  if (backups.length) {
+    console.log('직전 버전으로 백업된 파일 (.bak, 다음 재실행 시 최신본으로 교체됨):');
+    backups.forEach((a) => console.log('  ' + a.rel + '.bak'));
+    console.log('');
+  }
   console.log('다음 단계:');
   console.log('  1. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
   console.log('  2. Claude Code에서 /ingest-meeting 으로 첫 회의록 넣기');

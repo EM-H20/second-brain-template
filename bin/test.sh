@@ -81,12 +81,21 @@ printf 'STALE README\n' > knowledge/docs/README.md
 node "$ROOT/bin/init.js" -y > out4.log
 if grep -q 'STALE README' knowledge/docs/README.md; then fail "README 스캐폴딩 갱신 안 됨"; fi
 [ -f knowledge/docs/README.md.bak ] || fail "README .bak 백업 없음"
+grep -q 'STALE README' knowledge/docs/README.md.bak || fail "README .bak에 이전 내용 없음"
 grep -q 'bak 백업' out4.log || fail "분석 요약에 .bak 갱신 줄 없음"
+grep -q 'knowledge/docs/README.md.bak' out4.log || fail "완료 메시지에 .bak 백업 목록 없음"
 
 # 사용자 데이터는 이 모든 재실행 후에도 무손상
 grep -q 'edited by user' knowledge/index.md || fail "index.md 덮어씀"
 [ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "_topics.md 덮어씀"
+
+# _sources 저장 원본과 .obsidian 사용자 설정도 스캐폴딩 판정에 걸리지 않아야 함
+printf 'verbatim original\n' > knowledge/_sources/meetings/2026-07-21-test.md
+printf '{"scale": 2}\n' > knowledge/.obsidian/graph.json
+node "$ROOT/bin/init.js" -y > out5.log
+grep -q 'verbatim original' knowledge/_sources/meetings/2026-07-21-test.md || fail "_sources 저장 원본 덮어씀"
+grep -q '"scale": 2' knowledge/.obsidian/graph.json || fail ".obsidian 사용자 설정 덮어씀"
 
 echo "케이스 3 OK"
 
