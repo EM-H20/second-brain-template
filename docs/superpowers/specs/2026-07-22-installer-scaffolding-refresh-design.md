@@ -95,5 +95,6 @@ knowledge/_sources/**/README.md           (신규)
 - 버전 추적 / 변경분 diff / 파일별 마이그레이션 프롬프트 (C안)
 - 이름 바뀌거나 삭제된 옛 템플릿 파일 정리
 - `.gitignore`에 `*.bak` 자동 추가 (사용자 gitignore는 installer가 관리하지 않음)
-- `/setup-vault` 수정 — 손대지 않음. README/커맨드에 "업데이트 = npx 재실행"
-  안내 한 줄은 추후 별도로.
+- `/setup-vault` 수정 — 손대지 않음. README의 재실행 문단은 이번에 최소 보정했다
+  (스캐폴딩 갱신 + `.bak` 의미론). 별도 "업데이트" 강조 섹션과 커맨드 문서 반영은
+  여전히 추후 별도로.

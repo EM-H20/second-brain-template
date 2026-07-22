@@ -90,7 +90,10 @@ grep -q 'edited by user' knowledge/index.md || fail "index.md 덮어씀"
 [ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "_topics.md 덮어씀"
 
-# _sources 저장 원본과 .obsidian 사용자 설정도 스캐폴딩 판정에 걸리지 않아야 함
+# .obsidian/graph.json은 SRC에 있는 파일이라 planIfMissing을 타므로,
+# isScaffold가 넓어져 이걸 삼키면 아래 assertion이 잡는다.
+# _sources 저장 원본은 SRC에 없어 buildPlan(=SRC 순회)의 plan에 애초에 안 들어간다.
+# 지금은 실패할 수 없는 구조적 보장이며, buildPlan이 DEST를 훑도록 바뀌면 그때 잡는 가드다.
 printf 'verbatim original\n' > knowledge/_sources/meetings/2026-07-21-test.md
 printf '{"scale": 2}\n' > knowledge/.obsidian/graph.json
 node "$ROOT/bin/init.js" -y > out5.log
