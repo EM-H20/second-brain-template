@@ -5,5 +5,17 @@
   "bin": {
     "second-brain-template": "bin/init.js"
   },
+  "scripts": {
+    "test": "bash bin/test.sh"
+  },
+  "files": [
+    "bin",
+    "SECOND-BRAIN.md",
+    "AGENTS.md",
+    ".agents/skills/second-brain",
+    ".claude/commands",
+    ".codex/prompts",
+    "knowledge"
+  ],
   "license": "MIT"
 }

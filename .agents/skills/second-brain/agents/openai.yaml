@@ -1,0 +1,4 @@
+interface:
+  display_name: "Second Brain Vault"
+  short_description: "Capture, recall, and maintain project knowledge"
+  default_prompt: "Use $second-brain to work with this project knowledge vault."

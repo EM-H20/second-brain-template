@@ -28,24 +28,51 @@ function listFiles(dir) {
   return out;
 }
 
+function assertSafePath(to) {
+  const rel = path.relative(DEST, to);
+  if (path.isAbsolute(rel) || rel === '..' || rel.startsWith('..' + path.sep)) {
+    throw new Error('대상 프로젝트 밖에는 설치할 수 없습니다: ' + to);
+  }
+
+  let current = DEST;
+  for (const part of rel.split(path.sep)) {
+    if (!part) continue;
+    current = path.join(current, part);
+    if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+      throw new Error('심볼릭 링크 대상에는 설치할 수 없습니다: ' + path.relative(DEST, current));
+    }
+  }
+}
+
+function target(rel) {
+  const to = path.join(DEST, rel);
+  assertSafePath(to);
+  return to;
+}
+
 function write(to, content) {
+  assertSafePath(to);
   fs.mkdirSync(path.dirname(to), { recursive: true });
   fs.writeFileSync(to, content);
+}
+
+function ownedMarker(rel) {
+  return /\.ya?ml$/.test(rel) ? '# second-brain-template' : MARKER;
 }
 
 // ── 1단계: 현재 프로젝트 분석 (아무것도 쓰지 않음) ──────────────────
 
 // 템플릿 소유 파일: 대상이 없거나 마커를 가진 경우에만 덮어씀
 function planOwned(rel) {
-  const to = path.join(DEST, rel);
+  const to = target(rel);
   if (!fs.existsSync(to)) return { kind: 'owned', rel, label: '신규' };
-  if (!fs.readFileSync(to, 'utf8').includes(MARKER)) return { kind: 'warn', rel };
+  if (!fs.readFileSync(to, 'utf8').includes(ownedMarker(rel))) return { kind: 'warn', rel };
   return { kind: 'owned', rel, label: '갱신' };
 }
 
 // 사용자 소유 파일: 없을 때만 생성
 function planIfMissing(rel) {
-  return fs.existsSync(path.join(DEST, rel))
+  return fs.existsSync(target(rel))
     ? { kind: 'keep', rel }
     : { kind: 'copy', rel, label: '신규' };
 }
@@ -61,7 +88,7 @@ function isScaffold(rel) {
 
 // 스캐폴딩: 항상 최신본 유지. 내용이 다를 때만 .bak 백업 후 덮음
 function planScaffold(rel) {
-  const to = path.join(DEST, rel);
+  const to = target(rel);
   if (!fs.existsSync(to)) return { kind: 'copy', rel, label: '신규' };
   const cur = fs.readFileSync(to, 'utf8');
   const src = fs.readFileSync(path.join(SRC, rel), 'utf8');
@@ -71,7 +98,7 @@ function planScaffold(rel) {
 
 // CLAUDE.md: 없으면 import 한 줄짜리 생성, 있으면 한 줄 추가 (멱등)
 function planClaudeMd() {
-  const to = path.join(DEST, 'CLAUDE.md');
+  const to = target('CLAUDE.md');
   if (!fs.existsSync(to)) return { kind: 'claude-create', rel: 'CLAUDE.md', label: '신규' };
   if (fs.readFileSync(to, 'utf8').includes(IMPORT_LINE)) return { kind: 'keep', rel: 'CLAUDE.md' };
   return { kind: 'claude-append', rel: 'CLAUDE.md', label: 'import 한 줄 추가' };
@@ -79,7 +106,7 @@ function planClaudeMd() {
 
 // AGENTS.md: 없으면 템플릿 복사, 있으면 포인터 한 줄 추가 (멱등)
 function planAgentsMd() {
-  const to = path.join(DEST, 'AGENTS.md');
+  const to = target('AGENTS.md');
   if (!fs.existsSync(to)) return { kind: 'agents-copy', rel: 'AGENTS.md', label: '신규' };
   if (fs.readFileSync(to, 'utf8').includes('SECOND-BRAIN.md')) return { kind: 'keep', rel: 'AGENTS.md' };
   return { kind: 'agents-append', rel: 'AGENTS.md', label: '포인터 한 줄 추가' };
@@ -90,10 +117,15 @@ function buildPlan() {
   for (const dir of ['.claude/commands', '.codex/prompts']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
+  for (const f of listFiles(path.join(SRC, '.agents/skills/second-brain'))) {
+    plan.push(planOwned(path.relative(SRC, f)));
+  }
   for (const f of listFiles(path.join(SRC, 'knowledge'))) {
     const rel = path.relative(SRC, f);
+    if (rel === 'knowledge/_sources/.gitignore') continue;
     plan.push(isScaffold(rel) ? planScaffold(rel) : planIfMissing(rel));
   }
+  plan.push({ ...planIfMissing('knowledge/_sources/.gitignore'), srcRel: 'bin/assets/sources.gitignore' });
   plan.push(planClaudeMd());
   plan.push(planAgentsMd());
   return plan;
@@ -130,12 +162,12 @@ function confirm(cb) {
 }
 
 function applyAction(a) {
-  const to = path.join(DEST, a.rel);
+  const to = target(a.rel);
   if (a.kind === 'owned') {
     const content = fs.readFileSync(path.join(SRC, a.rel), 'utf8');
-    write(to, content.trimEnd() + '\n\n' + MARKER + '\n');
+    write(to, content.trimEnd() + '\n\n' + ownedMarker(a.rel) + '\n');
   } else if (a.kind === 'copy' || a.kind === 'agents-copy') {
-    write(to, fs.readFileSync(path.join(SRC, a.rel)));
+    write(to, fs.readFileSync(path.join(SRC, a.srcRel || a.rel)));
   } else if (a.kind === 'scaffold-update') {
     write(to + '.bak', fs.readFileSync(to));
     write(to, fs.readFileSync(path.join(SRC, a.rel)));
@@ -151,6 +183,10 @@ function applyAction(a) {
 
 const plan = buildPlan();
 printAnalysis(plan);
+if (plan.some((a) => a.rel === 'SECOND-BRAIN.md' && a.kind === 'warn')) {
+  console.error('\n기존 SECOND-BRAIN.md와 충돌해 설치를 중단했습니다. 파일을 직접 병합한 뒤 다시 실행하세요.');
+  process.exit(1);
+}
 confirm((ok) => {
   if (!ok) {
     console.log('\n설치를 취소했습니다. 변경된 파일은 없습니다.');

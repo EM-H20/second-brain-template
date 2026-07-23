@@ -10,14 +10,15 @@ It defines:
 - The knowledge vault layout under `knowledge/`
 - The strict frontmatter schema (how to find notes without reading everything)
 - The topic vocabulary rules (`knowledge/clusters/_topics.md`)
-- Workflows W1–W7: meeting ingestion, clustering, context-driven build,
-  conflict detection, report generation, issue knowledge loop
+- Workflows W1–W8: ingestion, clustering, context-driven build, conflict
+  detection, reports, issue recurrence, and reusable lessons
 
 ## Command equivalents
 
 Claude Code exposes these workflows as slash commands in `.claude/commands/`.
-For Codex, the same prompts are provided in `.codex/prompts/` (if your Codex
-version only reads global prompts, copy them to `~/.codex/prompts/`).
+Codex discovers the repository skill at `.agents/skills/second-brain/SKILL.md`;
+invoke it with natural language or `$second-brain`. `.codex/prompts/` is kept
+only for deprecated custom-prompt compatibility.
 
 If no command mechanism is available, plain natural language works: the
 workflows in SECOND-BRAIN.md are triggered by intent, not by command names.
@@ -34,6 +35,9 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Ingest an issue / completion report | W6 |
 | Ingest a document (기획서/스펙/아티클) | W7 |
 | Find similar past issues | W6 recurrence detection |
+| Capture a reusable work rule / lesson | W8 |
+| Recall topic context | W3 + W4 + W6 + W8 |
+| Maintain the vault | W2 full + W8 |
 
 ## Non-negotiables (repeated here for emphasis)
 

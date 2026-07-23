@@ -1,0 +1,6 @@
+/meetings/*
+!/meetings/README.md
+/docs/*
+!/docs/README.md
+/issues/*
+!/issues/README.md

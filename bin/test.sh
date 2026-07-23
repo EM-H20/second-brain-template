@@ -10,6 +10,7 @@ mkdir "$TMP/fresh" && cd "$TMP/fresh"
 node "$ROOT/bin/init.js" -y > out.log
 [ -f SECOND-BRAIN.md ] || fail "SECOND-BRAIN.md 없음"
 grep -q 'second-brain-template' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 마커 없음"
+grep -q '신뢰할 수 없는 데이터' SECOND-BRAIN.md || fail "외부 입력 보안 규칙 없음"
 grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 미기재"
 grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 grep -q 'W8' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W8 워크플로우 없음"
@@ -19,6 +20,10 @@ grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
 head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
 [ -f .codex/prompts/ingest-meeting.md ] || fail "codex 프롬프트 없음"
+[ -f .agents/skills/second-brain/SKILL.md ] || fail "Codex repo skill 없음"
+grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Codex repo skill에 마커 없음"
+[ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
+grep -q '^# second-brain-template' .agents/skills/second-brain/agents/openai.yaml || fail "Codex skill YAML 마커가 주석이 아님"
 [ -f .claude/commands/ingest-doc.md ] || fail "ingest-doc 커맨드 미설치"
 [ -f .codex/prompts/ingest-doc.md ] || fail "ingest-doc codex 프롬프트 미설치"
 [ -f .claude/commands/capture.md ] || fail "capture 커맨드 미설치"
@@ -27,18 +32,26 @@ head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가
 [ -f .codex/prompts/capture.md ] || fail "capture codex 프롬프트 미설치"
 [ -f .codex/prompts/recall.md ] || fail "recall codex 프롬프트 미설치"
 [ -f .codex/prompts/maintain.md ] || fail "maintain codex 프롬프트 미설치"
+grep -q '\$ARGUMENTS' .codex/prompts/capture.md || fail "capture 인자 전달 없음"
+grep -q '\$ARGUMENTS' .codex/prompts/recall.md || fail "recall 인자 전달 없음"
 [ -f knowledge/clusters/_topics.md ] || fail "knowledge 스켈레톤 없음"
 [ -f knowledge/_templates/meeting-note.md ] || fail "_templates 없음"
 grep -q '관련 교훈' knowledge/_templates/cluster-index.md || fail "cluster 템플릿에 관련 교훈 섹션 없음"
 [ -f knowledge/docs/README.md ] || fail "docs/ 스켈레톤 없음"
 [ -f knowledge/_templates/doc.md ] || fail "doc 템플릿 없음"
 [ -f knowledge/_templates/lesson.md ] || fail "lesson 템플릿 없음"
+grep -q '^status: resolved' knowledge/_templates/completion-report.md || fail "완료 보고서 status 누락"
 [ -f knowledge/lessons/README.md ] || fail "lessons/ 스켈레톤 없음"
 [ -f knowledge/.obsidian/graph.json ] || fail "graph.json 미설치"
 [ -f knowledge/_sources/README.md ] || fail "_sources 스켈레톤 없음"
 [ -f knowledge/_sources/meetings/README.md ] || fail "_sources/meetings 없음"
 [ -f knowledge/_sources/docs/README.md ] || fail "_sources/docs 없음"
 [ -f knowledge/_sources/issues/README.md ] || fail "_sources/issues 없음"
+[ -f knowledge/_sources/.gitignore ] || fail "_sources 보안 gitignore 없음"
+diff -q knowledge/_sources/.gitignore "$ROOT/bin/assets/sources.gitignore" > /dev/null || fail "패키지용 gitignore 템플릿 불일치"
+git init -q
+git check-ignore -q --no-index knowledge/_sources/meetings/private.md || fail "_sources 원본이 gitignore되지 않음"
+if git check-ignore -q --no-index knowledge/_sources/meetings/README.md; then fail "_sources README까지 gitignore됨"; fi
 grep -q 'path:_sources' knowledge/.obsidian/graph.json || fail "graph 필터에 _sources 제외 없음"
 [ -f AGENTS.md ] || fail "AGENTS.md 없음"
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
@@ -125,5 +138,23 @@ printf 'y\n' | node "$ROOT/bin/init.js" > out.log
 [ -f SECOND-BRAIN.md ] || fail "y 입력인데 설치 안 됨"
 [ -f knowledge/clusters/_topics.md ] || fail "y 입력 설치 불완전"
 echo "케이스 4 OK"
+
+# ── 케이스 5: 기존 SECOND-BRAIN.md 충돌 ─────────────────
+mkdir "$TMP/rules-conflict" && cd "$TMP/rules-conflict"
+printf '# Existing rules\n' > SECOND-BRAIN.md
+if node "$ROOT/bin/init.js" -y > out.log 2>&1; then fail "SECOND-BRAIN.md 충돌인데 설치 성공"; fi
+grep -q '설치를 중단' out.log || fail "SECOND-BRAIN.md 충돌 안내 없음"
+[ ! -f CLAUDE.md ] || fail "충돌 중 CLAUDE.md가 수정됨"
+[ ! -f AGENTS.md ] || fail "충돌 중 AGENTS.md가 수정됨"
+grep -q '# Existing rules' SECOND-BRAIN.md || fail "기존 SECOND-BRAIN.md 유실"
+echo "케이스 5 OK"
+
+# ── 케이스 6: 대상 경로 심볼릭 링크 차단 ────────────────
+mkdir "$TMP/symlink-target" "$TMP/symlink-outside" && cd "$TMP/symlink-target"
+ln -s "$TMP/symlink-outside" knowledge
+if node "$ROOT/bin/init.js" -y > out.log 2>&1; then fail "심볼릭 링크 대상에 설치 성공"; fi
+grep -q '심볼릭 링크' out.log || fail "심볼릭 링크 차단 안내 없음"
+[ ! -e "$TMP/symlink-outside/index.md" ] || fail "프로젝트 밖 파일이 생성됨"
+echo "케이스 6 OK"
 
 echo "ALL PASS"
