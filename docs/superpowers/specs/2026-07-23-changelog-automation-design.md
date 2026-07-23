@@ -95,14 +95,21 @@ file (`SHOWN_TYPES`) makes this list the single point of change.
 
 ## CI integration
 
-`version-bump.yml` changes:
+`version-bump.yml` already runs `npm test` and computes `NEW` inside the
+"Bump, commit, tag, push" step (`npm version <level> --no-git-tag-version`), and
+serializes runs via a `concurrency` group. `setup-node@v4` (node 20) is already
+present, so `node bin/changelog.js` can run with no extra setup. Required
+changes:
+
 - `actions/checkout@v4` needs `with: { fetch-depth: 0 }` — the default shallow
   clone has neither full history nor tags, so the generator would see nothing.
-- Add one step after the version is computed and before the commit:
-  `node bin/changelog.js --new "$NEW"`.
-- Add `CHANGELOG.md` to the `git add` line.
+- In the "Bump, commit, tag, push" step, after `NEW=...` and before
+  `git add package.json`, insert `node bin/changelog.js --new "$NEW"`.
+- Change `git add package.json` to `git add package.json CHANGELOG.md`.
+
 The `if: !startsWith(... 'chore(release):')` guard already prevents the release
-commit from retriggering the job — unchanged.
+commit from retriggering the job — unchanged. The `concurrency` group already
+prevents two releases racing on `CHANGELOG.md` — unchanged.
 
 ## README
 
