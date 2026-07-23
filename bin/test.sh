@@ -5,6 +5,10 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 fail() { echo "FAIL: $1"; exit 1; }
 
+# ── changelog.js 자체 검증 ─────────────────────────────
+node "$ROOT/bin/changelog.js" --selfcheck || fail "changelog selfcheck 실패"
+echo "changelog selfcheck OK"
+
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
 node "$ROOT/bin/init.js" -y > out.log
