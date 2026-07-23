@@ -2,6 +2,22 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.2.9] — 2026-07-23
+
+### Features
+
+- add stdlib changelog generator with self-check
+
+### Fixes
+
+- remove fabricated design-references section added out of scope
+
+## [v1.2.6] — 2026-07-23
+
+### Features
+
+- add .agents skill format, npm packaging, and installer path-safety hardening
+
 ## [v1.2.3] — 2026-07-23
 
 ### Fixes
