@@ -6,3 +6,5 @@ LLM이 볼트에 수행한 모든 쓰기 작업의 누적 기록. 절대 수정/
 형식: `- YYYY-MM-DD HH:MM | <workflow> | <action> | <files/ids>`
 
 ---
+
+- 2026-07-23 12:37 | W3 | hardened retrieval/source rules and aligned vault schemas | SECOND-BRAIN.md, knowledge/_sources, knowledge/_templates/completion-report.md, knowledge/index.md

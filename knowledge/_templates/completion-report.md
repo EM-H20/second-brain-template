@@ -3,6 +3,7 @@ type: completion-report
 id: ISS-NNNN           # 닫는 이슈와 동일한 id
 created: YYYY-MM-DD
 topics: []
+status: resolved
 resolves: ""           # "[[ISS-NNNN-...]]" 원 이슈 링크
 related: []
 source: ""             # _sources/issues/<id>.md (텍스트 보존 시) 또는 외부 URL

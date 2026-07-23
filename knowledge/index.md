@@ -19,6 +19,7 @@ related: []
 - decisions/ — 결정 기록 (DEC)
 - issues/ — 이슈·완료 리포트 (ISS)
 - docs/ — 문서 요약 노트 (DOC) — 권위·연관 가중치
+- lessons/ — 재사용할 작업 규칙·교훈 (LSN)
 - reports/ — 생성된 보고서
 - clusters/ — 주제 인덱스 + [[_topics]] 통제 어휘
 - _sources/ — 인제스트한 원본 텍스트 verbatim 보존 (검색·그래프 제외)
