@@ -6,7 +6,8 @@
     "second-brain-template": "bin/init.js"
   },
   "scripts": {
-    "test": "bash bin/test.sh"
+    "test": "bash bin/test.sh",
+    "changelog": "node bin/changelog.js"
   },
   "files": [
     "bin",

@@ -60,6 +60,7 @@ grep -q 'path:_sources' knowledge/.obsidian/graph.json || fail "graph 필터에 
 [ -f AGENTS.md ] || fail "AGENTS.md 없음"
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
+[ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
 [ ! -d docs ] || fail "docs/ 유출"
 echo "케이스 1 OK"
 
