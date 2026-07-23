@@ -267,17 +267,6 @@ defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = ru
 - **Local-first originals:** `_sources/` is Git-ignored by default, and the installer has zero
   runtime dependencies.
 
-## 📚 Design references and adaptations
-
-These papers informed the design, but this project does not reproduce their implementations or
-claim their reported performance. It adapts the relevant ideas to a small, Markdown-native vault.
-
-| Design axis | Research | Adaptation in this project |
-|---|---|---|
-| Structured metadata | [Enterprise metadata retrieval](https://arxiv.org/abs/2512.05411), [MCompassRAG](https://arxiv.org/abs/2606.18508), [SRAG](https://arxiv.org/abs/2603.26670) | YAML frontmatter and the controlled topic vocabulary narrow candidates before any body is opened. |
-| Lexical and logical retrieval | [Is Grep All You Need?](https://arxiv.org/abs/2605.15184), [Rethinking Agentic RAG](https://arxiv.org/abs/2605.27123) | The agent filters frontmatter, refines with `rg`, and opens only final matches; no vector database is added without measured need. |
-| Deterministic currency | [Don't Ask the LLM to Track Freshness](https://arxiv.org/abs/2606.01435), [Temporal Validity in Retrieval Memory](https://arxiv.org/abs/2606.26511) | `status` and `supersedes` / `superseded_by` determine current decisions while preserving history and surfacing unresolved conflicts. |
-
 ## ✍️ Filename rules (CJK caveat)
 
 Filenames must be ASCII kebab-case (`2026-07-15-auth-review.md`). Why: macOS (APFS) normalizes
@@ -559,17 +548,6 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 - **失败即停止安装：** 遇到无模板标记的 `SECOND-BRAIN.md`，或目标路径穿过符号链接时，
   安装器会在写入前停止。
 - **原文默认保留在本地：** `_sources/` 默认被 Git 忽略，安装器没有运行时依赖。
-
-## 📚 设计参考与应用
-
-以下论文为设计提供了参考，但本项目没有复现其实现，也不声称达到论文报告的性能。
-这里只将相关思想简化为适合小型 Markdown 知识库的结构。
-
-| 设计方向 | 参考研究 | 在本项目中的应用 |
-|---|---|---|
-| 结构化元数据 | [Enterprise metadata retrieval](https://arxiv.org/abs/2512.05411)、[MCompassRAG](https://arxiv.org/abs/2606.18508)、[SRAG](https://arxiv.org/abs/2603.26670) | 通过 YAML frontmatter 和受控主题词表，在打开正文前缩小候选范围。 |
-| 词法与逻辑检索 | [Is Grep All You Need?](https://arxiv.org/abs/2605.15184)、[Rethinking Agentic RAG](https://arxiv.org/abs/2605.27123) | 先过滤 frontmatter，再用 `rg` 修正检索，最后只打开命中项；没有实际测量需求时不引入向量数据库。 |
-| 确定性最新状态 | [Don't Ask the LLM to Track Freshness](https://arxiv.org/abs/2606.01435)、[Temporal Validity in Retrieval Memory](https://arxiv.org/abs/2606.26511) | 用 `status` 与 `supersedes` / `superseded_by` 判断当前决策，同时保留历史并暴露未解决的冲突。 |
 
 ## ✍️ 文件名规则（CJK 注意事项）
 
@@ -858,17 +836,6 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 - **原文はローカル優先：** `_sources/` はデフォルトで Git の追跡対象外で、インストーラーの
   実行時依存関係はありません。
 
-## 📚 設計上の参考文献と適用
-
-以下の論文を設計の参考にしましたが、実装の再現や論文記載の性能を主張するものではありません。
-関連する考え方だけを、小規模な Markdown ネイティブのボールト向けに単純化しています。
-
-| 設計軸 | 参考研究 | このプロジェクトでの適用 |
-|---|---|---|
-| 構造化メタデータ | [Enterprise metadata retrieval](https://arxiv.org/abs/2512.05411)、[MCompassRAG](https://arxiv.org/abs/2606.18508)、[SRAG](https://arxiv.org/abs/2603.26670) | YAML frontmatter と統制トピック語彙で、本文を開く前に候補を絞ります。 |
-| 字句・論理検索 | [Is Grep All You Need?](https://arxiv.org/abs/2605.15184)、[Rethinking Agentic RAG](https://arxiv.org/abs/2605.27123) | frontmatter を絞り、`rg` で検索を修正し、最終候補だけを開きます。必要性が計測されるまでベクトル DB は追加しません。 |
-| 決定的な最新性 | [Don't Ask the LLM to Track Freshness](https://arxiv.org/abs/2606.01435)、[Temporal Validity in Retrieval Memory](https://arxiv.org/abs/2606.26511) | `status` と `supersedes` / `superseded_by` で現在の決定を判定し、履歴を残して未解決の衝突を提示します。 |
-
 ## ✍️ ファイル名の規則（CJK の注意点）
 
 ファイル名は必ず ASCII kebab-case（`2026-07-15-auth-review.md`）にします。理由：
@@ -1150,17 +1117,6 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 - **안전 우선 설치:** 템플릿 마커가 없는 `SECOND-BRAIN.md`나 심볼릭 링크를 지나는 대상 경로를
   발견하면 파일을 쓰기 전에 설치를 중단한다.
 - **원본 로컬 우선:** `_sources/`는 기본적으로 Git에서 제외되며 설치기는 런타임 의존성이 없다.
-
-## 📚 설계 참고 및 적용
-
-아래 연구를 그대로 재현하거나 논문에서 보고한 성능을 이 프로젝트의 성능으로 주장하지 않는다.
-관련 아이디어만 작은 Markdown 기반 볼트에 맞게 단순화해 적용했다.
-
-| 설계 축 | 참고 연구 | 프로젝트 적용 |
-|---|---|---|
-| 구조화 메타데이터 | [Enterprise metadata retrieval](https://arxiv.org/abs/2512.05411), [MCompassRAG](https://arxiv.org/abs/2606.18508), [SRAG](https://arxiv.org/abs/2603.26670) | YAML frontmatter와 통제 토픽 어휘로 본문을 열기 전에 후보를 좁힌다. |
-| 렉시컬·논리 검색 | [Is Grep All You Need?](https://arxiv.org/abs/2605.15184), [Rethinking Agentic RAG](https://arxiv.org/abs/2605.27123) | frontmatter 필터 후 `rg`로 검색을 수정하고 최종 후보만 연다. 필요성이 측정되기 전에는 벡터 DB를 추가하지 않는다. |
-| 결정적 최신성 | [Don't Ask the LLM to Track Freshness](https://arxiv.org/abs/2606.01435), [Temporal Validity in Retrieval Memory](https://arxiv.org/abs/2606.26511) | `status`와 `supersedes` / `superseded_by`로 현재 결정을 판정하면서 이력을 보존하고 미해결 충돌을 드러낸다. |
 
 ## ✍️ 파일명 규칙 (한글/CJK 주의)
 
