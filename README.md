@@ -32,6 +32,10 @@ flowchart LR
     V -->|"/recall"| C
 ```
 
+> **3 core triggers** — plain language is enough, no slash needed:
+> **capture** (save it → meetings / docs / issues / lessons) · **recall** (pull the context brief) · **maintain** (tidy the vault).
+> The 9 original commands still work as aliases (12 total).
+
 ---
 
 ## ⚡ Quick start
@@ -295,6 +299,10 @@ flowchart LR
     V -->|"/recall"| C
 ```
 
+> **3 个核心触发词** —— 无需斜杠，自然语言即可：
+> **"记下"** → `/capture`（存入 会议 / 文档 / 问题 / 教训）· **"取出"** → `/recall`（生成上下文简报）· **"整理"** → `/maintain`（维护知识库）。
+> 原有 9 个命令仍作为别名可用（共 12 个）。
+
 ---
 
 ## ⚡ 快速开始
@@ -552,6 +560,10 @@ flowchart LR
     C -->|"/capture"| V
     V -->|"/recall"| C
 ```
+
+> **3 つのコアトリガー** —— スラッシュ不要、自然言語で十分：
+> **「記録して」** → `/capture`（会議 / ドキュメント / 課題 / 教訓を保存）· **「呼び出して」** → `/recall`（コンテキストブリーフ）· **「整理して」** → `/maintain`（ボールト整備）。
+> 既存 9 コマンドもエイリアスとして動作（計 12 個）。
 
 ---
 
@@ -812,6 +824,10 @@ flowchart LR
     C -->|"/capture"| V
     V -->|"/recall"| C
 ```
+
+> **핵심 트리거 3개** — 슬래시 없이 자연어면 충분:
+> **"기억해"** → `/capture` (회의 / 문서 / 이슈 / 교훈 저장) · **"꺼내줘"** → `/recall` (컨텍스트 브리프) · **"정리해"** → `/maintain` (볼트 정리).
+> 기존 9개 명령도 별칭으로 그대로 동작 (총 12개).
 
 ---
 
