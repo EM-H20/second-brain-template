@@ -1,4 +1,5 @@
 # 🧠 Project Second Brain Template
+<img width="714" height="658" alt="image" src="https://github.com/user-attachments/assets/1ae65a73-6379-46fa-b777-ef5ceca412eb" />
 
 ![Zero Dependency](https://img.shields.io/badge/dependencies-0-brightgreen)
 ![Pure Markdown](https://img.shields.io/badge/format-pure%20markdown-blue)
