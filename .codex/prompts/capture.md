@@ -1,10 +1,10 @@
-Capture the input into the vault, per SECOND-BRAIN.md — the "capture" trigger.
+---
+description: 입력을 판단해 회의/문서/이슈/교훈 중 알맞은 곳에 저장 (기억해)
+---
 
-Input: the file path or pasted content below (if empty, ask).
+Read `SECOND-BRAIN.md` completely, classify the input using "Trigger routing",
+then execute the selected workflow and its General rules end to end.
 
-Steps:
-1. Classify: transcript → meeting (W1); spec/기획서/article → doc (W7);
-   bug/symptom report → issue (W6); work-rule/preference/heuristic →
-   lesson (W8). Ambiguous → ask, never guess.
-2. Run the matching ingestion workflow end to end (원본 보존, 클러스터 갱신,
-   충돌/재발 검사 포함).
+Input: $ARGUMENTS (file path or pasted content; if empty, ask).
+
+If the input type is ambiguous, ask instead of guessing.

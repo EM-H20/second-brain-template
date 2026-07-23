@@ -2,17 +2,8 @@
 description: 새 의견/결정이 과거 활성 결정과 충돌하는지 검사하고, 충돌 시 선택지를 제시
 ---
 
-Check a new opinion/decision against the vault, per SECOND-BRAIN.md workflow W4.
+Read `SECOND-BRAIN.md` completely, then execute W4 and its General rules.
 
-Input: $ARGUMENTS (the new opinion/decision; if empty, ask).
+Input: $ARGUMENTS (the new opinion or decision; if empty, ask).
 
-Steps:
-1. Extract the topics of the input; scan `knowledge/decisions/` frontmatter
-   for ACTIVE decisions on those topics.
-2. Open matching decision notes; compare substance, not wording.
-3. No conflict → say so, list the aligned decisions (ids) it's consistent with.
-4. Conflict → present in the W4 format:
-   기존(id, 날짜, 요약) vs 신규(요약), then ask:
-   기존 유지 / 신규로 대체 / 둘 다 조건부 유지.
-5. Apply the user's choice per W4 resolution rules (supersede chain; never
-   delete history).
+Use the exact W4 conflict format and never resolve or supersede silently.

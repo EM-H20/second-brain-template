@@ -1,10 +1,10 @@
-# Codex custom prompts
+# Legacy Codex custom prompts
 
-`.claude/commands/` 와 동일한 워크플로우의 Codex 버전.
-사용 중인 Codex 버전이 프로젝트 로컬 prompts 를 읽지 못하면
-이 파일들을 `~/.codex/prompts/` 로 복사해서 사용:
+현재 Codex의 기본 인터페이스는 저장소에서 자동 발견되는
+`.agents/skills/second-brain/SKILL.md`다. 자연어 또는 `$second-brain`으로 호출한다.
 
-    cp .codex/prompts/*.md ~/.codex/prompts/
+이 폴더는 구버전 호환용이다. Custom prompts는 deprecated이며 프로젝트 로컬
+폴더를 읽지 않는다. 꼭 필요하면 원하는 파일만 `~/.codex/prompts/`로 복사하고
+Codex를 재시작한 뒤 `/prompts:ingest-meeting`처럼 호출한다.
 
-호출: Codex 에서 `/ingest-meeting` 등 프롬프트 이름으로 실행.
-규칙 원본은 SECOND-BRAIN.md (AGENTS.md 참조).
+규칙 원본은 항상 `SECOND-BRAIN.md`다.

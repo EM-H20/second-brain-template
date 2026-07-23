@@ -1,13 +1,10 @@
-Gather vault context on a topic, per SECOND-BRAIN.md workflow W3 — the
-"recall" trigger.
+---
+description: 주제 관련 결정·이슈·문서·교훈·충돌을 모아 Context Brief 작성 (꺼내줘)
+---
 
-Input: the topic or task below (if empty, ask).
+Read `SECOND-BRAIN.md` completely, then execute the "recall" trigger route
+(W3 + W4 + W6 + W8) and all General rules.
 
-Steps:
-1. Collect active decisions (official → internal → external), latest meeting
-   context, relevant docs (`topics` first, `topics_ref` as reference),
-   open/resolved issues (W6), and relevant lessons — grep `lessons/`
-   frontmatter for matching `trigger`/`topics` (W8).
-2. Run conflict detection (W4) against active decisions.
-3. Write a Context Brief in chat: goal, constraints (DEC ids), docs (DOC ids
-   + authority), past issues (ISS ids), 관련 교훈 (LSN ids), open questions.
+Input: $ARGUMENTS (topic or task; if empty, ask).
+
+Return the Context Brief in chat; do not create a report file.
