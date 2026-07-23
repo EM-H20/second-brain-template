@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -39,7 +41,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           NEW="$(npm version "${{ steps.level.outputs.level }}" --no-git-tag-version)"
-          git add package.json
+          node bin/changelog.js --new "$NEW"
+          git add package.json CHANGELOG.md
           git commit -m "chore(release): $NEW"
           git tag -a "$NEW" -m "$NEW"
           git push origin main --follow-tags
