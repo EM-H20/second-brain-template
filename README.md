@@ -27,8 +27,7 @@ flowchart LR
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 Report"]
     D2["📑 Docs (PRD, spec)"] -->|"/ingest-doc"| V
-    V -->|"/check-conflict"| V
-    V -->|"/maintain"| V
+    V -->|"/check-conflict<br/>/maintain"| V
     C -->|"/capture"| V
     V -->|"/recall"| C
 ```
@@ -291,8 +290,7 @@ flowchart LR
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 报告"]
     D2["📑 文档(策划书·规格书)"] -->|"/ingest-doc"| V
-    V -->|"/check-conflict"| V
-    V -->|"/maintain"| V
+    V -->|"/check-conflict<br/>/maintain"| V
     C -->|"/capture"| V
     V -->|"/recall"| C
 ```
@@ -550,8 +548,7 @@ flowchart LR
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 レポート"]
     D2["📑 ドキュメント(企画書・仕様書)"] -->|"/ingest-doc"| V
-    V -->|"/check-conflict"| V
-    V -->|"/maintain"| V
+    V -->|"/check-conflict<br/>/maintain"| V
     C -->|"/capture"| V
     V -->|"/recall"| C
 ```
@@ -811,8 +808,7 @@ flowchart LR
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 보고서"]
     D2["📑 문서(기획서·스펙)"] -->|"/ingest-doc"| V
-    V -->|"/check-conflict"| V
-    V -->|"/maintain"| V
+    V -->|"/check-conflict<br/>/maintain"| V
     C -->|"/capture"| V
     V -->|"/recall"| C
 ```
