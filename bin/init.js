@@ -56,8 +56,12 @@ function write(to, content) {
   fs.writeFileSync(to, content);
 }
 
+// 마커는 각 파일 형식의 주석 문법을 따라야 한다.
+// .json 은 주석을 넣을 수 없으므로 이 방식 자체를 쓸 수 없다 (planSettings 참고).
 function ownedMarker(rel) {
-  return /\.ya?ml$/.test(rel) ? '# second-brain-template' : MARKER;
+  if (/\.ya?ml$/.test(rel)) return '# second-brain-template';
+  if (/\.js$/.test(rel)) return '// second-brain-template';
+  return MARKER;
 }
 
 // ── 1단계: 현재 프로젝트 분석 (아무것도 쓰지 않음) ──────────────────
@@ -114,7 +118,7 @@ function planAgentsMd() {
 
 function buildPlan() {
   const plan = [planOwned('SECOND-BRAIN.md')];
-  for (const dir of ['.claude/commands', '.codex/prompts']) {
+  for (const dir of ['.claude/commands', '.claude/hooks', '.codex/prompts']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
   for (const f of listFiles(path.join(SRC, '.agents/skills/second-brain'))) {

@@ -9,6 +9,15 @@ fail() { echo "FAIL: $1"; exit 1; }
 node "$ROOT/bin/changelog.js" --selfcheck || fail "changelog selfcheck 실패"
 echo "changelog selfcheck OK"
 
+# npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
+node -e '
+const files = require("'"$ROOT"'/package.json").files;
+for (const p of [".claude/hooks", ".claude/settings.json"]) {
+  if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
+}
+' || fail "package.json files 누락"
+echo "packaging guard OK"
+
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
 node "$ROOT/bin/init.js" -y > out.log
@@ -23,6 +32,9 @@ grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우
 [ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
 head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
+[ -f .claude/hooks/session-context.js ] || fail "훅 스크립트 미설치"
+node --check .claude/hooks/session-context.js || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
+grep -q '^// second-brain-template' .claude/hooks/session-context.js || fail "JS 마커가 // 주석이 아님"
 [ -f .codex/prompts/ingest-meeting.md ] || fail "codex 프롬프트 없음"
 [ -f .agents/skills/second-brain/SKILL.md ] || fail "Codex repo skill 없음"
 grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Codex repo skill에 마커 없음"
