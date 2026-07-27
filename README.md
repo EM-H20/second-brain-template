@@ -229,7 +229,7 @@ Per-version history (features / fixes / perf) is auto-generated at
 ```
 knowledge/
 ├── meetings/     Meeting notes (YYYY-MM-DD-slug.md)
-├── decisions/    Decision records (DEC-NNNN) — the baseline for conflict detection
+├── decisions/    Decision records (DEC-NNNN) — ADR 6-section body, the baseline for conflict detection
 ├── issues/       Issues + completion reports (ISS-NNNN) — the raw material for recurrence detection
 ├── docs/         Document summary notes (DOC-NNNN) — authority/relevance weighting
 ├── lessons/      Lesson notes (LSN-NNNN) — accumulated and reused via capture/recall/maintain
@@ -544,7 +544,7 @@ npx github:EM-H20/second-brain-template
 ```
 knowledge/
 ├── meetings/     会议笔记 (YYYY-MM-DD-slug.md)
-├── decisions/    决策记录 (DEC-NNNN) —— 冲突检测的基准点
+├── decisions/    决策记录 (DEC-NNNN) —— ADR 六段结构，冲突检测的基准点
 ├── issues/       问题 + 完成报告 (ISS-NNNN) —— 复现检测的素材
 ├── docs/         文档摘要笔记 (DOC-NNNN) —— 权威性/关联度加权
 ├── lessons/      教训笔记 (LSN-NNNN) —— 通过 capture/recall/maintain 积累并复用
@@ -858,7 +858,7 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 ```
 knowledge/
 ├── meetings/     議事録 (YYYY-MM-DD-slug.md)
-├── decisions/    決定記録 (DEC-NNNN) — 衝突検知の基準点
+├── decisions/    決定記録 (DEC-NNNN) — ADR 6セクション、衝突検知の基準点
 ├── issues/       課題 + 完了レポート (ISS-NNNN) — 再発検知の材料
 ├── docs/         ドキュメント要約ノート (DOC-NNNN) — 権威性/関連度の重み付け
 ├── lessons/      教訓ノート (LSN-NNNN) — capture/recall/maintain で蓄積・再利用される経験則
@@ -1172,7 +1172,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 ```
 knowledge/
 ├── meetings/     회의노트 (YYYY-MM-DD-slug.md)
-├── decisions/    결정 기록 (DEC-NNNN) — 충돌 감지의 기준점
+├── decisions/    결정 기록 (DEC-NNNN) — ADR 6섹션, 충돌 감지의 기준점
 ├── issues/       이슈 + 완료 리포트 (ISS-NNNN) — 재발 탐지의 재료
 ├── docs/         문서 요약 노트 (DOC-NNNN) — 권위·연관 가중치
 ├── lessons/      교훈 노트 (LSN-NNNN) — capture/recall/maintain로 쌓이고 재활용되는 경험칙
