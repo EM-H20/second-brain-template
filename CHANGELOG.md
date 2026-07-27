@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.4.0] — 2026-07-28
+
+### Features
+
+- 결정 노트를 ADR 6섹션 구조로 고도화 (#5)
+
 ## [v1.3.0] — 2026-07-27
 
 ### Features
