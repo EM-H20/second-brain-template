@@ -162,4 +162,56 @@ grep -q '심볼릭 링크' out.log || fail "심볼릭 링크 차단 안내 없�
 [ ! -e "$TMP/symlink-outside/index.md" ] || fail "프로젝트 밖 파일이 생성됨"
 echo "케이스 6 OK"
 
+# ── 케이스 7: 세션 컨텍스트 훅 ──────────────────────────
+# 훅은 __dirname 기준으로 볼트를 찾으므로, 임시 프로젝트에 복사해서 검증한다.
+mkdir -p "$TMP/hook/.claude/hooks" && cd "$TMP/hook"
+cp "$ROOT/.claude/hooks/session-context.js" .claude/hooks/
+H=".claude/hooks/session-context.js"
+
+# 7a. knowledge/ 자체가 없으면 조용히 종료한다
+node "$H" > out.json < /dev/null || fail "볼트 없을 때 훅이 실패로 종료"
+[ ! -s out.json ] || fail "볼트 없는데 컨텍스트를 출력함"
+
+# 7b. _topics.md 는 있지만 토픽 항목이 0개면 (설치 직후 스캐폴딩) 출력하지 않는다
+mkdir -p knowledge/clusters
+cp "$ROOT/knowledge/clusters/_topics.md" knowledge/clusters/
+node "$H" > out.json < /dev/null || fail "빈 어휘에서 훅이 실패로 종료"
+[ ! -s out.json ] || fail "토픽 0개인데 컨텍스트를 출력함"
+
+# 7c. 토픽이 있으면 주입한다
+printf '`auth` — 인증 방식\n`cache` — 캐시 전략\n' >> knowledge/clusters/_topics.md
+node "$H" > out.json < /dev/null
+node -e '
+const o = JSON.parse(require("fs").readFileSync("out.json", "utf8"));
+const h = o.hookSpecificOutput;
+if (h.hookEventName !== "SessionStart") throw new Error("hookEventName 불일치");
+const c = h.additionalContext;
+if (!c.includes("auth")) throw new Error("토픽 슬러그 누락");
+if (!c.includes("cluster-")) throw new Error("클러스터 지시문 누락");
+if (!c.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 누락");
+if (c.includes("최근 작업")) throw new Error("log.md 없는데 최근 작업 섹션 있음");
+' || fail "훅 출력 검증 실패"
+
+# 7d. log.md 가 있으면 꼬리 15줄만 붙인다
+node -e '
+const lines = Array.from({ length: 40 }, (_, i) => "- line-" + i);
+require("fs").writeFileSync("knowledge/log.md", lines.join("\n") + "\n");
+'
+node "$H" > out.json < /dev/null
+node -e '
+const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecificOutput.additionalContext;
+if (!c.includes("최근 작업")) throw new Error("최근 작업 섹션 없음");
+if (!c.includes("line-39")) throw new Error("로그 마지막 줄 누락");
+if (c.includes("line-0")) throw new Error("로그 꼬리가 15줄로 제한되지 않음");
+' || fail "log.md 꼬리 검증 실패"
+
+# 7e. 비정상적으로 큰 파일에서도 죽지 않고 유효 JSON 을 낸다
+node -e '
+require("fs").writeFileSync("knowledge/clusters/_topics.md", "`t` — x\n" + "가".repeat(30000));
+'
+node "$H" > out.json < /dev/null || fail "거대 파일에서 훅이 실패로 종료"
+node -e 'JSON.parse(require("fs").readFileSync("out.json", "utf8"))' || fail "거대 파일에서 JSON 깨짐"
+[ "$(wc -c < out.json)" -lt 20000 ] || fail "8KB 상한이 적용되지 않음"
+echo "케이스 7 OK"
+
 echo "ALL PASS"
