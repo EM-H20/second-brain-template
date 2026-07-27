@@ -111,6 +111,8 @@ Given a transcript (file or pasted text):
    open questions.
 2. For every decision made in the meeting, ALSO create a separate decision
    note in `decisions/` (template: `_templates/decision.md`). Link both ways.
+   결정 노트의 Context·Alternatives·Consequences는 요약된 회의 노트가 아니라
+   원본 전사체를 직접 읽고 채운다 — 요약 단계에서 가장 먼저 소실되는 정보다.
 3. **Run conflict detection (W4) on every new decision BEFORE saving it.**
 4. Tag topics per the vocabulary rules above, then update the matching
    cluster notes (W2, incremental).
@@ -211,6 +213,8 @@ into `docs/`:
    detection (W4) BEFORE saving each one, link both ways
    (doc `decisions:` ↔ decision `related:`). external documents NEVER
    create decisions — record 논점 only.
+   결정 노트의 Context·Alternatives·Consequences는 요약된 doc 노트가 아니라
+   원본 문서를 직접 읽고 채운다.
 4. Weighting: core topics go in `topics`, peripheral ones in `topics_ref`
    (vocabulary rules per `clusters/_topics.md` apply to both). Retrieval
    order everywhere: `topics` matches first (official → internal →
