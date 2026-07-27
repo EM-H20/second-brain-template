@@ -56,9 +56,28 @@
 
 ## 툴 중립성
 
-`SECOND-BRAIN.md`는 변경하지 않는다. 규칙은 Codex·Gemini·Cursor에도 적용되는
-중립 문서로 남고, 훅은 Claude Code 전용 가속기로 얹는다. 훅이 없어도 규칙은
-그대로 동작한다 — 사람이 더 자주 잊을 뿐이다.
+**규칙은 `SECOND-BRAIN.md`에 두고, 훅은 그 규칙의 Claude Code 자동화로 얹는다.**
+
+초안에서는 `SECOND-BRAIN.md`를 아예 건드리지 않으려 했다. 그러면 규칙이 훅
+안에만 존재하게 되어, 훅이 없는 CLI에는 규칙 자체가 전달되지 않는다 — 중립을
+지킨 게 아니라 기능을 한쪽에만 넣은 것이다. 그래서 "세션 시작 컨텍스트" 규칙을
+General rules에 추가하고, 훅은 그것을 기계적으로 수행하는 도구로 재정의했다.
+
+**Codex도 훅 엔진이 있다** (`session_start`, `user_prompt_submit`, `pre/post_tool_use`,
+`session_end`, `subagent_start/stop`, `pre/post_compact`). 스키마도 Claude Code와
+동일해서 파일 하나를 양쪽에 공유하는 플러그인이 실재한다. 그런데 **훅 소스가
+`~/.codex/hooks.json`(사용자 전역)과 설치된 플러그인 두 가지뿐이다.** 저장소에
+커밋된 `.codex/hooks.json`은 읽지 않는다 — Codex CLI 0.145.0에서 프로젝트 레벨
+훅 파일을 심고 `Stop` 이벤트로 실험한 결과, 같은 이벤트의 사용자 레벨 훅은
+발화했지만 프로젝트 레벨 훅은 발화하지 않았고 `~/.codex/config.toml`의
+`hooks.state`에도 등록되지 않았다.
+
+레포에 파일을 떨구는 이 설치기로는 Codex 훅을 등록해 줄 방법이 없다. 사용자
+홈 전역 설정(`~/.codex/hooks.json`)을 건드리는 것은 "남의 파일 최소 침습"
+원칙과 정면으로 충돌하므로 채택하지 않는다. 대신 Codex가 무조건 읽는 두 경로
+— `AGENTS.md`와 `.agents/skills/second-brain/SKILL.md` — 에 같은 규칙을 명시한다.
+
+정리하면: **규칙은 동일, 강제 수단만 다르다.**
 
 ## 변경되는 파일
 
@@ -271,6 +290,7 @@
 - `UserPromptSubmit` 훅 (접근 C — 필요가 측정되면 그때)
 - 매칭·랭킹 로직
 - 임베딩, 벡터 DB, 인덱스 파일
-- Codex·Cursor용 등가 메커니즘
-- `SECOND-BRAIN.md` 규칙 변경
+- Codex 훅 자동 등록 (`~/.codex/hooks.json` 병합 또는 Codex 플러그인화).
+  전자는 사용자 홈 전역 설정을 건드리고 후자는 별도 배포 채널이 필요하다 —
+  둘 다 이 템플릿의 성격을 바꾼다. Codex는 규칙 문서로 커버한다
 - 새 런타임 의존성

@@ -259,11 +259,20 @@ to those rules. The supported interfaces are:
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
 
-Claude Code also gets a session-start hook (`.claude/hooks/session-context.mjs`).
-When a session opens it puts the vault's topic vocabulary and recent work log into
-context, so relevant decisions, issues, and lessons surface before any code gets
-written — without typing `/recall`. The rules themselves stay in `SECOND-BRAIN.md`
-alone, so CLIs without the hook behave identically; people just forget more often.
+**Check the vault at session start** is a rule in `SECOND-BRAIN.md`
+("세션 시작 컨텍스트") and it binds every CLI equally: read `clusters/_topics.md`
+and the tail of `log.md`, and if the task touches a listed topic, open that
+cluster note before writing code.
+
+**Claude Code automates it** — a session-start hook
+(`.claude/hooks/session-context.mjs`) is installed and registered, so relevant
+decisions, issues, and lessons surface without typing `/recall`.
+
+**Codex has an equivalent hook engine but cannot be automated here.** Codex
+loads hooks only from `~/.codex/hooks.json` or an installed plugin, never from a
+file committed to the repository — so a repo-scoped template has no way to
+register one. The same rule is therefore spelled out in `AGENTS.md` and
+`.agents/skills/second-brain/SKILL.md`. Same rule, different enforcement.
 
 ## 🛡 Safety and retrieval defaults
 
@@ -550,10 +559,18 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
 
-Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-context.mjs`）。
-会话开启时它把知识库的主题词表和最近的工作日志放进上下文，因此不必输入
-`/recall`，相关的决策、问题与教训就会先于代码浮现。规则本身仍然只在
-`SECOND-BRAIN.md` 里，所以没有钩子的 CLI 行为完全一致 —— 只是人更容易忘记。
+**会话开始时先看知识库**是 `SECOND-BRAIN.md` 中的规则（"세션 시작 컨텍스트"），
+对所有 CLI 一视同仁：读取 `clusters/_topics.md` 与 `log.md` 的末尾；若本次任务
+涉及词表中的某个主题，就在写代码之前先打开该主题的 cluster 笔记。
+
+**Claude Code 会自动完成这一步** —— 会话启动钩子
+（`.claude/hooks/session-context.mjs`）已安装并注册，因此不必输入 `/recall`，
+相关的决策、问题与教训就会先于代码浮现。
+
+**Codex 同样具备钩子引擎，但这里无法自动化。** Codex 只从 `~/.codex/hooks.json`
+或已安装的插件加载钩子，绝不从提交进仓库的文件加载 —— 以仓库为作用域的模板因此
+无法替你注册。所以同一条规则也写进了 `AGENTS.md` 和
+`.agents/skills/second-brain/SKILL.md`。规则相同，只是强制手段不同。
 
 ## 🛡 安全与检索默认值
 
@@ -843,11 +860,20 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
 
-Claude Code にはセッション開始フック（`.claude/hooks/session-context.mjs`）も
-インストールされる。セッションが開くとボールトの主題語彙と直近の作業ログを
-コンテキストに入れるため、`/recall` を打たなくても関連する決定・課題・教訓が
-コードより先に浮かび上がる。ルール自体は `SECOND-BRAIN.md` 一箇所のままなので、
-フックのない CLI でも結果は同じ — 人が忘れやすくなるだけだ。
+**セッション開始時にまずボールトを見る**というルールは `SECOND-BRAIN.md` の
+「세션 시작 컨텍스트」にあり、すべての CLI に等しく適用される。`clusters/_topics.md`
+と `log.md` の末尾を読み、今回のタスクが語彙内の主題に触れるなら、コードを書く前に
+その cluster ノートを開く。
+
+**Claude Code はこれを自動化する** — セッション開始フック
+（`.claude/hooks/session-context.mjs`）がインストール・登録されるため、`/recall` を
+打たなくても関連する決定・課題・教訓が先に浮かび上がる。
+
+**Codex にも同等のフック機構はあるが、ここでは自動化できない。** Codex は
+`~/.codex/hooks.json` かインストール済みプラグインからしかフックを読まず、リポジトリに
+コミットされたファイルからは読まない — リポジトリ単位のテンプレートでは登録して
+やれないということだ。そのため同じルールを `AGENTS.md` と
+`.agents/skills/second-brain/SKILL.md` にも明記した。ルールは同じで、強制手段だけが違う。
 
 ## 🛡 安全性と検索のデフォルト
 
@@ -1134,11 +1160,18 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
 
-Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/session-context.mjs`).
-세션이 열릴 때 볼트의 주제 어휘와 최근 작업 로그를 컨텍스트에 넣어, `/recall`을
-치지 않아도 관련 결정·이슈·교훈이 코드보다 먼저 떠오르게 한다. 규칙 원본은
-`SECOND-BRAIN.md` 하나로 유지되므로 훅이 없는 CLI에서도 결과는 같다 — 사람이 더
-자주 잊을 뿐이다.
+**세션 시작에 볼트를 먼저 본다**는 규칙은 `SECOND-BRAIN.md`의 "세션 시작 컨텍스트"에
+있고 모든 CLI에 동일하게 적용된다: `clusters/_topics.md`와 `log.md` 꼬리를 읽고,
+걸리는 주제가 있으면 그 클러스터 노트를 코드보다 먼저 연다.
+
+**Claude Code는 이 읽기를 자동화한다** — 세션 시작 훅(`.claude/hooks/session-context.mjs`)이
+설치·등록되어, `/recall`을 치지 않아도 관련 결정·이슈·교훈이 먼저 떠오른다.
+
+**Codex도 훅 엔진이 있지만 자동화할 수 없다.** Codex는 `~/.codex/hooks.json`이나
+설치된 플러그인에서만 훅을 읽고, 저장소에 커밋된 파일에서는 읽지 않는다 — 레포에
+파일을 떨구는 이 템플릿으로는 등록해 줄 방법이 없다. 그래서 Codex 쪽은
+`AGENTS.md`와 `.agents/skills/second-brain/SKILL.md`에 같은 규칙을 명시해 두었다.
+규칙은 같고, 강제 수단만 다르다.
 
 ## 🛡 안전·검색 기본값
 

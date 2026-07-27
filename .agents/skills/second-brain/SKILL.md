@@ -8,8 +8,12 @@ description: Operate this repository's Markdown knowledge vault. Use when captur
 1. Locate the repository root and read `SECOND-BRAIN.md` completely. It is the
    only source of truth for schemas and workflows; do not reconstruct them from
    this skill.
-2. Read the tail of `knowledge/log.md` and
-   `knowledge/clusters/_topics.md` before acting.
+2. Read `knowledge/clusters/_topics.md` and the tail of `knowledge/log.md`
+   before acting. If the task touches any topic in that vocabulary, open
+   `knowledge/clusters/cluster-<topic>.md` first — one file read gives you the
+   active decisions, superseded decisions, issues, lessons, and key documents
+   for that topic. Claude Code automates this with a SessionStart hook; Codex
+   cannot load repo-scoped hooks, so do it yourself.
 3. Classify the user's intent and execute the matching workflow in
    `SECOND-BRAIN.md` end to end, including its General rules.
 4. Search frontmatter first, narrow candidates with structured fields and
