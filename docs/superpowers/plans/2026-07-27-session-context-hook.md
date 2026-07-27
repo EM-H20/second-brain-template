@@ -1,5 +1,12 @@
 # 세션 컨텍스트 훅 구현 계획
 
+> **실행 완료. 이 문서의 코드 블록을 그대로 복사하지 말 것.** 구현 중 리뷰가
+> 세 군데에서 이 계획의 결함을 잡아 설계가 바뀌었다: (1) `log.md`는 앞부분을
+> 자른 뒤 꼬리를 뽑으면 안 되고 순서가 반대여야 한다, (2) `settings.json`
+> 병합에 모양 검사(`null`/배열/원시값)가 필요하다, (3) `node --check`는 `.js`
+> 마커 회귀를 잡지 못한다. 최종 설계는
+> [스펙](../specs/2026-07-27-session-context-hook-design.md)을 볼 것.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Claude Code 세션이 시작될 때 볼트의 주제 어휘와 최근 작업 로그를 자동으로 컨텍스트에 주입해, 사용자가 `/recall`을 치지 않아도 관련 결정·이슈·교훈이 코드보다 먼저 떠오르게 한다.
