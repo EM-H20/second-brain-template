@@ -234,6 +234,8 @@ knowledge/
 SECOND-BRAIN.md   Workflow rules (W1–W8) — the heart of the system
 CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with existing projects)
 .claude/commands/ 12 slash commands (9 original + capture/recall/maintain)
+.claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
+.claude/settings.json hook registration (merges one entry if the file already exists)
 .agents/skills/second-brain/ Codex repo skill (auto-detected)
 .codex/prompts/   Legacy Codex custom prompts (deprecated)
 ```
@@ -256,6 +258,12 @@ to those rules. The supported interfaces are:
 
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
+
+Claude Code also gets a session-start hook (`.claude/hooks/session-context.js`).
+When a session opens it puts the vault's topic vocabulary and recent work log into
+context, so relevant decisions, issues, and lessons surface before any code gets
+written — without typing `/recall`. The rules themselves stay in `SECOND-BRAIN.md`
+alone, so CLIs without the hook behave identically; people just forget more often.
 
 ## 🛡 Safety and retrieval defaults
 
@@ -518,6 +526,8 @@ knowledge/
 SECOND-BRAIN.md   工作流规则 (W1~W8) —— 系统的心脏
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突)
 .claude/commands/ 12 个斜杠命令 (原有 9 个 + capture/recall/maintain)
+.claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
+.claude/settings.json 钩子注册（文件已存在时只合并一个条目）
 .agents/skills/second-brain/ Codex 仓库技能（自动识别）
 .codex/prompts/   旧版 Codex 自定义提示词（已弃用）
 ```
@@ -539,6 +549,11 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
+
+Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-context.js`）。
+会话开启时它把知识库的主题词表和最近的工作日志放进上下文，因此不必输入
+`/recall`，相关的决策、问题与教训就会先于代码浮现。规则本身仍然只在
+`SECOND-BRAIN.md` 里，所以没有钩子的 CLI 行为完全一致 —— 只是人更容易忘记。
 
 ## 🛡 安全与检索默认值
 
@@ -803,6 +818,8 @@ knowledge/
 SECOND-BRAIN.md   ワークフロー規則 (W1〜W8) — システムの心臓部
 CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトとの衝突を防ぐ)
 .claude/commands/ スラッシュコマンド 12 個 (既存 9 個 + capture/recall/maintain)
+.claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
+.claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
 .agents/skills/second-brain/ Codex リポジトリスキル（自動認識）
 .codex/prompts/   旧 Codex カスタムプロンプト（非推奨）
 ```
@@ -825,6 +842,12 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
+
+Claude Code にはセッション開始フック（`.claude/hooks/session-context.js`）も
+インストールされる。セッションが開くとボールトの主題語彙と直近の作業ログを
+コンテキストに入れるため、`/recall` を打たなくても関連する決定・課題・教訓が
+コードより先に浮かび上がる。ルール自体は `SECOND-BRAIN.md` 一箇所のままなので、
+フックのない CLI でも結果は同じ — 人が忘れやすくなるだけだ。
 
 ## 🛡 安全性と検索のデフォルト
 
@@ -1086,6 +1109,8 @@ knowledge/
 SECOND-BRAIN.md   워크플로우 규칙 (W1~W8) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
 .claude/commands/ 슬래시 커맨드 12개 (기존 9개 + capture/recall/maintain)
+.claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
+.claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
 .agents/skills/second-brain/ Codex 저장소 스킬 (자동 인식)
 .codex/prompts/   레거시 Codex 커스텀 프롬프트 (deprecated)
 ```
@@ -1108,6 +1133,12 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
+
+Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/session-context.js`).
+세션이 열릴 때 볼트의 주제 어휘와 최근 작업 로그를 컨텍스트에 넣어, `/recall`을
+치지 않아도 관련 결정·이슈·교훈이 코드보다 먼저 떠오르게 한다. 규칙 원본은
+`SECOND-BRAIN.md` 하나로 유지되므로 훅이 없는 CLI에서도 결과는 같다 — 사람이 더
+자주 잊을 뿐이다.
 
 ## 🛡 안전·검색 기본값
 
