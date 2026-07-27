@@ -259,7 +259,7 @@ to those rules. The supported interfaces are:
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
 
-Claude Code also gets a session-start hook (`.claude/hooks/session-context.js`).
+Claude Code also gets a session-start hook (`.claude/hooks/session-context.mjs`).
 When a session opens it puts the vault's topic vocabulary and recent work log into
 context, so relevant decisions, issues, and lessons surface before any code gets
 written — without typing `/recall`. The rules themselves stay in `SECOND-BRAIN.md`
@@ -550,7 +550,7 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
 
-Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-context.js`）。
+Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-context.mjs`）。
 会话开启时它把知识库的主题词表和最近的工作日志放进上下文，因此不必输入
 `/recall`，相关的决策、问题与教训就会先于代码浮现。规则本身仍然只在
 `SECOND-BRAIN.md` 里，所以没有钩子的 CLI 行为完全一致 —— 只是人更容易忘记。
@@ -843,7 +843,7 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
 
-Claude Code にはセッション開始フック（`.claude/hooks/session-context.js`）も
+Claude Code にはセッション開始フック（`.claude/hooks/session-context.mjs`）も
 インストールされる。セッションが開くとボールトの主題語彙と直近の作業ログを
 コンテキストに入れるため、`/recall` を打たなくても関連する決定・課題・教訓が
 コードより先に浮かび上がる。ルール自体は `SECOND-BRAIN.md` 一箇所のままなので、
@@ -1134,7 +1134,7 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
 
-Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/session-context.js`).
+Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/session-context.mjs`).
 세션이 열릴 때 볼트의 주제 어휘와 최근 작업 로그를 컨텍스트에 넣어, `/recall`을
 치지 않아도 관련 결정·이슈·교훈이 코드보다 먼저 떠오르게 한다. 규칙 원본은
 `SECOND-BRAIN.md` 하나로 유지되므로 훅이 없는 CLI에서도 결과는 같다 — 사람이 더

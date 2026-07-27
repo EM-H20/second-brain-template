@@ -11,7 +11,7 @@
 
 **Goal:** Claude Code 세션이 시작될 때 볼트의 주제 어휘와 최근 작업 로그를 자동으로 컨텍스트에 주입해, 사용자가 `/recall`을 치지 않아도 관련 결정·이슈·교훈이 코드보다 먼저 떠오르게 한다.
 
-**Architecture:** `.claude/hooks/session-context.js`가 SessionStart 훅으로 등록된다. 훅은 `knowledge/clusters/_topics.md`(통제 어휘)와 `knowledge/log.md` 꼬리를 읽어 `hookSpecificOutput.additionalContext`로 출력한다. 무엇이 관련 있는지 판단하는 매칭 로직은 **구현하지 않는다** — 세션 안의 모델이 판단하고, 회수는 이미 주제별 집약본인 클러스터 노트 1개를 여는 것으로 끝난다.
+**Architecture:** `.claude/hooks/session-context.mjs`가 SessionStart 훅으로 등록된다. 훅은 `knowledge/clusters/_topics.md`(통제 어휘)와 `knowledge/log.md` 꼬리를 읽어 `hookSpecificOutput.additionalContext`로 출력한다. 무엇이 관련 있는지 판단하는 매칭 로직은 **구현하지 않는다** — 세션 안의 모델이 판단하고, 회수는 이미 주제별 집약본인 클러스터 노트 1개를 여는 것으로 끝난다.
 
 **Tech Stack:** Node.js 내장 모듈만 (`fs`, `path`). 빌드 스텝 없음. 테스트는 기존 `bin/test.sh` (bash + node 단언).
 
@@ -22,8 +22,8 @@
 - **`SECOND-BRAIN.md`를 변경하지 않는다.** 규칙은 툴 중립으로 남고, 훅은 Claude Code 전용 가속기다.
 - **사용자 소유 파일을 통째로 덮지 않는다.** `.claude/settings.json`은 `hooks.SessionStart` 항목 하나만 멱등 병합한다.
 - **모든 검증은 `bash bin/test.sh` 하나로 통과해야 한다.** 새 테스트 러너를 도입하지 않는다.
-- 훅 스크립트 식별자(멱등성 판정 키): `.claude/hooks/session-context.js`
-- 훅 command 문자열: `node "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.js"`
+- 훅 스크립트 식별자(멱등성 판정 키): `.claude/hooks/session-context.mjs`
+- 훅 command 문자열: `node "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs"`
 - 훅 timeout: `5`
 - 파일 읽기 상한: `8 * 1024` 바이트
 - `log.md` 꼬리 줄 수: `15`
@@ -33,7 +33,7 @@
 
 | 파일 | 역할 |
 |---|---|
-| `.claude/hooks/session-context.js` | 신규. 훅 본체. 볼트를 읽어 컨텍스트 JSON을 stdout에 출력. 다른 파일에 의존하지 않는 독립 스크립트 |
+| `.claude/hooks/session-context.mjs` | 신규. 훅 본체. 볼트를 읽어 컨텍스트 JSON을 stdout에 출력. 다른 파일에 의존하지 않는 독립 스크립트 |
 | `.claude/settings.json` | 신규. 템플릿 저장소 자신의 훅 등록이자, 설치 시 병합할 항목의 **단일 출처** |
 | `bin/init.js` | 수정. 마커 확장자 분기, `.claude/hooks` 설치, settings 병합, 설치기 출력 |
 | `package.json` | 수정. `files`에 신규 경로 추가 (누락 시 npx 설치가 통째로 실패) |
@@ -47,12 +47,12 @@
 ### Task 1: 훅 스크립트
 
 **Files:**
-- Create: `.claude/hooks/session-context.js`
+- Create: `.claude/hooks/session-context.mjs`
 - Test: `bin/test.sh` (케이스 7 추가, 파일 끝 `echo "ALL PASS"` 직전)
 
 **Interfaces:**
 - Consumes: 없음 (독립 스크립트)
-- Produces: `.claude/hooks/session-context.js` — 인자 없이 실행되며, stdout에 `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<문자열>"}}`를 출력하거나 아무것도 출력하지 않는다. 항상 exit 0. 볼트 위치는 `__dirname`에서 두 단계 위(`<project>/knowledge`)로 해석하며 CWD에 의존하지 않는다. Task 2가 이 경로를 설치 대상으로 참조하고, Task 3이 이 경로를 멱등성 판정 키로 참조한다.
+- Produces: `.claude/hooks/session-context.mjs` — 인자 없이 실행되며, stdout에 `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<문자열>"}}`를 출력하거나 아무것도 출력하지 않는다. 항상 exit 0. 볼트 위치는 `__dirname`에서 두 단계 위(`<project>/knowledge`)로 해석하며 CWD에 의존하지 않는다. Task 2가 이 경로를 설치 대상으로 참조하고, Task 3이 이 경로를 멱등성 판정 키로 참조한다.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
@@ -62,8 +62,8 @@
 # ── 케이스 7: 세션 컨텍스트 훅 ──────────────────────────
 # 훅은 __dirname 기준으로 볼트를 찾으므로, 임시 프로젝트에 복사해서 검증한다.
 mkdir -p "$TMP/hook/.claude/hooks" && cd "$TMP/hook"
-cp "$ROOT/.claude/hooks/session-context.js" .claude/hooks/
-H=".claude/hooks/session-context.js"
+cp "$ROOT/.claude/hooks/session-context.mjs" .claude/hooks/
+H=".claude/hooks/session-context.mjs"
 
 # 7a. knowledge/ 자체가 없으면 조용히 종료한다
 node "$H" > out.json < /dev/null || fail "볼트 없을 때 훅이 실패로 종료"
@@ -115,11 +115,11 @@ echo "케이스 7 OK"
 - [ ] **Step 2: 테스트가 실패하는지 확인**
 
 Run: `bash bin/test.sh`
-Expected: FAIL. `cp: .../.claude/hooks/session-context.js: No such file or directory` — 파일이 아직 없다.
+Expected: FAIL. `cp: .../.claude/hooks/session-context.mjs: No such file or directory` — 파일이 아직 없다.
 
 - [ ] **Step 3: 훅 스크립트 작성**
 
-`.claude/hooks/session-context.js` 전체 내용:
+`.claude/hooks/session-context.mjs` 전체 내용:
 
 ```javascript
 #!/usr/bin/env node
@@ -207,7 +207,7 @@ Expected: PASS. 출력 끝에 `케이스 7 OK` 와 `ALL PASS`.
 - [ ] **Step 5: 커밋**
 
 ```bash
-git add .claude/hooks/session-context.js bin/test.sh
+git add .claude/hooks/session-context.mjs bin/test.sh
 git commit -m "feat: add session context hook that injects vault topics"
 ```
 
@@ -221,8 +221,8 @@ git commit -m "feat: add session context hook that injects vault topics"
 - Test: `bin/test.sh` (케이스 1 보강 + `files` 가드)
 
 **Interfaces:**
-- Consumes: Task 1의 `.claude/hooks/session-context.js`
-- Produces: 설치 후 대상 프로젝트에 `.claude/hooks/session-context.js`가 존재하고 문법이 유효하다. 재실행 시 마커(`// second-brain-template`)를 확인하고 최신본으로 갱신된다.
+- Consumes: Task 1의 `.claude/hooks/session-context.mjs`
+- Produces: 설치 후 대상 프로젝트에 `.claude/hooks/session-context.mjs`가 존재하고 문법이 유효하다. 재실행 시 마커(`// second-brain-template`)를 확인하고 최신본으로 갱신된다.
 
 **배경:** `ownedMarker()`는 현재 `.yml`/`.yaml`에만 `#` 주석을 쓰고 나머지는 전부 HTML 주석을 붙인다. 지금까지 템플릿 소유 파일이 모두 `.md`라 문제가 없었으나, `.js`에 `<!-- ... -->`가 붙으면 문법 오류가 난다. 이 수정 없이는 Task 1의 스크립트가 설치되는 순간 깨진다.
 
@@ -231,9 +231,9 @@ git commit -m "feat: add session context hook that injects vault topics"
 `bin/test.sh`의 케이스 1에서, `head -1 .claude/commands/ingest-meeting.md ...` 줄(현재 25행) **바로 아래에** 추가한다.
 
 ```bash
-[ -f .claude/hooks/session-context.js ] || fail "훅 스크립트 미설치"
-node --check .claude/hooks/session-context.js || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
-grep -q '^// second-brain-template' .claude/hooks/session-context.js || fail "JS 마커가 // 주석이 아님"
+[ -f .claude/hooks/session-context.mjs ] || fail "훅 스크립트 미설치"
+node --check .claude/hooks/session-context.mjs || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
+grep -q '^// second-brain-template' .claude/hooks/session-context.mjs || fail "JS 마커가 // 주석이 아님"
 ```
 
 그리고 파일 상단, `echo "changelog selfcheck OK"` (현재 10행) **바로 아래에** 패키징 가드를 추가한다. `files`에서 빠지면 npm 패키지에 안 실려 `npx` 설치가 통째로 실패하는데, 설치 테스트는 로컬 경로를 쓰기 때문에 이 실수를 잡지 못한다.
@@ -346,7 +346,7 @@ git commit -m "feat: install session context hook into target projects"
 - Test: `bin/test.sh` (케이스 8 추가 + 케이스 1·3 보강)
 
 **Interfaces:**
-- Consumes: Task 2가 설치한 `.claude/hooks/session-context.js` 경로
+- Consumes: Task 2가 설치한 `.claude/hooks/session-context.mjs` 경로
 - Produces: 설치 후 대상 프로젝트의 `.claude/settings.json`에 `hooks.SessionStart` 항목이 등록되어 훅이 실제로 발화한다. 병합할 항목의 단일 출처는 템플릿 저장소의 `.claude/settings.json` 파일이며, `bin/init.js`는 그것을 읽어 쓴다 (두 곳에 같은 JSON을 복제하지 않는다).
 
 - [ ] **Step 1: 실패하는 테스트 작성**
@@ -357,7 +357,7 @@ git commit -m "feat: install session context hook into target projects"
 [ -f .claude/settings.json ] || fail "settings.json 미생성"
 node -e '
 const s = require("./.claude/settings.json");
-if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) {
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) {
   throw new Error("SessionStart 훅 미등록");
 }
 ' || fail "settings.json 에 훅 미등록"
@@ -381,7 +381,7 @@ node "$ROOT/bin/init.js" -y > out.log
 node -e '
 const s = require("./.claude/settings.json");
 if (!s.permissions.allow.includes("Bash(ls *)")) throw new Error("permissions 유실");
-if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("훅 미추가");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) throw new Error("훅 미추가");
 ' || fail "settings 병합 실패"
 [ -f .claude/settings.json.bak ] || fail "settings .bak 백업 없음"
 grep -q 'permissions' .claude/settings.json.bak || fail ".bak 에 원본 내용 없음"
@@ -406,7 +406,7 @@ node -e '
 const s = require("./.claude/settings.json");
 const j = JSON.stringify(s.hooks.SessionStart);
 if (!j.includes("echo mine")) throw new Error("기존 훅 유실");
-if (!j.includes("session-context.js")) throw new Error("우리 훅 미추가");
+if (!j.includes("session-context.mjs")) throw new Error("우리 훅 미추가");
 if (s.hooks.SessionStart.length !== 2) throw new Error("항목 수 이상: " + s.hooks.SessionStart.length);
 ' || fail "기존 SessionStart 훅 보존 실패"
 
@@ -418,7 +418,7 @@ grep -q 'broken json' .claude/settings.json || fail "깨진 settings 를 덮어�
 [ ! -f .claude/settings.json.bak ] || fail "깨진 settings 인데 .bak 생성"
 grep -q '파싱하지 못해' out.log || fail "폴백 안내 없음"
 grep -q 'CLAUDE_PROJECT_DIR' out.log || fail "복붙 스니펫 없음"
-[ -f .claude/hooks/session-context.js ] || fail "폴백인데 훅 스크립트도 미설치"
+[ -f .claude/hooks/session-context.mjs ] || fail "폴백인데 훅 스크립트도 미설치"
 echo "케이스 8 OK"
 ```
 
@@ -439,7 +439,7 @@ Expected: FAIL — `FAIL: settings.json 미생성`
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.js\"",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\"",
             "timeout": 5
           }
         ]
@@ -457,7 +457,7 @@ Expected: FAIL — `FAIL: settings.json 미생성`
 
 ```javascript
 // settings.json 병합 멱등성 판정 키 — 경로가 바뀌면 이 상수도 함께 바꿔야 한다
-const HOOK_ID = '.claude/hooks/session-context.js';
+const HOOK_ID = '.claude/hooks/session-context.mjs';
 ```
 
 `planAgentsMd()` 함수 **바로 아래에** 다음을 추가한다.
@@ -547,7 +547,7 @@ function planSettings() {
     console.log('  훅 스크립트는 설치됐습니다. 아래를 "hooks" 에 직접 추가하세요:\n');
     console.log('  "SessionStart": [');
     console.log('    { "hooks": [{ "type": "command",');
-    console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.js\\"", "timeout": 5 }] }');
+    console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\\"", "timeout": 5 }] }');
     console.log('  ]\n');
   }
 ```
@@ -598,7 +598,7 @@ git commit -m "feat: register session context hook by merging into settings.json
 `커맨드가 없는 CLI에서도 자연어로 동작한다 — ...` 문단 **아래에** 추가한다.
 
 ```markdown
-Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/session-context.js`).
+Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/session-context.mjs`).
 세션이 열릴 때 볼트의 주제 어휘와 최근 작업 로그를 컨텍스트에 넣어, `/recall`을
 치지 않아도 관련 결정·이슈·교훈이 코드보다 먼저 떠오르게 한다. 규칙 원본은
 `SECOND-BRAIN.md` 하나로 유지되므로 훅이 없는 CLI에서도 결과는 같다 — 사람이 더
@@ -617,7 +617,7 @@ Claude Code에는 세션 시작 훅이 함께 설치된다 (`.claude/hooks/sessi
 크로스-CLI 섹션 끝에:
 
 ```markdown
-Claude Code also gets a session-start hook (`.claude/hooks/session-context.js`).
+Claude Code also gets a session-start hook (`.claude/hooks/session-context.mjs`).
 When a session opens it puts the vault's topic vocabulary and recent work log into
 context, so relevant decisions, issues, and lessons surface before any code gets
 written — without typing `/recall`. The rules themselves stay in `SECOND-BRAIN.md`
@@ -636,7 +636,7 @@ alone, so CLIs without the hook behave identically; people just forget more ofte
 크로스-CLI 섹션 끝에:
 
 ```markdown
-Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-context.js`）。
+Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-context.mjs`）。
 会话开启时它把知识库的主题词表和最近的工作日志放进上下文，因此不必输入
 `/recall`，相关的决策、问题与教训就会先于代码浮现。规则本身仍然只在
 `SECOND-BRAIN.md` 里，所以没有钩子的 CLI 行为完全一致 —— 只是人更容易忘记。
@@ -654,7 +654,7 @@ Claude Code 还会安装一个会话启动钩子（`.claude/hooks/session-contex
 크로스-CLI 섹션 끝에:
 
 ```markdown
-Claude Code にはセッション開始フック（`.claude/hooks/session-context.js`）も
+Claude Code にはセッション開始フック（`.claude/hooks/session-context.mjs`）も
 インストールされる。セッションが開くとボールトの主題語彙と直近の作業ログを
 コンテキストに入れるため、`/recall` を打たなくても関連する決定・課題・教訓が
 コードより先に浮かび上がる。ルール自体は `SECOND-BRAIN.md` 一箇所のままなので、
@@ -685,7 +685,7 @@ git commit -m "docs: document the session context hook in all languages"
 ## 완료 기준
 
 - [ ] `bash bin/test.sh` 가 `ALL PASS` 로 끝난다
-- [ ] 빈 프로젝트에 설치하면 `.claude/hooks/session-context.js` 와 `.claude/settings.json` 이 생기고, `node --check` 를 통과한다
+- [ ] 빈 프로젝트에 설치하면 `.claude/hooks/session-context.mjs` 와 `.claude/settings.json` 이 생기고, `node --check` 를 통과한다
 - [ ] `permissions` 만 있는 기존 `.claude/settings.json` 에 설치하면 permissions 가 남고 훅 항목이 하나 추가되며 `.bak` 이 생긴다
 - [ ] 두 번 설치해도 훅 항목이 하나뿐이다
 - [ ] `package.json` 에 `dependencies` 가 없다

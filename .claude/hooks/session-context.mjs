@@ -1,15 +1,19 @@
 #!/usr/bin/env node
-'use strict';
 // second-brain-template 세션 컨텍스트 훅 — 의존성 0개 (node 내장 모듈만)
 //
 // SessionStart 시 볼트의 주제 어휘와 최근 작업 로그를 컨텍스트에 주입한다.
 // 무엇이 관련 있는지는 판단하지 않는다 — 그건 세션 안의 모델이 한다.
 // 어떤 실패도 세션 시작을 막아서는 안 되므로 모든 경로가 조용히 종료한다.
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const MAX_BYTES = 8 * 1024;
 const LOG_TAIL_LINES = 15;
+
+// .mjs 는 어떤 target 프로젝트의 package.json "type" 설정과도 무관하게 항상
+// ESM 으로 로드되므로, __dirname 은 여기서 직접 구해야 한다 (ESM 에 내장 __dirname 없음).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // 이 스크립트는 <project>/.claude/hooks/ 에 설치되므로 볼트는 두 단계 위다.
 // CWD 로 찾지 않는 이유: 훅 실행 시점의 CWD 는 보장되지 않는다.

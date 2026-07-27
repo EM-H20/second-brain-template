@@ -12,7 +12,7 @@ const IMPORT_LINE = '@SECOND-BRAIN.md';
 const AGENTS_POINTER = '**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.';
 const AUTO_YES = process.argv.includes('-y') || process.argv.includes('--yes');
 // settings.json 병합 멱등성 판정 키 — 경로가 바뀌면 이 상수도 함께 바꿔야 한다
-const HOOK_ID = '.claude/hooks/session-context.js';
+const HOOK_ID = '.claude/hooks/session-context.mjs';
 
 if (path.resolve(SRC) === path.resolve(DEST)) {
   console.error('템플릿 저장소 자신에게는 설치할 수 없습니다. 대상 프로젝트 루트에서 실행하세요.');
@@ -62,7 +62,7 @@ function write(to, content) {
 // .json 은 주석을 넣을 수 없으므로 이 방식 자체를 쓸 수 없다 (planSettings 참고).
 function ownedMarker(rel) {
   if (/\.ya?ml$/.test(rel)) return '# second-brain-template';
-  if (/\.js$/.test(rel)) return '// second-brain-template';
+  if (/\.[cm]?js$/.test(rel)) return '// second-brain-template';
   return MARKER;
 }
 
@@ -252,7 +252,7 @@ confirm((ok) => {
     console.log('  훅 스크립트는 설치됐습니다. 아래를 "hooks" 에 직접 추가하세요:\n');
     console.log('  "SessionStart": [');
     console.log('    { "hooks": [{ "type": "command",');
-    console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.js\\"", "timeout": 5 }] }');
+    console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\\"", "timeout": 5 }] }');
     console.log('  ]\n');
   }
   console.log('다음 단계:');
