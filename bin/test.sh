@@ -37,6 +37,14 @@ head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가
 [ -f .claude/hooks/session-context.js ] || fail "훅 스크립트 미설치"
 node --check .claude/hooks/session-context.js || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
 grep -q '^// second-brain-template' .claude/hooks/session-context.js || fail "JS 마커가 // 주석이 아님"
+[ -f .claude/settings.json ] || fail "settings.json 미생성"
+node -e '
+const s = require("./.claude/settings.json");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) {
+  throw new Error("SessionStart 훅 미등록");
+}
+' || fail "settings.json 에 훅 미등록"
+grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
 [ -f .codex/prompts/ingest-meeting.md ] || fail "codex 프롬프트 없음"
 [ -f .agents/skills/second-brain/SKILL.md ] || fail "Codex repo skill 없음"
 grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Codex repo skill에 마커 없음"
@@ -115,6 +123,7 @@ diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting
 grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md.bak || fail ".bak에 이전 내용 없음"
 grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
+[ ! -f .claude/settings.json.bak ] || fail "이미 등록된 훅인데 settings .bak 재생성됨"
 
 # 멱등: 바뀐 게 없으면 .bak을 다시 만들지 않는다
 rm knowledge/_templates/meeting-note.md.bak
@@ -175,6 +184,54 @@ if node "$ROOT/bin/init.js" -y > out.log 2>&1; then fail "심볼릭 링크 대�
 grep -q '심볼릭 링크' out.log || fail "심볼릭 링크 차단 안내 없음"
 [ ! -e "$TMP/symlink-outside/index.md" ] || fail "프로젝트 밖 파일이 생성됨"
 echo "케이스 6 OK"
+
+# ── 케이스 8: settings.json 병합 ────────────────────────
+# 8a. 기존 permissions 를 보존하며 훅 항목만 추가한다
+mkdir -p "$TMP/settings/.claude" && cd "$TMP/settings"
+printf '{\n  "permissions": { "allow": ["Bash(ls *)"] }\n}\n' > .claude/settings.json
+node "$ROOT/bin/init.js" -y > out.log
+node -e '
+const s = require("./.claude/settings.json");
+if (!s.permissions.allow.includes("Bash(ls *)")) throw new Error("permissions 유실");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("훅 미추가");
+' || fail "settings 병합 실패"
+[ -f .claude/settings.json.bak ] || fail "settings .bak 백업 없음"
+grep -q 'permissions' .claude/settings.json.bak || fail ".bak 에 원본 내용 없음"
+grep -q 'SessionStart 훅' out.log || fail "확인 전 분석 요약에 settings 줄 없음"
+grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
+grep -q 'settings.json.bak' out.log || fail "백업 경로 안내 없음"
+
+# 8b. 재실행해도 중복 추가하지 않고 .bak 도 만들지 않는다
+rm .claude/settings.json.bak
+node "$ROOT/bin/init.js" -y > out2.log
+[ ! -f .claude/settings.json.bak ] || fail "이미 등록됐는데 .bak 재생성"
+node -e '
+const s = require("./.claude/settings.json");
+if (s.hooks.SessionStart.length !== 1) throw new Error("훅 항목 중복 추가");
+' || fail "훅 병합 멱등성 깨짐"
+
+# 8c. 사용자가 이미 다른 SessionStart 훅을 쓰고 있으면 그것을 보존한다
+mkdir -p "$TMP/settings2/.claude" && cd "$TMP/settings2"
+printf '{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"echo mine"}]}]}}\n' > .claude/settings.json
+node "$ROOT/bin/init.js" -y > out.log
+node -e '
+const s = require("./.claude/settings.json");
+const j = JSON.stringify(s.hooks.SessionStart);
+if (!j.includes("echo mine")) throw new Error("기존 훅 유실");
+if (!j.includes("session-context.js")) throw new Error("우리 훅 미추가");
+if (s.hooks.SessionStart.length !== 2) throw new Error("항목 수 이상: " + s.hooks.SessionStart.length);
+' || fail "기존 SessionStart 훅 보존 실패"
+
+# 8d. 깨진 JSON 은 건드리지 않고 복붙 안내로 폴백한다
+mkdir -p "$TMP/settings3/.claude" && cd "$TMP/settings3"
+printf '{ broken json\n' > .claude/settings.json
+node "$ROOT/bin/init.js" -y > out.log
+grep -q 'broken json' .claude/settings.json || fail "깨진 settings 를 덮어씀"
+[ ! -f .claude/settings.json.bak ] || fail "깨진 settings 인데 .bak 생성"
+grep -q '파싱하지 못해' out.log || fail "폴백 안내 없음"
+grep -q 'CLAUDE_PROJECT_DIR' out.log || fail "복붙 스니펫 없음"
+[ -f .claude/hooks/session-context.js ] || fail "폴백인데 훅 스크립트도 미설치"
+echo "케이스 8 OK"
 
 # ── 케이스 7: 세션 컨텍스트 훅 ──────────────────────────
 # 훅은 __dirname 기준으로 볼트를 찾으므로, 임시 프로젝트에 복사해서 검증한다.
