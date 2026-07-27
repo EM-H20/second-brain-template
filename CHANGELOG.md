@@ -2,7 +2,7 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
-## [v1.4.0] — 2026-07-28
+## [v1.4.0] — 2026-07-27
 
 ### Features
 
