@@ -274,6 +274,16 @@ cluster note before writing code.
 (`.claude/hooks/session-context.mjs`) is installed and registered, so relevant
 decisions, issues, and lessons surface without typing `/recall`.
 
+The hook works silently, so nothing appears on screen. To check that it runs,
+invoke it directly:
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+If the vault has at least one topic you get the JSON it would inject; an empty
+vault (zero topics) prints nothing — that is also correct.
+
 **Codex has an equivalent hook engine but cannot be automated here.** Codex
 loads hooks only from `~/.codex/hooks.json` or an installed plugin, never from a
 file committed to the repository — so a repo-scoped template has no way to
@@ -576,6 +586,15 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 **Claude Code 会自动完成这一步** —— 会话启动钩子
 （`.claude/hooks/session-context.mjs`）已安装并注册，因此不必输入 `/recall`，
 相关的决策、问题与教训就会先于代码浮现。
+
+钩子静默运行，屏幕上不会有任何提示。想确认它是否生效，直接执行：
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+知识库中只要有一个主题，就会输出将要注入的 JSON；空知识库（0 个主题）不输出任何
+内容 —— 这同样是正确的。
 
 **Codex 同样具备钩子引擎，但这里无法自动化。** Codex 只从 `~/.codex/hooks.json`
 或已安装的插件加载钩子，绝不从提交进仓库的文件加载 —— 以仓库为作用域的模板因此
@@ -884,6 +903,15 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 （`.claude/hooks/session-context.mjs`）がインストール・登録されるため、`/recall` を
 打たなくても関連する決定・課題・教訓が先に浮かび上がる。
 
+フックは静かに動くため画面には何も出ない。動いているか確かめるには直接実行する:
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+主題が 1 つでもあれば注入される JSON が出力され、空のボールト（主題 0 件）では何も
+出力されない — 後者も正常である。
+
 **Codex にも同等のフック機構はあるが、ここでは自動化できない。** Codex は
 `~/.codex/hooks.json` かインストール済みプラグインからしかフックを読まず、リポジトリに
 コミットされたファイルからは読まない — リポジトリ単位のテンプレートでは登録して
@@ -1186,6 +1214,15 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 
 **Claude Code는 이 읽기를 자동화한다** — 세션 시작 훅(`.claude/hooks/session-context.mjs`)이
 설치·등록되어, `/recall`을 치지 않아도 관련 결정·이슈·교훈이 먼저 떠오른다.
+
+훅은 조용히 동작하므로 화면에 아무것도 뜨지 않는다. 도는지 확인하려면 직접 실행한다:
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+주제가 하나라도 있으면 주입될 JSON이 출력되고, 빈 볼트(토픽 0개)면 아무것도
+출력되지 않는다 — 후자도 정상이다.
 
 **Codex도 훅 엔진이 있지만 자동화할 수 없다.** Codex는 `~/.codex/hooks.json`이나
 설치된 플러그인에서만 훅을 읽고, 저장소에 커밋된 파일에서는 읽지 않는다 — 레포에

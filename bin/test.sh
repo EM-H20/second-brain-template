@@ -54,6 +54,10 @@ if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) {
 }
 ' || fail "settings.json 에 훅 미등록"
 grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
+# 초기 세팅은 슬래시, 일상 사용은 자연어 — 첫 화면에서 이 경계가 흐려지면 Codex 사용자가 헤맨다
+grep -q '기억해' out.log || fail "다음 단계에 자연어 사용법 없음"
+grep -q '볼트 초기화해줘' out.log || fail "다음 단계에 Codex 초기화 경로 없음"
+grep -q 'session-context.mjs' out.log || fail "훅 확인 방법 안내 없음"
 [ -f .codex/prompts/ingest-meeting.md ] || fail "codex 프롬프트 없음"
 [ -f .agents/skills/second-brain/SKILL.md ] || fail "Codex repo skill 없음"
 grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Codex repo skill에 마커 없음"

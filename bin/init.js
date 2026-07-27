@@ -255,8 +255,14 @@ confirm((ok) => {
     console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\\"", "timeout": 5 }] }');
     console.log('  ]\n');
   }
+  // 1~2는 clone 직후 1회 하는 초기 세팅이라 슬래시 커맨드가 맞고,
+  // 3부터가 일상 사용이다. 그 경계를 흐리면 Codex 사용자는 없는 커맨드를 찾게 된다.
   console.log('다음 단계:');
-  console.log('  1. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
-  console.log('  2. Claude Code에서 /ingest-meeting 으로 첫 회의록 넣기');
-  console.log('  3. (선택) /setup-vault 로 프로젝트 정보 반영');
+  console.log('  1. 볼트 초기화 — /setup-vault   (Codex: "볼트 초기화해줘")');
+  console.log('  2. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
+  console.log('  3. 이후엔 자연어면 충분:');
+  console.log('       "이 회의록 기억해"  ·  "인증 관련 꺼내줘"  ·  "볼트 정리해"');
+  console.log('     (슬래시 커맨드 12개는 파워유저용 별칭 — README 참고)\n');
+  console.log('훅이 도는지 확인: node .claude/hooks/session-context.mjs');
+  console.log('  주제가 있으면 주입될 JSON이, 빈 볼트면 아무것도 출력되지 않습니다.');
 });
