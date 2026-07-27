@@ -214,7 +214,7 @@ into `docs/`:
    (doc `decisions:` ↔ decision `related:`). external documents NEVER
    create decisions — record 논점 only.
    결정 노트의 Context·Alternatives·Consequences는 요약된 doc 노트가 아니라
-   원본 문서를 직접 읽고 채운다.
+   원본 문서를 직접 읽고 채운다 — 요약 단계에서 가장 먼저 소실되는 정보다.
 4. Weighting: core topics go in `topics`, peripheral ones in `topics_ref`
    (vocabulary rules per `clusters/_topics.md` apply to both). Retrieval
    order everywhere: `topics` matches first (official → internal →
