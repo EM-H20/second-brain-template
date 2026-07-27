@@ -32,15 +32,21 @@ grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우
 [ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
 head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
-# node --check 는 이 회귀를 잡지 못한다 — Annex B 문법이 CommonJS 모드에서 <!-- 를
-# 한 줄 주석으로 허용하기 때문이다. 실제 가드는 아래 grep 단언이다. 지우지 말 것.
-[ -f .claude/hooks/session-context.js ] || fail "훅 스크립트 미설치"
-node --check .claude/hooks/session-context.js || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
-grep -q '^// second-brain-template' .claude/hooks/session-context.js || fail "JS 마커가 // 주석이 아님"
+# .mjs는 항상 모듈 모드로 파싱되므로 Annex B 문법(<!-- 를 한 줄 주석으로 허용)이
+# 적용되지 않는다 — node --check 는 이제 HTML 마커가 붙으면 실제로 문법 오류로
+# 잡아낸다. 그래도 회귀 방어의 진짜 가드는 아래 부재(absence) 단언이다: 위 grep은
+# 마커가 "있다"는 것만 확인하는데, 훅 소스 3번째 줄 자체가 `// second-brain-template`
+# 로 시작해서 실제로 어떤 마커가 붙었는지와 무관하게 항상 통과한다. 지우지 말 것.
+[ -f .claude/hooks/session-context.mjs ] || fail "훅 스크립트 미설치"
+node --check .claude/hooks/session-context.mjs || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
+grep -q '^// second-brain-template' .claude/hooks/session-context.mjs || fail "JS 마커가 // 주석이 아님"
+if grep -q -- '<!-- second-brain-template -->' .claude/hooks/session-context.mjs; then
+  fail "JS 소유 파일에 HTML 마커가 붙음"
+fi
 [ -f .claude/settings.json ] || fail "settings.json 미생성"
 node -e '
 const s = require("./.claude/settings.json");
-if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) {
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) {
   throw new Error("SessionStart 훅 미등록");
 }
 ' || fail "settings.json 에 훅 미등록"
@@ -193,7 +199,7 @@ node "$ROOT/bin/init.js" -y > out.log
 node -e '
 const s = require("./.claude/settings.json");
 if (!s.permissions.allow.includes("Bash(ls *)")) throw new Error("permissions 유실");
-if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("훅 미추가");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) throw new Error("훅 미추가");
 ' || fail "settings 병합 실패"
 [ -f .claude/settings.json.bak ] || fail "settings .bak 백업 없음"
 grep -q 'permissions' .claude/settings.json.bak || fail ".bak 에 원본 내용 없음"
@@ -218,7 +224,7 @@ node -e '
 const s = require("./.claude/settings.json");
 const j = JSON.stringify(s.hooks.SessionStart);
 if (!j.includes("echo mine")) throw new Error("기존 훅 유실");
-if (!j.includes("session-context.js")) throw new Error("우리 훅 미추가");
+if (!j.includes("session-context.mjs")) throw new Error("우리 훅 미추가");
 if (s.hooks.SessionStart.length !== 2) throw new Error("항목 수 이상: " + s.hooks.SessionStart.length);
 ' || fail "기존 SessionStart 훅 보존 실패"
 
@@ -230,7 +236,7 @@ grep -q 'broken json' .claude/settings.json || fail "깨진 settings 를 덮어�
 [ ! -f .claude/settings.json.bak ] || fail "깨진 settings 인데 .bak 생성"
 grep -q '파싱하지 못해' out.log || fail "폴백 안내 없음"
 grep -q 'CLAUDE_PROJECT_DIR' out.log || fail "복붙 스니펫 없음"
-[ -f .claude/hooks/session-context.js ] || fail "폴백인데 훅 스크립트도 미설치"
+[ -f .claude/hooks/session-context.mjs ] || fail "폴백인데 훅 스크립트도 미설치"
 
 # 8e. 순수 객체가 아닌 JSON(null)은 크래시하지 않고 파싱 실패와 동일하게 폴백한다
 mkdir -p "$TMP/settings4/.claude" && cd "$TMP/settings4"
@@ -253,7 +259,7 @@ if node "$ROOT/bin/init.js" -y > out.log 2>&1; then EC=0; else EC=$?; fi
 grep -q '"hooks":"x"' .claude/settings.json.bak || fail ".bak 에 원본 내용 없음"
 node -e '
 const s = require("./.claude/settings.json");
-if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("훅이 성공했다고 안내하는데 실제로는 누락됨");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) throw new Error("훅이 성공했다고 안내하는데 실제로는 누락됨");
 ' || fail "settings.hooks 문자열인데 훅이 조용히 유실됨"
 
 # 8g. hooks 가 배열인 경우 크래시/조용한 유실 없이 안전하게 객체로 교체해 병합한다
@@ -265,7 +271,7 @@ if node "$ROOT/bin/init.js" -y > out.log 2>&1; then EC=0; else EC=$?; fi
 [ -f .claude/settings.json.bak ] || fail "settings.hooks 배열 케이스에 .bak 백업 없음"
 node -e '
 const s = require("./.claude/settings.json");
-if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("hooks 가 배열이라 JSON.stringify 가 훅을 조용히 삭제함");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) throw new Error("hooks 가 배열이라 JSON.stringify 가 훅을 조용히 삭제함");
 ' || fail "settings.hooks 배열인데 훅이 조용히 유실됨"
 
 echo "케이스 8 OK"
@@ -273,8 +279,8 @@ echo "케이스 8 OK"
 # ── 케이스 7: 세션 컨텍스트 훅 ──────────────────────────
 # 훅은 __dirname 기준으로 볼트를 찾으므로, 임시 프로젝트에 복사해서 검증한다.
 mkdir -p "$TMP/hook/.claude/hooks" && cd "$TMP/hook"
-cp "$ROOT/.claude/hooks/session-context.js" .claude/hooks/
-H=".claude/hooks/session-context.js"
+cp "$ROOT/.claude/hooks/session-context.mjs" .claude/hooks/
+H=".claude/hooks/session-context.mjs"
 
 # 7a. knowledge/ 자체가 없으면 조용히 종료한다
 node "$H" > out.json < /dev/null || fail "볼트 없을 때 훅이 실패로 종료"
@@ -335,5 +341,21 @@ if (c.includes("early-0")) throw new Error("최근 작업에 파일 시작 줄 �
 ' || fail "로그 8KB 초과 꼬리 검증 실패"
 
 echo "케이스 7 OK"
+
+# ── 케이스 9: ESM 대상 프로젝트 (package.json "type": "module") ──
+# .mjs 는 대상의 "type" 설정과 무관하게 항상 모듈로 로드된다. .js + require() 였다면
+# "ReferenceError: require is not defined in ES module scope" 로 죽고 아무것도
+# 출력하지 못한다 — 이 케이스가 그 회귀를 잡는다.
+mkdir "$TMP/esm" && cd "$TMP/esm"
+printf '{"type": "module"}\n' > package.json
+node "$ROOT/bin/init.js" -y > out.log
+printf '`esm-check` — ESM 대상 검증용\n' >> knowledge/clusters/_topics.md
+node .claude/hooks/session-context.mjs > out.json < /dev/null || fail "ESM 대상 프로젝트에서 훅 실행 실패"
+node -e '
+const o = JSON.parse(require("fs").readFileSync("out.json", "utf8"));
+if (o.hookSpecificOutput.hookEventName !== "SessionStart") throw new Error("hookEventName 불일치");
+if (!o.hookSpecificOutput.additionalContext.includes("esm-check")) throw new Error("ESM 대상에서 컨텍스트 누락");
+' || fail "ESM 대상 프로젝트 훅 출력 검증 실패"
+echo "케이스 9 OK"
 
 echo "ALL PASS"

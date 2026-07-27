@@ -64,7 +64,7 @@
 
 | 파일 | 상태 | 내용 |
 |---|---|---|
-| `.claude/hooks/session-context.js` | 신규 | 훅 스크립트 |
+| `.claude/hooks/session-context.mjs` | 신규 | 훅 스크립트 |
 | `.claude/settings.json` | 신규 | SessionStart 훅 등록 (대상 프로젝트에는 병합) |
 | `bin/init.js` | 수정 | 마커 확장자 분기, settings 병합, 설치 계획, 안내 출력 |
 | `package.json` | 수정 | `files`에 신규 경로 추가 |
@@ -73,7 +73,7 @@
 
 ## 훅 스크립트
 
-`.claude/hooks/session-context.js` — Node 내장 모듈만 사용.
+`.claude/hooks/session-context.mjs` — Node 내장 모듈만 사용.
 
 동작 순서:
 
@@ -147,7 +147,7 @@
 
 | 파일 | 정책 | 재실행 시 |
 |---|---|---|
-| `.claude/hooks/session-context.js` | 템플릿 소유 (`planOwned`) | 마커 확인 후 최신본으로 갱신 |
+| `.claude/hooks/session-context.mjs` | 템플릿 소유 (`planOwned`) | 마커 확인 후 최신본으로 갱신 |
 | `.claude/settings.json` | 없으면 생성, 있으면 `hooks` 항목만 멱등 병합 | 이미 있으면 그대로 |
 
 `settings.json`을 통째로 덮어쓰지 않는다. 그 파일에는 permissions, 다른
@@ -211,7 +211,7 @@
 
   "SessionStart": [
     { "hooks": [{ "type": "command",
-        "command": "node .claude/hooks/session-context.js", "timeout": 5 }] }
+        "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\"", "timeout": 5 }] }
   ]
 ```
 
@@ -256,11 +256,13 @@
 | `settings.json`이 `null` / 루트 배열 | 파일 무변경, exit 0, 나머지 설치는 계속 진행 |
 | `hooks`가 문자열 / 배열 | 죽지 않고 훅 등록 성공, `.bak`에 원본 보존 |
 
-`.js` 마커 회귀에 대해 한 가지 기록해 둔다. `node --check`는 이 회귀를 **잡지
-못한다** — Node의 Annex B 문법이 CommonJS 모드에서 `<!--`를 한 줄 주석으로
-허용하므로, HTML 마커가 붙은 `.js`도 exit 0으로 통과한다 (`{"type":"module"}`
-아래에서만 실패). 실제 가드는 `grep -q '^// second-brain-template'` 단언이다.
-테스트를 정리할 때 이 단언을 지우면 회귀 방어가 사라진다.
+훅이 `.mjs`이므로 항상 모듈 모드로 파싱되고, Annex B 문법(`<!--`를 한 줄 주석으로
+허용)은 모듈 모드에 적용되지 않는다 — 마커 회귀로 HTML 마커가 붙으면
+`node --check`가 실제로 문법 오류로 잡아낸다. 그래도 진짜 가드는
+`grep -q '^// second-brain-template'`에 더해, HTML 마커의 **부재**를 확인하는
+`grep`이다: 훅 소스 3번째 줄 자체가 `// second-brain-template`로 시작해서
+긍정(존재) 단언만으로는 어떤 마커가 실제로 붙었는지와 무관하게 항상 통과한다.
+테스트를 정리할 때 이 부재 단언을 지우면 회귀 방어가 사라진다.
 
 ## 범위 밖
 
