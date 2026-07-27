@@ -25,6 +25,20 @@ function readCapped(file) {
   }
 }
 
+function readLog(file) {
+  try {
+    const buf = fs.readFileSync(file);
+    const fullText = buf.toString('utf8');
+    const tail = fullText.trimEnd().split('\n').slice(-LOG_TAIL_LINES).join('\n');
+
+    // Cap the tail result, not the original file
+    if (tail.length <= MAX_BYTES) return tail;
+    return tail.substring(0, MAX_BYTES) + '\n… (이하 생략)';
+  } catch (e) {
+    return null;
+  }
+}
+
 // `slug` 또는 - `slug` 로 시작하는 줄만 토픽 항목으로 센다.
 // _topics.md 머리말("형식: `slug` — 정의")은 백틱으로 시작하지 않아 걸리지 않는다.
 function countTopics(text) {
@@ -52,11 +66,8 @@ function build() {
     topics.trim(),
   ];
 
-  const log = readCapped(path.join(VAULT, 'log.md'));
-  if (log) {
-    const tail = log.trimEnd().split('\n').slice(-LOG_TAIL_LINES).join('\n');
-    if (tail.trim()) parts.push('', '### 최근 작업', tail);
-  }
+  const log = readLog(path.join(VAULT, 'log.md'));
+  if (log && log.trim()) parts.push('', '### 최근 작업', log);
 
   return parts.join('\n');
 }

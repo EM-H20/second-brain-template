@@ -212,6 +212,20 @@ require("fs").writeFileSync("knowledge/clusters/_topics.md", "`t` — x\n" + "�
 node "$H" > out.json < /dev/null || fail "거대 파일에서 훅이 실패로 종료"
 node -e 'JSON.parse(require("fs").readFileSync("out.json", "utf8"))' || fail "거대 파일에서 JSON 깨짐"
 [ "$(wc -c < out.json)" -lt 20000 ] || fail "8KB 상한이 적용되지 않음"
+
+# 7f. log.md 가 8KB를 초과해도 마지막 줄을 보여준다 (첫 8KB 아님)
+node -e '
+const lines = Array.from({ length: 2000 }, (_, i) => "- early-" + i);
+lines.push("- FINAL_MARKER_LINE");
+require("fs").writeFileSync("knowledge/log.md", lines.join("\n"));
+'
+node "$H" > out.json < /dev/null
+node -e '
+const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecificOutput.additionalContext;
+if (!c.includes("FINAL_MARKER_LINE")) throw new Error("최근 작업에 마지막 줄 없음");
+if (c.includes("early-0")) throw new Error("최근 작업에 파일 시작 줄 있음");
+' || fail "로그 8KB 초과 꼬리 검증 실패"
+
 echo "케이스 7 OK"
 
 echo "ALL PASS"
