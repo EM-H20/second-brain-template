@@ -32,6 +32,8 @@ grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우
 [ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
 head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
+# node --check 는 이 회귀를 잡지 못한다 — Annex B 문법이 CommonJS 모드에서 <!-- 를
+# 한 줄 주석으로 허용하기 때문이다. 실제 가드는 아래 grep 단언이다. 지우지 말 것.
 [ -f .claude/hooks/session-context.js ] || fail "훅 스크립트 미설치"
 node --check .claude/hooks/session-context.js || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
 grep -q '^// second-brain-template' .claude/hooks/session-context.js || fail "JS 마커가 // 주석이 아님"
