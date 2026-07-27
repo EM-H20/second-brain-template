@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.3.0] — 2026-07-27
+
+### Features
+
+- auto-surface vault context at session start
+
 ## [v1.2.9] — 2026-07-23
 
 ### Features
