@@ -198,6 +198,12 @@ are preconfigured in `knowledge/.obsidian/graph.json` — they apply the moment 
 
 ## 🗂 Command reference
 
+These are **Claude Code** slash commands. **Codex has no slash commands** — call
+the same workflows with `$second-brain` or plain natural language, e.g.
+`/ingest-meeting` → "put this transcript in the vault". Every row below is
+reachable that way; the routing lives in `SECOND-BRAIN.md`, not in the command
+names.
+
 | Command | Role |
 |---|---|
 | `/setup-vault` | One-time initialization right after cloning |
@@ -499,6 +505,10 @@ npx github:EM-H20/second-brain-template
 
 ## 🗂 命令参考
 
+以下是 **Claude Code** 的斜杠命令。**Codex 没有斜杠命令** —— 用 `$second-brain`
+或自然语言调用同样的工作流，例如 `/ingest-meeting` → "把这份会议记录放进知识库"。
+下表每一行都能这样触达；路由定义在 `SECOND-BRAIN.md` 里，而不在命令名称上。
+
 | 命令 | 作用 |
 |---|---|
 | `/setup-vault` | clone 之后的一次性初始化 |
@@ -799,6 +809,11 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 
 ## 🗂 コマンドリファレンス
 
+以下は **Claude Code** のスラッシュコマンドである。**Codex にスラッシュコマンドは
+ない** — `$second-brain` か自然言語で同じワークフローを呼ぶ。例: `/ingest-meeting`
+→ 「この議事録をボールトに入れて」。下表のすべての行がその方法で到達でき、ルーティングは
+コマンド名ではなく `SECOND-BRAIN.md` に定義されている。
+
 | コマンド | 役割 |
 |---|---|
 | `/setup-vault` | clone 直後の 1 回だけの初期化 |
@@ -1098,6 +1113,11 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 ---
 
 ## 🗂 커맨드 레퍼런스
+
+아래는 **Claude Code** 슬래시 커맨드다. **Codex에는 슬래시 커맨드가 없다** —
+`$second-brain` 또는 자연어로 같은 워크플로우를 호출한다. 예: `/ingest-meeting`
+→ "이 회의록 볼트에 넣어줘". 아래 모든 행이 그렇게 도달 가능하며, 라우팅은
+커맨드 이름이 아니라 `SECOND-BRAIN.md`에 정의되어 있다.
 
 | 커맨드 | 역할 |
 |---|---|

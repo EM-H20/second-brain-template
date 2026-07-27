@@ -59,6 +59,8 @@ grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
 grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Codex repo skill에 마커 없음"
 # Codex는 저장소 파일로 훅을 등록할 수 없으므로, 같은 규칙이 읽히는 두 경로에 있어야 한다
 grep -q 'cluster-' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 클러스터 우선 읽기 지시 없음"
+# setup-vault 는 W 워크플로우가 아니라, 스킬이 직접 라우팅해야 Codex 에서 도달 가능하다
+grep -q 'setup' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 볼트 초기화 트리거 없음"
 grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없음"
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"

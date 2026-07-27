@@ -1,6 +1,6 @@
 ---
 name: second-brain
-description: Operate this repository's Markdown knowledge vault. Use when capturing a meeting, document, issue, completion report, decision, or lesson; recalling project context; checking conflicts or similar issues; rebuilding topic clusters; generating a vault-grounded report; or implementing from stored project knowledge. Triggers include capture/기억해, recall/꺼내줘, maintain/정리해, ingest, conflict check, similar issue, report, and build-from-vault requests.
+description: Operate this repository's Markdown knowledge vault. Use when capturing a meeting, document, issue, completion report, decision, or lesson; recalling project context; checking conflicts or similar issues; rebuilding topic clusters; generating a vault-grounded report; implementing from stored project knowledge; or verifying the vault right after cloning the template. Triggers include capture/기억해, recall/꺼내줘, maintain/정리해, ingest, conflict check, similar issue, report, build-from-vault, and vault setup/초기화/점검 requests.
 ---
 
 # Second Brain
@@ -16,6 +16,12 @@ description: Operate this repository's Markdown knowledge vault. Use when captur
    cannot load repo-scoped hooks, so do it yourself.
 3. Classify the user's intent and execute the matching workflow in
    `SECOND-BRAIN.md` end to end, including its General rules.
+   Vault setup is the one intent with no W-workflow: when the user asks to
+   initialise or check the vault after cloning the template, verify that the
+   `knowledge/` skeleton, note templates, topic vocabulary, and work log
+   documented in `SECOND-BRAIN.md` all exist. Report anything missing instead
+   of reconstructing it from memory, then explain how to open `knowledge/` as
+   an Obsidian vault.
 4. Search frontmatter first, narrow candidates with structured fields and
    `rg`, then open only final matches. Never scan `knowledge/_sources/` during
    retrieval.
