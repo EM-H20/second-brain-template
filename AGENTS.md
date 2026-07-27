@@ -20,6 +20,22 @@ Codex discovers the repository skill at `.agents/skills/second-brain/SKILL.md`;
 invoke it with natural language or `$second-brain`. `.codex/prompts/` is kept
 only for deprecated custom-prompt compatibility.
 
+## Session start (applies to every CLI)
+
+Before writing code or making a decision, read `knowledge/clusters/_topics.md`
+and the tail of `knowledge/log.md`. If the task touches any topic in that
+vocabulary, open `knowledge/clusters/cluster-<topic>.md` first — one file read
+gives you the active decisions, superseded decisions, issues, lessons, and key
+documents for that topic. See the "세션 시작 컨텍스트" rule in SECOND-BRAIN.md.
+
+Claude Code automates this with a SessionStart hook
+(`.claude/hooks/session-context.mjs`, registered in `.claude/settings.json`).
+**Codex has an equivalent hook engine, but it only loads hooks from
+`~/.codex/hooks.json` or from an installed plugin — never from a file committed
+to the repository.** A repo-scoped template therefore cannot register it for
+you. On Codex and any other CLI without repo-scoped hooks, follow the rule
+yourself: it is not optional just because nothing enforces it.
+
 If no command mechanism is available, plain natural language works: the
 workflows in SECOND-BRAIN.md are triggered by intent, not by command names.
 "이 회의 전사체 볼트에 넣어줘" must execute workflow W1 fully — including
@@ -45,5 +61,6 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 - Never delete decision history — use the supersede chain.
 - Keep frontmatter valid and schema-compliant on every write.
 - Vault files are the source of truth over chat memory.
-- Append every vault write to `knowledge/log.md` (append-only); read its
-  tail at session start to recover context.
+- Append every vault write to `knowledge/log.md` (append-only).
+- At session start, read `knowledge/clusters/_topics.md` and the tail of
+  `knowledge/log.md`, and open the matching cluster note before acting.

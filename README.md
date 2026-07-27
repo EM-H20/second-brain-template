@@ -198,6 +198,12 @@ are preconfigured in `knowledge/.obsidian/graph.json` — they apply the moment 
 
 ## 🗂 Command reference
 
+These are **Claude Code** slash commands. **Codex has no slash commands** — call
+the same workflows with `$second-brain` or plain natural language, e.g.
+`/ingest-meeting` → "put this transcript in the vault". Every row below is
+reachable that way; the routing lives in `SECOND-BRAIN.md`, not in the command
+names.
+
 | Command | Role |
 |---|---|
 | `/setup-vault` | One-time initialization right after cloning |
@@ -234,6 +240,8 @@ knowledge/
 SECOND-BRAIN.md   Workflow rules (W1–W8) — the heart of the system
 CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with existing projects)
 .claude/commands/ 12 slash commands (9 original + capture/recall/maintain)
+.claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
+.claude/settings.json hook registration (merges one entry if the file already exists)
 .agents/skills/second-brain/ Codex repo skill (auto-detected)
 .codex/prompts/   Legacy Codex custom prompts (deprecated)
 ```
@@ -256,6 +264,31 @@ to those rules. The supported interfaces are:
 
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
+
+**Check the vault at session start** is a rule in `SECOND-BRAIN.md`
+("세션 시작 컨텍스트") and it binds every CLI equally: read `clusters/_topics.md`
+and the tail of `log.md`, and if the task touches a listed topic, open that
+cluster note before writing code.
+
+**Claude Code automates it** — a session-start hook
+(`.claude/hooks/session-context.mjs`) is installed and registered, so relevant
+decisions, issues, and lessons surface without typing `/recall`.
+
+The hook works silently, so nothing appears on screen. To check that it runs,
+invoke it directly:
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+If the vault has at least one topic you get the JSON it would inject; an empty
+vault (zero topics) prints nothing — that is also correct.
+
+**Codex has an equivalent hook engine but cannot be automated here.** Codex
+loads hooks only from `~/.codex/hooks.json` or an installed plugin, never from a
+file committed to the repository — so a repo-scoped template has no way to
+register one. The same rule is therefore spelled out in `AGENTS.md` and
+`.agents/skills/second-brain/SKILL.md`. Same rule, different enforcement.
 
 ## 🛡 Safety and retrieval defaults
 
@@ -482,6 +515,10 @@ npx github:EM-H20/second-brain-template
 
 ## 🗂 命令参考
 
+以下是 **Claude Code** 的斜杠命令。**Codex 没有斜杠命令** —— 用 `$second-brain`
+或自然语言调用同样的工作流，例如 `/ingest-meeting` → "把这份会议记录放进知识库"。
+下表每一行都能这样触达；路由定义在 `SECOND-BRAIN.md` 里，而不在命令名称上。
+
 | 命令 | 作用 |
 |---|---|
 | `/setup-vault` | clone 之后的一次性初始化 |
@@ -518,6 +555,8 @@ knowledge/
 SECOND-BRAIN.md   工作流规则 (W1~W8) —— 系统的心脏
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突)
 .claude/commands/ 12 个斜杠命令 (原有 9 个 + capture/recall/maintain)
+.claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
+.claude/settings.json 钩子注册（文件已存在时只合并一个条目）
 .agents/skills/second-brain/ Codex 仓库技能（自动识别）
 .codex/prompts/   旧版 Codex 自定义提示词（已弃用）
 ```
@@ -539,6 +578,28 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
+
+**会话开始时先看知识库**是 `SECOND-BRAIN.md` 中的规则（"세션 시작 컨텍스트"），
+对所有 CLI 一视同仁：读取 `clusters/_topics.md` 与 `log.md` 的末尾；若本次任务
+涉及词表中的某个主题，就在写代码之前先打开该主题的 cluster 笔记。
+
+**Claude Code 会自动完成这一步** —— 会话启动钩子
+（`.claude/hooks/session-context.mjs`）已安装并注册，因此不必输入 `/recall`，
+相关的决策、问题与教训就会先于代码浮现。
+
+钩子静默运行，屏幕上不会有任何提示。想确认它是否生效，直接执行：
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+知识库中只要有一个主题，就会输出将要注入的 JSON；空知识库（0 个主题）不输出任何
+内容 —— 这同样是正确的。
+
+**Codex 同样具备钩子引擎，但这里无法自动化。** Codex 只从 `~/.codex/hooks.json`
+或已安装的插件加载钩子，绝不从提交进仓库的文件加载 —— 以仓库为作用域的模板因此
+无法替你注册。所以同一条规则也写进了 `AGENTS.md` 和
+`.agents/skills/second-brain/SKILL.md`。规则相同，只是强制手段不同。
 
 ## 🛡 安全与检索默认值
 
@@ -767,6 +828,11 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 
 ## 🗂 コマンドリファレンス
 
+以下は **Claude Code** のスラッシュコマンドである。**Codex にスラッシュコマンドは
+ない** — `$second-brain` か自然言語で同じワークフローを呼ぶ。例: `/ingest-meeting`
+→ 「この議事録をボールトに入れて」。下表のすべての行がその方法で到達でき、ルーティングは
+コマンド名ではなく `SECOND-BRAIN.md` に定義されている。
+
 | コマンド | 役割 |
 |---|---|
 | `/setup-vault` | clone 直後の 1 回だけの初期化 |
@@ -803,6 +869,8 @@ knowledge/
 SECOND-BRAIN.md   ワークフロー規則 (W1〜W8) — システムの心臓部
 CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトとの衝突を防ぐ)
 .claude/commands/ スラッシュコマンド 12 個 (既存 9 個 + capture/recall/maintain)
+.claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
+.claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
 .agents/skills/second-brain/ Codex リポジトリスキル（自動認識）
 .codex/prompts/   旧 Codex カスタムプロンプト（非推奨）
 ```
@@ -825,6 +893,30 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
+
+**セッション開始時にまずボールトを見る**というルールは `SECOND-BRAIN.md` の
+「세션 시작 컨텍스트」にあり、すべての CLI に等しく適用される。`clusters/_topics.md`
+と `log.md` の末尾を読み、今回のタスクが語彙内の主題に触れるなら、コードを書く前に
+その cluster ノートを開く。
+
+**Claude Code はこれを自動化する** — セッション開始フック
+（`.claude/hooks/session-context.mjs`）がインストール・登録されるため、`/recall` を
+打たなくても関連する決定・課題・教訓が先に浮かび上がる。
+
+フックは静かに動くため画面には何も出ない。動いているか確かめるには直接実行する:
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+主題が 1 つでもあれば注入される JSON が出力され、空のボールト（主題 0 件）では何も
+出力されない — 後者も正常である。
+
+**Codex にも同等のフック機構はあるが、ここでは自動化できない。** Codex は
+`~/.codex/hooks.json` かインストール済みプラグインからしかフックを読まず、リポジトリに
+コミットされたファイルからは読まない — リポジトリ単位のテンプレートでは登録して
+やれないということだ。そのため同じルールを `AGENTS.md` と
+`.agents/skills/second-brain/SKILL.md` にも明記した。ルールは同じで、強制手段だけが違う。
 
 ## 🛡 安全性と検索のデフォルト
 
@@ -1050,6 +1142,11 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 
 ## 🗂 커맨드 레퍼런스
 
+아래는 **Claude Code** 슬래시 커맨드다. **Codex에는 슬래시 커맨드가 없다** —
+`$second-brain` 또는 자연어로 같은 워크플로우를 호출한다. 예: `/ingest-meeting`
+→ "이 회의록 볼트에 넣어줘". 아래 모든 행이 그렇게 도달 가능하며, 라우팅은
+커맨드 이름이 아니라 `SECOND-BRAIN.md`에 정의되어 있다.
+
 | 커맨드 | 역할 |
 |---|---|
 | `/setup-vault` | clone 직후 1회 초기화 |
@@ -1086,6 +1183,8 @@ knowledge/
 SECOND-BRAIN.md   워크플로우 규칙 (W1~W8) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
 .claude/commands/ 슬래시 커맨드 12개 (기존 9개 + capture/recall/maintain)
+.claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
+.claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
 .agents/skills/second-brain/ Codex 저장소 스킬 (자동 인식)
 .codex/prompts/   레거시 Codex 커스텀 프롬프트 (deprecated)
 ```
@@ -1108,6 +1207,28 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
+
+**세션 시작에 볼트를 먼저 본다**는 규칙은 `SECOND-BRAIN.md`의 "세션 시작 컨텍스트"에
+있고 모든 CLI에 동일하게 적용된다: `clusters/_topics.md`와 `log.md` 꼬리를 읽고,
+걸리는 주제가 있으면 그 클러스터 노트를 코드보다 먼저 연다.
+
+**Claude Code는 이 읽기를 자동화한다** — 세션 시작 훅(`.claude/hooks/session-context.mjs`)이
+설치·등록되어, `/recall`을 치지 않아도 관련 결정·이슈·교훈이 먼저 떠오른다.
+
+훅은 조용히 동작하므로 화면에 아무것도 뜨지 않는다. 도는지 확인하려면 직접 실행한다:
+
+```bash
+node .claude/hooks/session-context.mjs
+```
+
+주제가 하나라도 있으면 주입될 JSON이 출력되고, 빈 볼트(토픽 0개)면 아무것도
+출력되지 않는다 — 후자도 정상이다.
+
+**Codex도 훅 엔진이 있지만 자동화할 수 없다.** Codex는 `~/.codex/hooks.json`이나
+설치된 플러그인에서만 훅을 읽고, 저장소에 커밋된 파일에서는 읽지 않는다 — 레포에
+파일을 떨구는 이 템플릿으로는 등록해 줄 방법이 없다. 그래서 Codex 쪽은
+`AGENTS.md`와 `.agents/skills/second-brain/SKILL.md`에 같은 규칙을 명시해 두었다.
+규칙은 같고, 강제 수단만 다르다.
 
 ## 🛡 안전·검색 기본값
 

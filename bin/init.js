@@ -11,6 +11,8 @@ const MARKER = '<!-- second-brain-template -->';
 const IMPORT_LINE = '@SECOND-BRAIN.md';
 const AGENTS_POINTER = '**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.';
 const AUTO_YES = process.argv.includes('-y') || process.argv.includes('--yes');
+// settings.json 병합 멱등성 판정 키 — 경로가 바뀌면 이 상수도 함께 바꿔야 한다
+const HOOK_ID = '.claude/hooks/session-context.mjs';
 
 if (path.resolve(SRC) === path.resolve(DEST)) {
   console.error('템플릿 저장소 자신에게는 설치할 수 없습니다. 대상 프로젝트 루트에서 실행하세요.');
@@ -56,8 +58,12 @@ function write(to, content) {
   fs.writeFileSync(to, content);
 }
 
+// 마커는 각 파일 형식의 주석 문법을 따라야 한다.
+// .json 은 주석을 넣을 수 없으므로 이 방식 자체를 쓸 수 없다 (planSettings 참고).
 function ownedMarker(rel) {
-  return /\.ya?ml$/.test(rel) ? '# second-brain-template' : MARKER;
+  if (/\.ya?ml$/.test(rel)) return '# second-brain-template';
+  if (/\.[cm]?js$/.test(rel)) return '// second-brain-template';
+  return MARKER;
 }
 
 // ── 1단계: 현재 프로젝트 분석 (아무것도 쓰지 않음) ──────────────────
@@ -112,9 +118,28 @@ function planAgentsMd() {
   return { kind: 'agents-append', rel: 'AGENTS.md', label: '포인터 한 줄 추가' };
 }
 
+// .claude/settings.json 은 사용자 소유 파일이다 (permissions, 다른 플러그인의 훅, env).
+// 통째로 덮지 않고 SessionStart 항목 하나만 멱등하게 병합한다 —
+// planClaudeMd/planAgentsMd 가 CLAUDE.md·AGENTS.md 에 한 줄만 덧붙이는 것과 같은 방식.
+function planSettings() {
+  const rel = '.claude/settings.json';
+  const to = target(rel);
+  if (!fs.existsSync(to)) return { kind: 'copy', rel, label: '신규' };
+  let cur;
+  try {
+    cur = JSON.parse(fs.readFileSync(to, 'utf8'));
+  } catch (e) {
+    return { kind: 'settings-unparsable', rel };
+  }
+  if (!cur || typeof cur !== 'object' || Array.isArray(cur)) return { kind: 'settings-unparsable', rel };
+  const hooks = cur.hooks && typeof cur.hooks === 'object' && !Array.isArray(cur.hooks) ? cur.hooks : {};
+  if (JSON.stringify(hooks).includes(HOOK_ID)) return { kind: 'keep', rel };
+  return { kind: 'settings-merge', rel, label: 'SessionStart 훅 1개 추가 (.bak 백업)' };
+}
+
 function buildPlan() {
   const plan = [planOwned('SECOND-BRAIN.md')];
-  for (const dir of ['.claude/commands', '.codex/prompts']) {
+  for (const dir of ['.claude/commands', '.claude/hooks', '.codex/prompts']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
   for (const f of listFiles(path.join(SRC, '.agents/skills/second-brain'))) {
@@ -126,6 +151,7 @@ function buildPlan() {
     plan.push(isScaffold(rel) ? planScaffold(rel) : planIfMissing(rel));
   }
   plan.push({ ...planIfMissing('knowledge/_sources/.gitignore'), srcRel: 'bin/assets/sources.gitignore' });
+  plan.push(planSettings());
   plan.push(planClaudeMd());
   plan.push(planAgentsMd());
   return plan;
@@ -140,8 +166,10 @@ function printAnalysis(plan) {
   const scaffolds = plan.filter((a) => a.kind === 'scaffold-update').length;
   if (scaffolds) console.log('  갱신(.bak 백업): ' + scaffolds + '개');
   if (keeps) console.log('  유지(기존 파일, 건드리지 않음): ' + keeps + '개');
-  plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append')
+  plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append' || a.kind === 'settings-merge')
     .forEach((a) => console.log('  ' + a.rel + ': ' + a.label));
+  plan.filter((a) => a.kind === 'settings-unparsable')
+    .forEach((a) => console.log('  ! ' + a.rel + ' — JSON 파싱 실패, 훅 등록을 건너뜁니다'));
   plan.filter((a) => a.kind === 'warn')
     .forEach((a) => console.log('  ! ' + a.rel + ' — 마커 없는 기존 파일, 건너뜀 (필요하면 직접 병합)'));
 }
@@ -177,8 +205,17 @@ function applyAction(a) {
     write(to, fs.readFileSync(to, 'utf8').trimEnd() + '\n\n' + IMPORT_LINE + '\n');
   } else if (a.kind === 'agents-append') {
     write(to, fs.readFileSync(to, 'utf8').trimEnd() + '\n\n' + AGENTS_POINTER + '\n');
+  } else if (a.kind === 'settings-merge') {
+    const raw = fs.readFileSync(to);
+    const cur = JSON.parse(raw.toString('utf8'));
+    const src = JSON.parse(fs.readFileSync(path.join(SRC, '.claude/settings.json'), 'utf8'));
+    if (!cur.hooks || typeof cur.hooks !== 'object' || Array.isArray(cur.hooks)) cur.hooks = {};
+    cur.hooks.SessionStart = Array.isArray(cur.hooks.SessionStart) ? cur.hooks.SessionStart : [];
+    cur.hooks.SessionStart.push(src.hooks.SessionStart[0]);
+    write(to + '.bak', raw);
+    write(to, JSON.stringify(cur, null, 2) + '\n');
   }
-  // 'keep' / 'warn': 아무것도 하지 않음
+  // 'keep' / 'warn' / 'settings-unparsable': 아무것도 하지 않는다
 }
 
 const plan = buildPlan();
@@ -201,8 +238,31 @@ confirm((ok) => {
     backups.forEach((a) => console.log('  ' + a.rel + '.bak'));
     console.log('');
   }
+  const settings = plan.find((a) => a.rel === '.claude/settings.json');
+  if (settings && (settings.kind === 'copy' || settings.kind === 'settings-merge')) {
+    console.log('✓ 세션 컨텍스트 훅 등록됨\n');
+    console.log('  이제 Claude Code 세션을 시작하면 볼트의 주제 목록과 최근 작업이');
+    console.log('  자동으로 주입됩니다. /recall 을 치지 않아도 관련 결정·이슈·교훈이');
+    console.log('  코드를 쓰기 전에 먼저 떠오릅니다.\n');
+    if (settings.kind === 'settings-merge') {
+      console.log('  기존 설정 백업: .claude/settings.json.bak\n');
+    }
+  } else if (settings && settings.kind === 'settings-unparsable') {
+    console.log('! .claude/settings.json 을 파싱하지 못해 훅 등록을 건너뛰었습니다.');
+    console.log('  훅 스크립트는 설치됐습니다. 아래를 "hooks" 에 직접 추가하세요:\n');
+    console.log('  "SessionStart": [');
+    console.log('    { "hooks": [{ "type": "command",');
+    console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\\"", "timeout": 5 }] }');
+    console.log('  ]\n');
+  }
+  // 1~2는 clone 직후 1회 하는 초기 세팅이라 슬래시 커맨드가 맞고,
+  // 3부터가 일상 사용이다. 그 경계를 흐리면 Codex 사용자는 없는 커맨드를 찾게 된다.
   console.log('다음 단계:');
-  console.log('  1. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
-  console.log('  2. Claude Code에서 /ingest-meeting 으로 첫 회의록 넣기');
-  console.log('  3. (선택) /setup-vault 로 프로젝트 정보 반영');
+  console.log('  1. 볼트 초기화 — /setup-vault   (Codex: "볼트 초기화해줘")');
+  console.log('  2. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
+  console.log('  3. 이후엔 자연어면 충분:');
+  console.log('       "이 회의록 기억해"  ·  "인증 관련 꺼내줘"  ·  "볼트 정리해"');
+  console.log('     (슬래시 커맨드 12개는 파워유저용 별칭 — README 참고)\n');
+  console.log('훅이 도는지 확인: node .claude/hooks/session-context.mjs');
+  console.log('  주제가 있으면 주입될 JSON이, 빈 볼트면 아무것도 출력되지 않습니다.');
 });
