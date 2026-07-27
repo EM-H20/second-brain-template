@@ -131,7 +131,8 @@ function planSettings() {
   } catch (e) {
     return { kind: 'settings-unparsable', rel };
   }
-  const hooks = cur && cur.hooks ? cur.hooks : {};
+  if (!cur || typeof cur !== 'object' || Array.isArray(cur)) return { kind: 'settings-unparsable', rel };
+  const hooks = cur.hooks && typeof cur.hooks === 'object' && !Array.isArray(cur.hooks) ? cur.hooks : {};
   if (JSON.stringify(hooks).includes(HOOK_ID)) return { kind: 'keep', rel };
   return { kind: 'settings-merge', rel, label: 'SessionStart 훅 1개 추가 (.bak 백업)' };
 }
@@ -208,7 +209,7 @@ function applyAction(a) {
     const raw = fs.readFileSync(to);
     const cur = JSON.parse(raw.toString('utf8'));
     const src = JSON.parse(fs.readFileSync(path.join(SRC, '.claude/settings.json'), 'utf8'));
-    cur.hooks = cur.hooks || {};
+    if (!cur.hooks || typeof cur.hooks !== 'object' || Array.isArray(cur.hooks)) cur.hooks = {};
     cur.hooks.SessionStart = Array.isArray(cur.hooks.SessionStart) ? cur.hooks.SessionStart : [];
     cur.hooks.SessionStart.push(src.hooks.SessionStart[0]);
     write(to + '.bak', raw);

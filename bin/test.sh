@@ -231,6 +231,43 @@ grep -q 'broken json' .claude/settings.json || fail "깨진 settings 를 덮어�
 grep -q '파싱하지 못해' out.log || fail "폴백 안내 없음"
 grep -q 'CLAUDE_PROJECT_DIR' out.log || fail "복붙 스니펫 없음"
 [ -f .claude/hooks/session-context.js ] || fail "폴백인데 훅 스크립트도 미설치"
+
+# 8e. 순수 객체가 아닌 JSON(null)은 크래시하지 않고 파싱 실패와 동일하게 폴백한다
+mkdir -p "$TMP/settings4/.claude" && cd "$TMP/settings4"
+printf 'null\n' > .claude/settings.json
+if node "$ROOT/bin/init.js" -y > out.log 2>&1; then EC=0; else EC=$?; fi
+[ "$EC" = "0" ] || fail "settings 가 null 이면 installer 가 비정상 종료"
+[ -f CLAUDE.md ] || fail "settings 가 null 이라 나머지 설치(CLAUDE.md)가 중단됨"
+[ "$(cat .claude/settings.json)" = "null" ] || fail "settings 가 null 인데 파일이 변경됨"
+[ ! -f .claude/settings.json.bak ] || fail "settings 가 null 인데 .bak 생성"
+grep -q '파싱하지 못해' out.log || fail "null settings 에 폴백 안내 없음"
+if grep -q '훅 등록됨' out.log; then fail "null settings 인데 성공했다고 안내함"; fi
+
+# 8f. hooks 가 객체가 아닌 경우(문자열) 크래시하지 않고 안전하게 객체로 교체해 병합한다
+mkdir -p "$TMP/settings5/.claude" && cd "$TMP/settings5"
+printf '{"hooks":"x"}\n' > .claude/settings.json
+if node "$ROOT/bin/init.js" -y > out.log 2>&1; then EC=0; else EC=$?; fi
+[ "$EC" = "0" ] || fail "settings.hooks 가 문자열이면 installer 가 비정상 종료"
+[ -f CLAUDE.md ] || fail "settings.hooks 가 문자열이라 나머지 설치가 중단됨"
+[ -f .claude/settings.json.bak ] || fail "settings.hooks 문자열 케이스에 .bak 백업 없음"
+grep -q '"hooks":"x"' .claude/settings.json.bak || fail ".bak 에 원본 내용 없음"
+node -e '
+const s = require("./.claude/settings.json");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("훅이 성공했다고 안내하는데 실제로는 누락됨");
+' || fail "settings.hooks 문자열인데 훅이 조용히 유실됨"
+
+# 8g. hooks 가 배열인 경우 크래시/조용한 유실 없이 안전하게 객체로 교체해 병합한다
+mkdir -p "$TMP/settings6/.claude" && cd "$TMP/settings6"
+printf '{"hooks":[]}\n' > .claude/settings.json
+if node "$ROOT/bin/init.js" -y > out.log 2>&1; then EC=0; else EC=$?; fi
+[ "$EC" = "0" ] || fail "settings.hooks 가 배열이면 installer 가 비정상 종료"
+[ -f CLAUDE.md ] || fail "settings.hooks 가 배열이라 나머지 설치가 중단됨"
+[ -f .claude/settings.json.bak ] || fail "settings.hooks 배열 케이스에 .bak 백업 없음"
+node -e '
+const s = require("./.claude/settings.json");
+if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.js")) throw new Error("hooks 가 배열이라 JSON.stringify 가 훅을 조용히 삭제함");
+' || fail "settings.hooks 배열인데 훅이 조용히 유실됨"
+
 echo "케이스 8 OK"
 
 # ── 케이스 7: 세션 컨텍스트 훅 ──────────────────────────
