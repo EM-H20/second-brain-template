@@ -35,8 +35,9 @@ head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가
 # .mjs는 항상 모듈 모드로 파싱되므로 Annex B 문법(<!-- 를 한 줄 주석으로 허용)이
 # 적용되지 않는다 — node --check 는 이제 HTML 마커가 붙으면 실제로 문법 오류로
 # 잡아낸다. 그래도 회귀 방어의 진짜 가드는 아래 부재(absence) 단언이다: 위 grep은
-# 마커가 "있다"는 것만 확인하는데, 훅 소스 3번째 줄 자체가 `// second-brain-template`
-# 로 시작해서 실제로 어떤 마커가 붙었는지와 무관하게 항상 통과한다. 지우지 말 것.
+# 마커가 "있다"는 것만 확인하는데, 훅 소스의 첫 주석 줄 자체가
+# `// second-brain-template` 로 시작해서 실제로 어떤 마커가 붙었는지와 무관하게
+# 항상 통과한다. 지우지 말 것.
 [ -f .claude/hooks/session-context.mjs ] || fail "훅 스크립트 미설치"
 node --check .claude/hooks/session-context.mjs || fail "훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
 grep -q '^// second-brain-template' .claude/hooks/session-context.mjs || fail "JS 마커가 // 주석이 아님"

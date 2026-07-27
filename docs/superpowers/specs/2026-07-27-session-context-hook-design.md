@@ -137,8 +137,9 @@
 
 `bin/init.js:59-61`의 `ownedMarker()`는 `.yml`/`.yaml`에만 `#` 주석을 쓰고
 나머지는 전부 HTML 주석(`<!-- second-brain-template -->`)을 붙인다. 지금까지
-템플릿 소유 파일이 모두 `.md`라 문제가 없었으나, `.js` 파일에 이 마커가 붙으면
-문법 오류가 난다. `.js` → `// second-brain-template` 분기를 추가한다.
+템플릿 소유 파일이 모두 `.md`라 문제가 없었으나, JS 파일에 이 마커가 붙으면
+문법 오류가 난다. `/\.[cm]?js$/` → `// second-brain-template` 분기를 추가한다
+(훅은 `.mjs`이며, 정규식은 `.js`/`.cjs`도 함께 덮는다).
 
 `.json`은 주석을 넣을 수 없으므로 마커 방식 자체를 쓸 수 없다. `settings.json`을
 아래처럼 병합 방식으로 다루는 이유이기도 하다.
@@ -247,7 +248,8 @@
 
 | 조건 | 기대 |
 |---|---|
-| `.js` 소유 파일 설치 | `//` 마커가 붙고 `node --check` 통과 |
+| `.mjs` 소유 파일 설치 | `//` 마커가 붙고 HTML 마커는 없으며 `node --check` 통과 |
+| `"type":"module"` 대상 프로젝트 | 훅이 exit 0, 유효 JSON 출력 |
 | `settings.json` 없음 | 생성되고 훅이 등록됨 |
 | `settings.json`에 permissions만 있음 | permissions 보존, 훅 추가, `.bak` 생성 |
 | 이미 우리 훅이 등록됨 | 파일 무변경, `.bak` 미생성, 출력 없음 |
@@ -260,7 +262,7 @@
 허용)은 모듈 모드에 적용되지 않는다 — 마커 회귀로 HTML 마커가 붙으면
 `node --check`가 실제로 문법 오류로 잡아낸다. 그래도 진짜 가드는
 `grep -q '^// second-brain-template'`에 더해, HTML 마커의 **부재**를 확인하는
-`grep`이다: 훅 소스 3번째 줄 자체가 `// second-brain-template`로 시작해서
+`grep`이다: 훅 소스의 첫 주석 줄 자체가 `// second-brain-template`로 시작해서
 긍정(존재) 단언만으로는 어떤 마커가 실제로 붙었는지와 무관하게 항상 통과한다.
 테스트를 정리할 때 이 부재 단언을 지우면 회귀 방어가 사라진다.
 

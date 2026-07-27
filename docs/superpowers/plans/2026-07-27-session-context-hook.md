@@ -1,10 +1,13 @@
 # 세션 컨텍스트 훅 구현 계획
 
-> **실행 완료. 이 문서의 코드 블록을 그대로 복사하지 말 것.** 구현 중 리뷰가
-> 세 군데에서 이 계획의 결함을 잡아 설계가 바뀌었다: (1) `log.md`는 앞부분을
-> 자른 뒤 꼬리를 뽑으면 안 되고 순서가 반대여야 한다, (2) `settings.json`
-> 병합에 모양 검사(`null`/배열/원시값)가 필요하다, (3) `node --check`는 `.js`
-> 마커 회귀를 잡지 못한다. 최종 설계는
+> **실행 완료. 이 문서의 코드 블록을 그대로 복사하지 말 것 — 아래 Task 1의
+> 소스는 CommonJS이고 실제로 배포된 것은 ESM이다.** 구현 중 리뷰가 네 군데에서
+> 이 계획의 결함을 잡아 설계가 바뀌었다: (1) `log.md`는 앞부분을 자른 뒤 꼬리를
+> 뽑으면 안 되고 순서가 반대여야 한다, (2) `settings.json` 병합에 모양
+> 검사(`null`/배열/원시값)가 필요하다, (3) 마커 회귀 가드로 지정한 긍정 `grep`은
+> 훅 자신의 첫 주석 줄에 걸려 아무것도 지키지 못한다 — HTML 마커의 부재를
+> 확인해야 한다, (4) `.js` + `require()`는 `"type":"module"` 대상 프로젝트에서
+> 모듈 로드 시점에 죽는다 — 훅은 ESM 문법의 `.mjs`여야 한다. 최종 설계는
 > [스펙](../specs/2026-07-27-session-context-hook-design.md)을 볼 것.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
