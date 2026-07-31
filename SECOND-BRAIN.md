@@ -24,6 +24,7 @@ knowledge/
 ├── reports/      # generated reports             YYYY-MM-DD-<slug>.md
 ├── clusters/     # topic index notes             cluster-<topic-slug>.md
 ├── lessons/      # reusable work-rules          LSN-NNNN-<slug>.md
+├── _bases/       # Obsidian Bases views (human-facing tables, not search targets)
 ├── _templates/   # note templates (do not edit during normal work)
 └── _sources/     # ingested originals, verbatim (excluded from search & graph)
 ```
@@ -80,7 +81,9 @@ Type-specific keys:
 - index: 볼트 진입점. `status: active`; 검색 후보나 cluster `members`에는 세지 않는다.
 
 `cluster`는 복수 `topics` 대신 단일 `topic`을 사용한다. `index.md`, `log.md`,
-folder `README.md`, `clusters/_topics.md`는 운영 파일이며 콘텐츠 검색 후보에서 제외한다.
+folder `README.md`, `clusters/_topics.md`, `_bases/*.base`는 운영 파일이며 콘텐츠
+검색 후보에서 제외한다. `_bases/`는 사람이 Obsidian에서 보는 표 뷰일 뿐이며,
+에이전트의 회수 경로는 언제나 frontmatter grep이다 — base 파일을 읽어서 노트를 찾지 않는다.
 
 `source:` (meeting/issue/completion-report/doc): 원본의 위치. 텍스트 원본을
 보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.
@@ -118,7 +121,7 @@ Given a transcript (file or pasted text):
    cluster notes (W2, incremental).
 5. Add `related` wikilinks to earlier meetings/decisions on the same topics.
 
-### W2 — Clustering (`/cluster`, and incrementally during W1)
+### W2 — Clustering & integrity (`/cluster`, and incrementally during W1)
 
 A cluster note (`clusters/cluster-<topic>.md`) is a human-readable index:
 what this topic is, timeline of meetings that touched it, list of decisions
@@ -126,9 +129,34 @@ what this topic is, timeline of meetings that touched it, list of decisions
 
 - Incremental (during ingestion): update only the clusters whose topics
   appear in the new note.
-- Full (`/cluster`): rescan all frontmatter, rebuild every cluster note,
-  merge topics that turned out to be duplicates (update `_topics.md` and
-  retag affected notes).
+- Full (`/cluster`): rescan all frontmatter, **run the integrity check below**,
+  rebuild every cluster note, merge topics that turned out to be duplicates
+  (update `_topics.md` and retag affected notes).
+
+**무결성 검사 (full 패스에서만).** 이 볼트의 회수는 전적으로 frontmatter가 유효하고
+wikilink가 실재한다는 전제 위에 서 있다. YAML 한 줄이 깨지면 그 노트는 오류 없이
+조용히 검색에서 사라진다 — 그래서 주기적 검사가 필요하다. full 패스는 이미 전체
+frontmatter를 스캔하므로 추가 비용 없이 같이 본다. 검사 항목:
+
+1. **frontmatter** — YAML 파싱 실패, type별 필수 키 누락, 해당 type에 없는 `status` 값
+2. **wikilink** — `related`/`resolution`/`resolves` 및 cluster·index 본문의 `[[...]]`
+   중 실재하지 않는 노트를 가리키는 것
+3. **supersede 체인 대칭** — A에 `superseded_by: B`가 있으면 B에 `supersedes: A`가
+   있어야 한다. 한쪽만 있으면 최신성 판정(General rules)이 깨진다.
+   대상: decision, doc, lesson
+4. **id 무결성** — 폴더 내 `NNNN` 중복, 파일명의 id와 frontmatter `id` 불일치
+5. **토픽 어휘** — 노트가 쓰는 `topics`/`topics_ref` 슬러그 중 `_topics.md`에 없는 것,
+   그리고 `_topics.md`에 등재됐지만 아무 노트도 안 쓰는 것
+6. **cluster 정합** — `members:` 수와 실제 core-`topics` 노트 수 불일치, 어떤 클러스터
+   에도 안 잡힌 노트, `index.md`에 링크되지 않은 클러스터
+7. **source 경로** — `source:`가 로컬 `_sources/...` 경로인데 그 파일이 없는 경우
+   (경로 존재만 확인한다. `_sources/` 본문은 열지 않는다)
+
+**검사는 절대 자동 수정하지 않는다.** 발견 항목을 파일 경로와 이유와 함께 보고하고,
+고칠지는 사용자가 정한다 — 결정을 조용히 덮지 않는 W4와 같은 이유다. 고아 노트는
+의도적일 수 있고, frontmatter 수정은 검색 결과를 바꾼다. 0건이면 "무결성 이상 없음"
+한 줄로 끝낸다. 수정을 승인받아 실제로 고친 경우에만 `log.md`에 기록한다 (검사 자체는
+읽기 전용이므로 로그를 남기지 않는다).
 
 ### W3 — Context-driven build (`/build`)
 

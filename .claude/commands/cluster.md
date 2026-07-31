@@ -1,9 +1,14 @@
 ---
-description: 볼트 전체를 재스캔해 주제 클러스터를 재구성하고 중복 토픽을 병합
+description: 볼트 전체를 재스캔해 무결성을 검사하고 주제 클러스터를 재구성 + 중복 토픽 병합
 ---
 
 Read `SECOND-BRAIN.md` completely, then execute a full W2 pass and its General
 rules.
 
-Propose topic merges before applying them. Rebuild every cluster section,
+Run the integrity check first and report every finding with its file path and
+reason — broken frontmatter, dead wikilinks, asymmetric supersede chains, id
+collisions, unknown topic slugs, cluster/index drift, missing source files.
+Fix nothing without approval.
+
+Then propose topic merges before applying them. Rebuild every cluster section,
 including documents and lessons, and update `knowledge/index.md` when needed.

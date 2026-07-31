@@ -27,6 +27,7 @@ grep -q '신뢰할 수 없는 데이터' SECOND-BRAIN.md || fail "외부 입력 
 grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 미기재"
 grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 grep -q 'W8' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W8 워크플로우 없음"
+grep -q '무결성 검사' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W2 무결성 검사 없음"
 grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우팅 없음"
 # 세션 시작 규칙은 툴 중립이어야 한다 — 훅이 없는 CLI(Codex 등)가 지킬 근거가 여기 있다.
 grep -q '세션 시작 컨텍스트' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 세션 시작 규칙 없음"
@@ -90,6 +91,12 @@ grep -q '논의 기록 없음' knowledge/_templates/decision.md || fail "결정 
 grep -q '^status: resolved' knowledge/_templates/completion-report.md || fail "완료 보고서 status 누락"
 [ -f knowledge/lessons/README.md ] || fail "lessons/ 스켈레톤 없음"
 [ -f knowledge/.obsidian/graph.json ] || fail "graph.json 미설치"
+[ -f knowledge/_bases/README.md ] || fail "_bases 스켈레톤 없음"
+[ -f knowledge/_bases/vault.base ] || fail "_bases/vault.base 미설치"
+# 노트 타입을 추가하면 base 뷰도 따라와야 한다 — 이 루프가 그 드리프트를 잡는다
+for t in decision issue doc lesson meeting; do
+  grep -q "note.type == \"$t\"" knowledge/_bases/vault.base || fail "vault.base에 $t 뷰 없음"
+done
 [ -f knowledge/_sources/README.md ] || fail "_sources 스켈레톤 없음"
 [ -f knowledge/_sources/meetings/README.md ] || fail "_sources/meetings 없음"
 [ -f knowledge/_sources/docs/README.md ] || fail "_sources/docs 없음"

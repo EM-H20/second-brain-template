@@ -44,7 +44,7 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Intent | Workflow |
 |---|---|
 | Ingest a meeting transcript | W1 (includes W4 conflict check) |
-| Reorganize topic clusters | W2 |
+| Reorganize topic clusters | W2 (full pass includes the integrity check) |
 | Implement from vault context | W3 (includes W4 + W6 checks) |
 | Check an opinion against past decisions | W4 |
 | Generate a report from a given format | W5 |
@@ -53,7 +53,7 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Find similar past issues | W6 recurrence detection |
 | Capture a reusable work rule / lesson | W8 |
 | Recall topic context | W3 + W4 + W6 + W8 |
-| Maintain the vault | W2 full + W8 |
+| Maintain the vault | W2 full (integrity check + re-cluster) + W8 |
 
 ## Non-negotiables (repeated here for emphasis)
 

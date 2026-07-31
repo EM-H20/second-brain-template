@@ -1,0 +1,112 @@
+properties:
+  file.name:
+    displayName: 노트
+  note.created:
+    displayName: 생성일
+  note.topics:
+    displayName: 주제
+  note.status:
+    displayName: 상태
+  note.supersedes:
+    displayName: 대체함
+  note.superseded_by:
+    displayName: 대체됨
+  note.symptoms:
+    displayName: 증상
+  note.root_cause:
+    displayName: 근본 원인
+  note.resolution:
+    displayName: 완료 리포트
+  note.doc_type:
+    displayName: 문서 종류
+  note.authority:
+    displayName: 권위
+  note.trigger:
+    displayName: 소환 조건
+
+views:
+  - type: table
+    name: 활성 결정
+    filters:
+      and:
+        - 'note.type == "decision"'
+        - 'note.status == "active"'
+    order:
+      - file.name
+      - note.created
+      - note.topics
+      - note.supersedes
+
+  - type: table
+    name: 대체된 결정
+    filters:
+      and:
+        - 'note.type == "decision"'
+        - 'note.status == "superseded"'
+    order:
+      - file.name
+      - note.created
+      - note.superseded_by
+      - note.topics
+
+  - type: table
+    name: 열린 이슈
+    filters:
+      and:
+        - 'note.type == "issue"'
+        - 'note.status == "open"'
+    order:
+      - file.name
+      - note.created
+      - note.symptoms
+      - note.root_cause
+      - note.topics
+
+  - type: table
+    name: 해결된 이슈
+    filters:
+      and:
+        - 'note.type == "issue"'
+        - 'note.status == "resolved"'
+    order:
+      - file.name
+      - note.created
+      - note.symptoms
+      - note.resolution
+
+  - type: table
+    name: 문서
+    filters:
+      and:
+        - 'note.type == "doc"'
+        - 'note.status == "active"'
+    order:
+      - file.name
+      - note.authority
+      - note.doc_type
+      - note.created
+      - note.topics
+
+  - type: table
+    name: 교훈
+    filters:
+      and:
+        - 'note.type == "lesson"'
+        - 'note.status == "active"'
+    order:
+      - file.name
+      - note.trigger
+      - note.topics
+      - note.created
+
+  - type: table
+    name: 회의
+    filters:
+      and:
+        - 'note.type == "meeting"'
+    order:
+      - file.name
+      - note.created
+      - note.attendees
+      - note.decisions
+      - note.topics
