@@ -183,13 +183,18 @@ are preconfigured in `knowledge/.obsidian/graph.json` — they apply the moment 
   Topic clusters naturally group together
 - **Backlinks panel**: open a decision note and you see, in reverse, which meetings and issues reference it
 - **`knowledge/index.md`**: the entrance to the vault. Start here and you won't get lost
+- **`knowledge/_bases/vault.base`**: Bases views over your frontmatter —
+  active decisions / superseded decisions / open issues / resolved issues /
+  docs by authority / lessons / meetings. Enable the core **Bases** plugin on
+  Obsidian 1.9+ and it just opens
 
 ### Optional plugins
 
 | Plugin | Purpose |
 |---|---|
 | **Obsidian Git** | Automatic commit/push backup of the vault (configurable interval) |
-| **Dataview** | Frontmatter-based queries — dynamic tables like "all open issues" or "active decisions" |
+| **Bases** (core) | Frontmatter table views. `_bases/vault.base` ships with the template — nothing to install |
+| **Dataview** | Only if Bases isn't enough — inline queries and complex aggregation |
 
 > ⚠️ `.obsidian/workspace*` is already in `.gitignore`, so your personal editor state
 > doesn't pollute the repository.
@@ -209,7 +214,7 @@ names.
 | `/setup-vault` | One-time initialization right after cloning |
 | `/ingest-meeting` | Transcript → meeting note + decision extraction + cluster update + conflict check |
 | `/ingest-doc` | Turn PRDs, specs, and articles into knowledge — authority/relevance weighting + decision extraction |
-| `/cluster` | Re-cluster the whole vault, merge duplicate topics |
+| `/cluster` | Integrity check + re-cluster the whole vault, merge duplicate topics |
 | `/build` | Vault context brief → hand off to the harness (Superpowers/ECC) workflow for implementation |
 | `/check-conflict` | Check a new opinion against past active decisions |
 | `/report` | Generate a vault-grounded report in your own format |
@@ -217,7 +222,7 @@ names.
 | `/find-similar-issue` | Search past issues similar to the current problem |
 | `/capture` | Judge the input and save it to meetings/docs/issues/lessons as appropriate |
 | `/recall` | Gather topic-related decisions, issues, docs, and lessons into a context brief |
-| `/maintain` | Re-cluster + merge duplicate topics + harvest lessons from the session |
+| `/maintain` | Integrity check + re-cluster + merge duplicate topics + harvest lessons from the session |
 
 ## 📜 Changelog
 
@@ -235,6 +240,7 @@ knowledge/
 ├── lessons/      Lesson notes (LSN-NNNN) — accumulated and reused via capture/recall/maintain
 ├── reports/      Generated reports
 ├── clusters/     Topic indexes + _topics.md (controlled vocabulary)
+├── _bases/       Obsidian Bases table views (for humans, not the agent's retrieval path)
 ├── _templates/   Note templates (including frontmatter schema)
 └── _sources/     Verbatim preservation of originals (mirrors meetings/docs/issues)
 SECOND-BRAIN.md   Workflow rules (W1–W8) — the heart of the system
@@ -500,13 +506,17 @@ npx github:EM-H20/second-brain-template
   主题聚类会自然地聚拢显现
 - **反向链接面板**：打开一条决策笔记，就能反向看到"引用了这条决策的会议/问题"
 - **`knowledge/index.md`**：知识库的入口。从这里出发就不会迷路
+- **`knowledge/_bases/vault.base`**：基于 frontmatter 的 Bases 表格视图 ——
+  有效决策 / 被取代的决策 / 未解决问题 / 已解决问题 / 文档（按权威性）/ 教训 / 会议。
+  在 Obsidian 1.9+ 启用核心插件 **Bases** 即可直接打开
 
 ### 可选插件
 
 | 插件 | 用途 |
 |---|---|
 | **Obsidian Git** | 知识库自动 commit/push 备份（周期可配置） |
-| **Dataview** | 基于 frontmatter 的查询 —— "所有未解决问题""有效决策列表"之类的动态表格 |
+| **Bases**（核心） | frontmatter 表格视图。模板已内置 `_bases/vault.base` —— 无需额外安装 |
+| **Dataview** | 仅在 Bases 不够用时 —— 需要内联查询或复杂聚合的场景 |
 
 > ⚠️ `.obsidian/workspace*` 已登记在 `.gitignore` 中，
 > 个人的编辑状态不会污染仓库。
@@ -524,7 +534,7 @@ npx github:EM-H20/second-brain-template
 | `/setup-vault` | clone 之后的一次性初始化 |
 | `/ingest-meeting` | 记录 → 会议笔记 + 决策拆分 + 聚类更新 + 冲突检查 |
 | `/ingest-doc` | 将策划书、规格书、文章等文档知识化 —— 权威性/关联度加权 + 决策提取 |
-| `/cluster` | 对整个知识库重新聚类，合并重复主题 |
+| `/cluster` | 知识库完整性检查 + 对整个知识库重新聚类，合并重复主题 |
 | `/build` | 知识库上下文简报 → 交由 harness（Superpowers/ECC）工作流实现 |
 | `/check-conflict` | 检查新观点与过去有效决策的冲突 |
 | `/report` | 按你的格式生成有知识库依据的报告 |
@@ -532,7 +542,7 @@ npx github:EM-H20/second-brain-template
 | `/find-similar-issue` | 检索与当前问题相似的历史问题 |
 | `/capture` | 判断输入内容，存入会议/文档/问题/教训中最合适的位置 |
 | `/recall` | 汇总主题相关的决策·问题·文档·教训，生成上下文简报 |
-| `/maintain` | 重新聚类 + 合并重复主题 + 收获本次会话的教训 |
+| `/maintain` | 完整性检查 + 重新聚类 + 合并重复主题 + 收获本次会话的教训 |
 
 ## 📜 变更记录
 
@@ -550,6 +560,7 @@ knowledge/
 ├── lessons/      教训笔记 (LSN-NNNN) —— 通过 capture/recall/maintain 积累并复用
 ├── reports/      生成的报告
 ├── clusters/     主题索引 + _topics.md (受控词汇表)
+├── _bases/       Obsidian Bases 表格视图 (给人看的，不是 agent 的检索路径)
 ├── _templates/   笔记模板 (含 frontmatter 规格)
 └── _sources/     原文逐字保存 (镜像 meetings/docs/issues)
 SECOND-BRAIN.md   工作流规则 (W1~W8) —— 系统的心脏
@@ -813,13 +824,18 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
   トピッククラスタが自然にまとまって見えます
 - **バックリンクパネル**：決定ノートを開くと「この決定を参照している会議／課題」が逆方向に表示されます
 - **`knowledge/index.md`**：ボールトの入口。ここから始めれば迷いません
+- **`knowledge/_bases/vault.base`**：frontmatter をテーブルで見る Bases ビュー ——
+  有効な決定 / 置き換えられた決定 / 未解決の課題 / 解決済みの課題 /
+  ドキュメント（権威性別）/ 教訓 / 会議。Obsidian 1.9+ でコアプラグイン
+  **Bases** を有効にすればそのまま開けます
 
 ### オプションプラグイン
 
 | プラグイン | 用途 |
 |---|---|
 | **Obsidian Git** | ボールトの自動 commit/push バックアップ（周期設定可） |
-| **Dataview** | frontmatter ベースのクエリ ——「未解決の課題すべて」「有効な決定一覧」のような動的テーブル |
+| **Bases**（コア） | frontmatter のテーブルビュー。`_bases/vault.base` が同梱済み —— 追加インストール不要 |
+| **Dataview** | Bases で足りない場合のみ —— インラインクエリや複雑な集計が必要なとき |
 
 > ⚠️ `.obsidian/workspace*` はすでに `.gitignore` に登録済みなので、
 > 個人の編集状態がリポジトリを汚染することはありません。
@@ -838,7 +854,7 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 | `/setup-vault` | clone 直後の 1 回だけの初期化 |
 | `/ingest-meeting` | 文字起こし → 議事録 + 決定の分離 + クラスタ更新 + 衝突チェック |
 | `/ingest-doc` | 企画書・仕様書・記事などのドキュメントを知識化 —— 権威性/関連度の重み付け + 決定抽出 |
-| `/cluster` | ボールト全体を再クラスタリング、重複トピックを統合 |
+| `/cluster` | ボールトの整合性チェック + 全体を再クラスタリング、重複トピックを統合 |
 | `/build` | ボールトのコンテキストブリーフ → ハーネス（Superpowers/ECC）ワークフローで実装 |
 | `/check-conflict` | 新しい意見 vs 過去の有効な決定の衝突チェック |
 | `/report` | ユーザーのフォーマット通りにボールトを根拠としたレポートを生成 |
@@ -846,7 +862,7 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 | `/find-similar-issue` | 現在の問題と類似する過去の課題を検索 |
 | `/capture` | 入力内容を判断し、会議/ドキュメント/課題/教訓のうち適切な場所に保存 |
 | `/recall` | トピック関連の決定・課題・ドキュメント・教訓を集めてコンテキストブリーフを作成 |
-| `/maintain` | クラスタ再構成 + 重複トピック統合 + セッションの教訓を収穫 |
+| `/maintain` | 整合性チェック + クラスタ再構成 + 重複トピック統合 + セッションの教訓を収穫 |
 
 ## 📜 変更履歴
 
@@ -864,6 +880,7 @@ knowledge/
 ├── lessons/      教訓ノート (LSN-NNNN) — capture/recall/maintain で蓄積・再利用される経験則
 ├── reports/      生成されたレポート
 ├── clusters/     トピック別インデックス + _topics.md (統制語彙)
+├── _bases/       Obsidian Bases テーブルビュー (人が見る用。エージェントの検索経路ではない)
 ├── _templates/   ノートのテンプレート (frontmatter 規格を含む)
 └── _sources/     原文をそのまま (verbatim) 保存 (meetings/docs/issues のミラー)
 SECOND-BRAIN.md   ワークフロー規則 (W1〜W8) — システムの心臓部
@@ -1127,13 +1144,17 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
   주제 클러스터가 자연스럽게 뭉쳐 보인다
 - **백링크 패널**: 결정 노트를 열면 "이 결정을 참조하는 회의/이슈"가 역방향으로 보인다
 - **`knowledge/index.md`**: 볼트의 입구. 여기서 시작하면 길을 잃지 않는다
+- **`knowledge/_bases/vault.base`**: frontmatter를 표로 보는 Bases 뷰 —
+  활성 결정 / 대체된 결정 / 열린 이슈 / 해결된 이슈 / 문서(권위별) / 교훈 / 회의.
+  Obsidian 1.9+에서 코어 플러그인 **Bases**를 켜면 바로 뜬다
 
 ### 선택 플러그인
 
 | 플러그인 | 용도 |
 |---|---|
 | **Obsidian Git** | 볼트 자동 commit/push 백업 (주기 설정 가능) |
-| **Dataview** | frontmatter 기반 쿼리 — "열린 이슈 전부", "활성 결정 목록" 같은 동적 표 |
+| **Bases** (코어) | frontmatter 표 뷰. `_bases/vault.base`가 미리 들어있다 — 별도 설치 불필요 |
+| **Dataview** | Bases로 부족할 때만. 인라인 쿼리·복잡한 집계가 필요한 경우 |
 
 > ⚠️ `.obsidian/workspace*`는 `.gitignore`에 이미 등록되어 있어
 > 개인 편집 상태가 저장소를 오염시키지 않는다.
@@ -1152,7 +1173,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 | `/setup-vault` | clone 직후 1회 초기화 |
 | `/ingest-meeting` | 전사체 → 회의노트 + 결정 분리 + 클러스터 갱신 + 충돌 검사 |
 | `/ingest-doc` | 기획서·스펙·아티클 등 문서 지식화 — 권위·연관 가중치 + 결정 추출 |
-| `/cluster` | 볼트 전체 재클러스터링, 중복 토픽 병합 |
+| `/cluster` | 볼트 무결성 검사 + 전체 재클러스터링, 중복 토픽 병합 |
 | `/build` | 볼트 컨텍스트 브리프 → 하네스(Superpowers/ECC) 워크플로우로 구현 |
 | `/check-conflict` | 새 의견 vs 과거 활성 결정 충돌 검사 |
 | `/report` | 사용자 양식대로 볼트 근거 보고서 생성 |
@@ -1160,7 +1181,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 | `/find-similar-issue` | 현재 문제와 유사한 과거 이슈 검색 |
 | `/capture` | 입력을 판단해 회의/문서/이슈/교훈 중 알맞은 곳에 저장 (기억해) |
 | `/recall` | 주제 관련 결정·이슈·문서·교훈을 모아 컨텍스트 브리프 작성 (꺼내줘) |
-| `/maintain` | 클러스터 재구성 + 중복 토픽 병합 + 세션 교훈 수확 (정리해) |
+| `/maintain` | 무결성 검사 + 클러스터 재구성 + 중복 토픽 병합 + 세션 교훈 수확 (정리해) |
 
 ## 📜 변경 내역
 
@@ -1178,6 +1199,7 @@ knowledge/
 ├── lessons/      교훈 노트 (LSN-NNNN) — capture/recall/maintain로 쌓이고 재활용되는 경험칙
 ├── reports/      생성된 보고서
 ├── clusters/     주제별 인덱스 + _topics.md (통제 어휘)
+├── _bases/       Obsidian Bases 표 뷰 (사람용, 에이전트 회수 경로 아님)
 ├── _templates/   노트 양식 (frontmatter 규격 포함)
 └── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
 SECOND-BRAIN.md   워크플로우 규칙 (W1~W8) — 시스템의 심장
