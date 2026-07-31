@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.5.0] — 2026-07-31
+
+### Features
+
+- 볼트 무결성 검사(W2) + Obsidian Bases 표 뷰 (#6)
+
 ## [v1.4.0] — 2026-07-27
 
 ### Features
