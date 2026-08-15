@@ -27,6 +27,7 @@ flowchart LR
     C -->|"bug appears"| I["🐛 Issue"]
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 Report"]
+    V -->|"/issue-candidates"| G["🔗 Issue tracker"]
     D2["📑 Docs (PRD, spec)"] -->|"/ingest-doc"| V
     V -->|"/check-conflict · /maintain"| M["🔧 Vault upkeep<br/>conflict check · re-cluster · lessons"]
     C -->|"/capture"| V
@@ -35,7 +36,7 @@ flowchart LR
 
 > **3 core triggers** — plain language is enough, no slash needed:
 > **capture** (save it → meetings / docs / issues / lessons) · **recall** (pull the context brief) · **maintain** (tidy the vault).
-> The 9 original commands still work as aliases (12 total).
+> The 10 original commands still work as aliases (13 total).
 
 ---
 
@@ -75,7 +76,7 @@ In non-interactive environments such as CI, pass the `-y` flag to skip the confi
 ## 📖 Usage — everyday scenarios
 
 A second brain earns its value not when you **put things in**, but when you **pull things out**.
-These seven scenes are the whole loop.
+These eight scenes are the whole loop.
 
 ### 1. After a meeting — put the transcript into the vault
 
@@ -90,6 +91,7 @@ What happens automatically:
 - **A separate note for every decision** made in the meeting (`decisions/DEC-NNNN`)
 - If a new decision **conflicts with a past active decision, it is detected immediately** and you are asked — nothing is ever silently overwritten
 - The relevant topic clusters (`clusters/`) are updated
+- Work items raised in the meeting are left as **issue candidates** in the note — no issue is filed yet
 
 ### 2. When implementing a feature — the vault supplies the context
 
@@ -156,6 +158,23 @@ natural moments (when you correct the AI, resolve a conflict, or close an issue)
 with your approval — never silently. No session-end nagging, no fine-tuning; the model stays the
 same, but the material it pulls keeps getting better.
 
+### 8. When work starts — meeting outcomes become tracker issues
+
+```
+/issue-candidates
+```
+
+Shows the unprocessed candidates waiting in your meeting notes as a table.
+**Only the ones you pick** become issues; the rest are left untouched. Title,
+body, and labels are matched to whatever conventions the project already has
+(`.github/ISSUE_TEMPLATE/`, a CONTRIBUTING section, an existing issue command),
+so no particular tracker is assumed. You see the title, labels, target, and the
+exact command before anything is created — this is the vault's only outbound
+write, so it never runs without confirmation.
+
+Discarded candidates stay too, with the reason. Recording why a work item never
+became an issue is what stops the same discussion from recurring.
+
 > 💡 Commands are just a convenience — **natural language is the interface.** The workflows are
 > defined in `SECOND-BRAIN.md` by intent, so they work identically in a CLI that has no commands.
 
@@ -220,6 +239,7 @@ names.
 | `/report` | Generate a vault-grounded report in your own format |
 | `/ingest-issue` | Turn issues / completion reports into knowledge |
 | `/find-similar-issue` | Search past issues similar to the current problem |
+| `/issue-candidates` | Show the issue candidates extracted from meetings and file only the ones you pick |
 | `/capture` | Judge the input and save it to meetings/docs/issues/lessons as appropriate |
 | `/recall` | Gather topic-related decisions, issues, docs, and lessons into a context brief |
 | `/maintain` | Integrity check + re-cluster + merge duplicate topics + harvest lessons from the session |
@@ -243,9 +263,9 @@ knowledge/
 ├── _bases/       Obsidian Bases table views (for humans, not the agent's retrieval path)
 ├── _templates/   Note templates (including frontmatter schema)
 └── _sources/     Verbatim preservation of originals (mirrors meetings/docs/issues)
-SECOND-BRAIN.md   Workflow rules (W1–W8) — the heart of the system
+SECOND-BRAIN.md   Workflow rules (W1–W9) — the heart of the system
 CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with existing projects)
-.claude/commands/ 12 slash commands (9 original + capture/recall/maintain)
+.claude/commands/ 13 slash commands (10 original + capture/recall/maintain)
 .claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
 .claude/settings.json hook registration (merges one entry if the file already exists)
 .agents/skills/second-brain/ Codex repo skill (auto-detected)
@@ -354,6 +374,7 @@ flowchart LR
     C -->|"出现问题"| I["🐛 问题"]
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 报告"]
+    V -->|"/issue-candidates"| G["🔗 问题追踪器"]
     D2["📑 文档(策划书·规格书)"] -->|"/ingest-doc"| V
     V -->|"/check-conflict · /maintain"| M["🔧 知识库维护<br/>冲突检查 · 重新聚类 · 教训"]
     C -->|"/capture"| V
@@ -362,7 +383,7 @@ flowchart LR
 
 > **3 个核心触发词** —— 无需斜杠，自然语言即可：
 > **"记下"** → `/capture`（存入 会议 / 文档 / 问题 / 教训）· **"取出"** → `/recall`（生成上下文简报）· **"整理"** → `/maintain`（维护知识库）。
-> 原有 9 个命令仍作为别名可用（共 12 个）。
+> 原有 10 个命令仍作为别名可用（共 13 个）。
 
 ---
 
@@ -401,7 +422,7 @@ npx github:EM-H20/second-brain-template
 ## 📖 用法 —— 日常场景
 
 第二大脑的价值不在**存入**的时候，而在**取出**的时候产生。
-以下七个场景就是完整闭环。
+以下八个场景就是完整闭环。
 
 ### 1. 会议结束后 —— 把记录存入知识库
 
@@ -416,6 +437,7 @@ npx github:EM-H20/second-brain-template
 - 会议中做出的**每个决策都生成独立笔记**（`decisions/DEC-NNNN`）
 - 新决策若**与过去的有效决策冲突，会被立即检测**并询问你 —— 绝不会静默覆盖
 - 更新相关的主题聚类（`clusters/`）
+- 会议中提出的工作项作为**问题候选**留在笔记里 —— 此时还不会创建 issue
 
 ### 2. 实现功能时 —— 知识库提供上下文
 
@@ -479,6 +501,21 @@ npx github:EM-H20/second-brain-template
 且只有经你批准才保存 —— 绝不会静默保存。没有会话结束时的打扰，也没有微调；模型本身不变，
 但它取用的材料会越来越好。
 
+### 8. 开始干活时 —— 会议结果变成追踪器里的问题
+
+```
+/issue-candidates
+```
+
+把会议笔记中尚未处理的候选以表格展示。**只有你选中的**才会变成 issue，
+其余的一律不动。标题、正文与标签会对齐项目已有的约定
+（`.github/ISSUE_TEMPLATE/`、CONTRIBUTING 中的章节、既有的 issue 命令），
+因此不预设任何特定追踪器。创建之前会先展示标题、标签、目标与将要执行的命令 ——
+这是知识库唯一一条向外写入的路径，没有确认就不会执行。
+
+被舍弃的候选也会连同理由一起留下。记录下"为什么没有做成 issue"，
+才能避免同样的讨论在下次会议重演。
+
 > 💡 命令只是便利手段，**自然语言才是接口**。工作流在 `SECOND-BRAIN.md` 中
 > 以意图为基准定义，因此在没有命令的 CLI 中同样有效。
 
@@ -540,6 +577,7 @@ npx github:EM-H20/second-brain-template
 | `/report` | 按你的格式生成有知识库依据的报告 |
 | `/ingest-issue` | 将问题/完成报告知识化 |
 | `/find-similar-issue` | 检索与当前问题相似的历史问题 |
+| `/issue-candidates` | 展示从会议中提取的问题候选，仅将你选中的登记为 issue |
 | `/capture` | 判断输入内容，存入会议/文档/问题/教训中最合适的位置 |
 | `/recall` | 汇总主题相关的决策·问题·文档·教训，生成上下文简报 |
 | `/maintain` | 完整性检查 + 重新聚类 + 合并重复主题 + 收获本次会话的教训 |
@@ -563,9 +601,9 @@ knowledge/
 ├── _bases/       Obsidian Bases 表格视图 (给人看的，不是 agent 的检索路径)
 ├── _templates/   笔记模板 (含 frontmatter 规格)
 └── _sources/     原文逐字保存 (镜像 meetings/docs/issues)
-SECOND-BRAIN.md   工作流规则 (W1~W8) —— 系统的心脏
+SECOND-BRAIN.md   工作流规则 (W1~W9) —— 系统的心脏
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突)
-.claude/commands/ 12 个斜杠命令 (原有 9 个 + capture/recall/maintain)
+.claude/commands/ 13 个斜杠命令 (原有 10 个 + capture/recall/maintain)
 .claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
 .claude/settings.json 钩子注册（文件已存在时只合并一个条目）
 .agents/skills/second-brain/ Codex 仓库技能（自动识别）
@@ -668,6 +706,7 @@ flowchart LR
     C -->|"課題が発生"| I["🐛 課題"]
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 レポート"]
+    V -->|"/issue-candidates"| G["🔗 課題トラッカー"]
     D2["📑 ドキュメント(企画書・仕様書)"] -->|"/ingest-doc"| V
     V -->|"/check-conflict · /maintain"| M["🔧 ボールト整備<br/>衝突検知 · 再クラスタ · 教訓"]
     C -->|"/capture"| V
@@ -676,7 +715,7 @@ flowchart LR
 
 > **3 つのコアトリガー** —— スラッシュ不要、自然言語で十分：
 > **「記録して」** → `/capture`（会議 / ドキュメント / 課題 / 教訓を保存）· **「呼び出して」** → `/recall`（コンテキストブリーフ）· **「整理して」** → `/maintain`（ボールト整備）。
-> 既存 9 コマンドもエイリアスとして動作（計 12 個）。
+> 既存 10 コマンドもエイリアスとして動作（計 13 個）。
 
 ---
 
@@ -716,7 +755,7 @@ CI などの非対話環境では `-y` フラグで確認をスキップでき�
 ## 📖 使い方 — 日常のシナリオ
 
 セカンドブレインは**入れるとき**ではなく、**取り出すとき**に価値が生まれます。
-以下の 7 つの場面が全体のループです。
+以下の 8 つの場面が全体のループです。
 
 ### 1. 会議が終わったら — 文字起こしをボールトへ
 
@@ -731,6 +770,7 @@ CI などの非対話環境では `-y` フラグで確認をスキップでき�
 - 会議で下された**決定ごとに個別ノート**を生成（`decisions/DEC-NNNN`）
 - 新しい決定が**過去の有効な決定と衝突すれば即座に検知**して確認を求めます —— 黙って上書きすることはありません
 - 関連するトピッククラスタ（`clusters/`）を更新
+- 会議で挙がった作業は**課題候補**としてノートに残る — この時点では issue を作らない
 
 ### 2. 機能を実装するとき — ボールトがコンテキストを供給する
 
@@ -797,6 +837,22 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 黙って保存されることはありません。セッション終了時の催促もなく、ファインチューニングもしません。
 モデル自体は変わりませんが、引き出す材料はどんどん良くなります。
 
+### 8. 作業を始めるとき — 会議の結果がトラッカーの課題になる
+
+```
+/issue-candidates
+```
+
+議事録に溜まった未処理の候補を表で表示する。**選んだものだけ**が issue になり、
+残りには一切触れない。タイトル・本文・ラベルはプロジェクトに既にある規約
+（`.github/ISSUE_TEMPLATE/`、CONTRIBUTING の該当節、既存の issue コマンド）に
+合わせるので、特定のトラッカーを前提としない。作成の前にタイトル・ラベル・対象・
+実行するコマンドを提示して確認を取る — ボールトが外へ書く唯一の経路であり、
+確認なしには実行しない。
+
+捨てた候補も理由とともに残る。会議で挙がった作業をなぜ issue にしなかったかが
+記録されて初めて、同じ議論が次の会議で繰り返されなくなる。
+
 > 💡 コマンドは利便性のためのもので、**自然言語こそがインターフェース**です。ワークフローが
 > `SECOND-BRAIN.md` に意図ベースで定義されているため、コマンドのない CLI でも同じように動作します。
 
@@ -860,6 +916,7 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 | `/report` | ユーザーのフォーマット通りにボールトを根拠としたレポートを生成 |
 | `/ingest-issue` | 課題／完了レポートを知識化 |
 | `/find-similar-issue` | 現在の問題と類似する過去の課題を検索 |
+| `/issue-candidates` | 会議から抽出した課題候補を表示し、選んだものだけを issue として登録 |
 | `/capture` | 入力内容を判断し、会議/ドキュメント/課題/教訓のうち適切な場所に保存 |
 | `/recall` | トピック関連の決定・課題・ドキュメント・教訓を集めてコンテキストブリーフを作成 |
 | `/maintain` | 整合性チェック + クラスタ再構成 + 重複トピック統合 + セッションの教訓を収穫 |
@@ -883,9 +940,9 @@ knowledge/
 ├── _bases/       Obsidian Bases テーブルビュー (人が見る用。エージェントの検索経路ではない)
 ├── _templates/   ノートのテンプレート (frontmatter 規格を含む)
 └── _sources/     原文をそのまま (verbatim) 保存 (meetings/docs/issues のミラー)
-SECOND-BRAIN.md   ワークフロー規則 (W1〜W8) — システムの心臓部
+SECOND-BRAIN.md   ワークフロー規則 (W1〜W9) — システムの心臓部
 CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトとの衝突を防ぐ)
-.claude/commands/ スラッシュコマンド 12 個 (既存 9 個 + capture/recall/maintain)
+.claude/commands/ スラッシュコマンド 13 個 (既存 10 個 + capture/recall/maintain)
 .claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
 .claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
 .agents/skills/second-brain/ Codex リポジトリスキル（自動認識）
@@ -990,6 +1047,7 @@ flowchart LR
     C -->|"이슈 발생"| I["🐛 이슈"]
     I -->|"/ingest-issue"| V
     V -->|"/report"| R["📄 보고서"]
+    V -->|"/issue-candidates"| G["🔗 이슈 트래커"]
     D2["📑 문서(기획서·스펙)"] -->|"/ingest-doc"| V
     V -->|"/check-conflict · /maintain"| M["🔧 볼트 유지<br/>충돌 검사 · 재클러스터 · 교훈"]
     C -->|"/capture"| V
@@ -998,7 +1056,7 @@ flowchart LR
 
 > **핵심 트리거 3개** — 슬래시 없이 자연어면 충분:
 > **"기억해"** → `/capture` (회의 / 문서 / 이슈 / 교훈 저장) · **"꺼내줘"** → `/recall` (컨텍스트 브리프) · **"정리해"** → `/maintain` (볼트 정리).
-> 기존 9개 명령도 별칭으로 그대로 동작 (총 12개).
+> 기존 10개 명령도 별칭으로 그대로 동작 (총 13개).
 
 ---
 
@@ -1038,7 +1096,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 ## 📖 사용법 — 일상 시나리오
 
 세컨드 브레인은 **넣을 때**가 아니라 **꺼낼 때** 가치가 생긴다.
-아래 일곱 장면이 전체 루프다.
+아래 여덟 장면이 전체 루프다.
 
 ### 1. 회의가 끝나면 — 전사체를 볼트에 넣는다
 
@@ -1053,6 +1111,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 - 회의 중 내려진 **결정마다 별도 노트** 생성 (`decisions/DEC-NNNN`)
 - 새 결정이 **과거 활성 결정과 충돌하면 즉시 감지**하고 물어본다 — 조용히 덮어쓰는 일은 없다
 - 관련 주제 클러스터(`clusters/`) 갱신
+- 회의에서 나온 작업은 **이슈 후보**로 회의노트에 남는다 — 아직 이슈를 만들지는 않는다
 
 ### 2. 기능을 구현할 때 — 볼트가 컨텍스트를 공급한다
 
@@ -1117,6 +1176,21 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 충돌을 해결할 때, 이슈를 닫을 때) 제안되고 네 승인으로만 저장된다 — 조용히 저장되는 일은 없다.
 세션 끝에 귀찮게 묻지도, 파인튜닝하지도 않는다 — 모델은 그대로지만 꺼내 쓰는 재료가 계속 좋아진다.
 
+### 8. 작업을 시작할 때 — 회의 결과가 트래커의 이슈가 된다
+
+```
+/issue-candidates
+```
+
+회의노트에 쌓인 미처리 후보를 표로 보여준다. **고른 것만** 이슈가 되고 나머지는
+손대지 않는다. 제목·본문·라벨은 프로젝트가 이미 가진 규약(`.github/ISSUE_TEMPLATE/`,
+CONTRIBUTING의 해당 절, 기존 이슈 커맨드)에 맞추므로 특정 트래커를 전제하지 않는다.
+생성 전에 제목·라벨·대상·실행할 명령을 보여주고 확인을 받는다 — 볼트가 밖으로 쓰는
+유일한 경로라서 확인 없이는 실행하지 않는다.
+
+버린 후보도 이유와 함께 남는다. 회의에서 나온 작업을 왜 이슈로 만들지 않았는지가
+기록되어야 같은 논의가 다음 회의에서 반복되지 않는다.
+
 > 💡 커맨드는 편의일 뿐, **자연어가 곧 인터페이스**다. 워크플로우가
 > `SECOND-BRAIN.md`에 의도 기준으로 정의되어 있어서 커맨드 없는 CLI에서도 똑같이 동작한다.
 
@@ -1179,6 +1253,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 | `/report` | 사용자 양식대로 볼트 근거 보고서 생성 |
 | `/ingest-issue` | 이슈/완료 리포트 지식화 |
 | `/find-similar-issue` | 현재 문제와 유사한 과거 이슈 검색 |
+| `/issue-candidates` | 회의에서 뽑은 이슈 후보를 보여주고, 고른 것만 이슈로 등록 |
 | `/capture` | 입력을 판단해 회의/문서/이슈/교훈 중 알맞은 곳에 저장 (기억해) |
 | `/recall` | 주제 관련 결정·이슈·문서·교훈을 모아 컨텍스트 브리프 작성 (꺼내줘) |
 | `/maintain` | 무결성 검사 + 클러스터 재구성 + 중복 토픽 병합 + 세션 교훈 수확 (정리해) |
@@ -1202,9 +1277,9 @@ knowledge/
 ├── _bases/       Obsidian Bases 표 뷰 (사람용, 에이전트 회수 경로 아님)
 ├── _templates/   노트 양식 (frontmatter 규격 포함)
 └── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
-SECOND-BRAIN.md   워크플로우 규칙 (W1~W8) — 시스템의 심장
+SECOND-BRAIN.md   워크플로우 규칙 (W1~W9) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
-.claude/commands/ 슬래시 커맨드 12개 (기존 9개 + capture/recall/maintain)
+.claude/commands/ 슬래시 커맨드 13개 (기존 10개 + capture/recall/maintain)
 .claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
 .claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
 .agents/skills/second-brain/ Codex 저장소 스킬 (자동 인식)
