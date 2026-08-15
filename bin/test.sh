@@ -27,6 +27,10 @@ grep -q '신뢰할 수 없는 데이터' SECOND-BRAIN.md || fail "외부 입력 
 grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 미기재"
 grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 grep -q 'W8' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W8 워크플로우 없음"
+grep -q 'W9' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W9 워크플로우 없음"
+# 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
+# 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
+grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"
 grep -q '무결성 검사' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W2 무결성 검사 없음"
 grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우팅 없음"
 # 세션 시작 규칙은 툴 중립이어야 한다 — 훅이 없는 CLI(Codex 등)가 지킬 근거가 여기 있다.
