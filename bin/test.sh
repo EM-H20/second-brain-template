@@ -70,6 +70,9 @@ grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Co
 grep -q 'cluster-' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 클러스터 우선 읽기 지시 없음"
 # setup-vault 는 W 워크플로우가 아니라, 스킬이 직접 라우팅해야 Codex 에서 도달 가능하다
 grep -q 'setup' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 볼트 초기화 트리거 없음"
+# Codex 는 description 으로 스킬을 고른다 — 여기 트리거가 없으면 W9 는 Codex 에서 도달 불가
+grep -q 'issue candidate' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 이슈 후보 트리거 없음"
+grep -q 'W9' AGENTS.md || fail "AGENTS.md에 W9 라우팅 없음"
 grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없음"
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"

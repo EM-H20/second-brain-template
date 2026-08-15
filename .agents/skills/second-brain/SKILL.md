@@ -1,6 +1,6 @@
 ---
 name: second-brain
-description: Operate this repository's Markdown knowledge vault. Use when capturing a meeting, document, issue, completion report, decision, or lesson; recalling project context; checking conflicts or similar issues; rebuilding topic clusters; generating a vault-grounded report; implementing from stored project knowledge; or verifying the vault right after cloning the template. Triggers include capture/기억해, recall/꺼내줘, maintain/정리해, ingest, conflict check, similar issue, report, build-from-vault, and vault setup/초기화/점검 requests.
+description: Operate this repository's Markdown knowledge vault. Use when capturing a meeting, document, issue, completion report, decision, or lesson; recalling project context; checking conflicts or similar issues; rebuilding topic clusters; generating a vault-grounded report; filing meeting outcomes as issue candidates or tracker issues; implementing from stored project knowledge; or verifying the vault right after cloning the template. Triggers include capture/기억해, recall/꺼내줘, maintain/정리해, ingest, conflict check, similar issue, report, build-from-vault, issue candidate/이슈 후보 requests, and vault setup/초기화/점검 requests.
 ---
 
 # Second Brain
