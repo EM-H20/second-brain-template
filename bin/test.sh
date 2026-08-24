@@ -18,10 +18,16 @@ for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills"]) {
 ' || fail "package.json files 누락"
 echo "packaging guard OK"
 
-# 두 SKILL.md 사본은 항상 동일해야 한다 — Claude(.claude/skills)와 Codex(.agents/skills)가 같은 스킬을 본다
-diff -q "$ROOT/.claude/skills/second-brain/SKILL.md" "$ROOT/.agents/skills/second-brain/SKILL.md" > /dev/null \
-  || fail "SKILL.md 두 사본 불일치 (.claude/skills vs .agents/skills)"
-echo "skill parity OK"
+# 두 스킬 트리는 항상 같은 스킬 집합의 바이트 동일 사본이어야 한다 — Claude와 Codex가 같은 스킬을 본다
+A_SKILLS=$(ls "$ROOT/.agents/skills")
+C_SKILLS=$(ls "$ROOT/.claude/skills")
+[ "$A_SKILLS" = "$C_SKILLS" ] || fail "스킬 집합 불일치 (.agents/skills vs .claude/skills)"
+[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "13" ] || fail "스킬 수가 13이 아님"
+for s in $A_SKILLS; do
+  diff -q "$ROOT/.claude/skills/$s/SKILL.md" "$ROOT/.agents/skills/$s/SKILL.md" > /dev/null \
+    || fail "SKILL.md 사본 불일치: $s"
+done
+echo "skill parity OK (13)"
 
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
