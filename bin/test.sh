@@ -100,6 +100,14 @@ grep -q '^reviewed: null' knowledge/_templates/lesson.md || fail "lesson 템플�
 grep -q '^status: resolved' knowledge/_templates/completion-report.md || fail "완료 보고서 status 누락"
 [ -f knowledge/lessons/README.md ] || fail "lessons/ 스켈레톤 없음"
 [ -f knowledge/.obsidian/graph.json ] || fail "graph.json 미설치"
+[ -f knowledge/.obsidian/types.json ] || fail "types.json 미설치"
+node -e '
+const t = require("./knowledge/.obsidian/types.json").types;
+if (t.reviewed !== "date" || t.created !== "date") throw new Error("날짜 타입 미등록");
+for (const k of ["topics", "topics_ref", "related", "symptoms", "attendees", "decisions"]) {
+  if (t[k] !== "multitext") throw new Error(k + " 리스트 타입 미등록");
+}
+' || fail "types.json 프로퍼티 타입 검증 실패"
 [ -f knowledge/_bases/README.md ] || fail "_bases 스켈레톤 없음"
 [ -f knowledge/_bases/vault.base ] || fail "_bases/vault.base 미설치"
 # 노트 타입을 추가하면 base 뷰도 따라와야 한다 — 이 루프가 그 드리프트를 잡는다
@@ -190,6 +198,9 @@ printf '{"scale": 2}\n' > knowledge/.obsidian/graph.json
 node "$ROOT/bin/init.js" -y > out5.log
 grep -q 'verbatim original' knowledge/_sources/meetings/2026-07-21-test.md || fail "_sources 저장 원본 덮어씀"
 grep -q '"scale": 2' knowledge/.obsidian/graph.json || fail ".obsidian 사용자 설정 덮어씀"
+printf '{"types": {"custom": "text"}}\n' > knowledge/.obsidian/types.json
+node "$ROOT/bin/init.js" -y > out6.log
+grep -q '"custom"' knowledge/.obsidian/types.json || fail "types.json 사용자 설정 덮어씀"
 
 echo "케이스 3 OK"
 
