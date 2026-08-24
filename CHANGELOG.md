@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.7.0] — 2026-08-25
+
+### Features
+
+- 커맨드 12종 → 크로스-CLI 스킬 승격 + 레거시 표면 은퇴 (#9)
+
 ## [v1.6.0] — 2026-08-24
 
 ### Features
