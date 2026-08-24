@@ -15,10 +15,13 @@ It defines:
 
 ## Command equivalents
 
-Claude Code exposes these workflows as slash commands in `.claude/commands/`.
-Codex discovers the repository skill at `.agents/skills/second-brain/SKILL.md`;
-invoke it with natural language or `$second-brain`. `.codex/prompts/` is kept
-only for deprecated custom-prompt compatibility.
+Claude Code exposes these workflows as slash commands in `.claude/commands/`
+and auto-discovers the same repository skill at
+`.claude/skills/second-brain/SKILL.md`. Codex discovers its copy at
+`.agents/skills/second-brain/SKILL.md`; invoke it with natural language or
+`$second-brain`. The two SKILL.md files are kept byte-identical (guarded by
+`bin/test.sh`). `.codex/prompts/` is kept only for deprecated custom-prompt
+compatibility.
 
 ## Session start (applies to every CLI)
 
