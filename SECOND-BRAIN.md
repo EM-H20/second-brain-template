@@ -47,8 +47,9 @@ Common keys for all notes:
 ```yaml
 type: meeting | decision | issue | completion-report | report | cluster | doc | lesson | index
 created: YYYY-MM-DD
+reviewed: YYYY-MM-DD | null     # decision·doc·lesson만, 선택 — 마지막 인간 확인일; null/부재면 created 기준 ("Status 라이프사이클" 참조)
 topics: [<topic-slug>, ...]     # lowercase kebab-case topic tags
-status: active | superseded | resolved | open | archived   # per-type, see below
+status: active | superseded | resolved | open | archived   # 타입별 완결 어휘는 "Status 라이프사이클" 표 참조
 related: ["[[note]]", ...]      # wikilinks to related notes
 ```
 
@@ -57,7 +58,7 @@ Type-specific keys:
 - meeting: `attendees: []`, `decisions: [DEC-NNNN, ...]`, `action_items: n`,
   `source: "_sources/meetings/<id>.md" | "<external URL>"`
 - decision: `id: DEC-NNNN`, `supersedes: DEC-NNNN | null`,
-  `superseded_by: DEC-NNNN | null`, `status: active | superseded`
+  `superseded_by: DEC-NNNN | null`, `status: active | superseded | archived`
 - issue: `id: ISS-NNNN`, `symptoms: [<keyword>, ...]`,
   `root_cause: <one line>`, `status: open | resolved`,
   `resolution: "[[ISS-NNNN-...]]" | null` (link to completion report),
@@ -71,7 +72,7 @@ Type-specific keys:
   `source: "_sources/docs/<id>.md" (local, 텍스트 저장 시) | "<external URL>"`,
   `topics_ref: [...]` (참고 연관 — 검색 후순위), `decisions: [DEC-NNNN, ...]`,
   `supersedes: DOC-NNNN | null`, `superseded_by: DOC-NNNN | null`,
-  `status: active | superseded`
+  `status: active | superseded | archived`
 - lesson: `type: lesson`, `id: LSN-NNNN`, `trigger: <한 줄, 이 교훈을 소환할 상황 — grep 키>`,
   `status: active | superseded | archived`,
   `source: <세션 날짜 | ISS-NNNN | 회의 id>`,
@@ -89,6 +90,48 @@ folder `README.md`, `clusters/_topics.md`, `_bases/*.base`는 운영 파일이�
 보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.
 (decision·report·cluster는 파생/생성물이라 `source` 없음.)
 텍스트 원본을 로컬에 저장한 경우에도 외부 출처(예: 노션 URL)를 남기고 싶으면 노트 본문에 적는다 — frontmatter의 `source:` 키는 하나만 둔다.
+
+## Status 라이프사이클과 회수 시맨틱
+
+**타입별 status 어휘 (완결 목록 — 이 밖의 값은 W2 무결성 검사 위반):**
+
+| type | status 어휘 |
+|---|---|
+| decision, doc, lesson | `active \| superseded \| archived` |
+| issue | `open \| resolved` |
+| completion-report | `resolved` (고정) |
+| meeting, report, cluster, index | `active` (고정 — 역사 기록·파생물은 라이프사이클이 없다) |
+
+`archived` = 후속 없이 은퇴한 노트. supersede와 같은 불변 규칙을 따른다:
+본문은 절대 삭제·수정하지 않고 status만 바꾸며, 반드시 사용자의 명시적 결정으로만 전환한다.
+
+**`reviewed:` 키 (decision·doc·lesson 전용, 선택).** `reviewed: YYYY-MM-DD` —
+인간이 이 노트가 여전히 유효함을 마지막으로 확인한 날. `null`이거나 키가 없으면 `created`가 기준일.
+갱신은 오직 명시적 인간 확인(주로 W2 full 리뷰 보고에 대한 응답)으로만 한다 —
+에이전트가 노트를 인용했다고 자동으로 올리지 않는다.
+
+**오래됨(stale) 판정.** `status: active`이고 `오늘 − max(created, reviewed) > 3개월`이면
+리뷰 후보다. 시간 경과는 status를 절대 바꾸지 않는다 — 오래됨은 표시와 보고만 만들고,
+처분은 전부 인간이 한다. 소비처는 정확히 두 곳:
+
+- **recall / W3 (모든 Context Brief):** 오래된 노트도 제약으로 사용하되 반드시
+  인라인 표기한다. 예: `DEC-0012 — ⚠ 마지막 확인 7개월 전`
+- **W2 full 패스:** 무결성 검사 뒤 리뷰 후보 목록(id, 마지막 확인 경과)을 보고한다.
+  건별 처분: 아직 유효 → `reviewed` 갱신 / 폐기 → `archived` / 대체됨 → supersede 체인.
+  무결성 검사와 동일하게 보고만 하며 자동 수정하지 않는다. 승인된 수정은 `log.md`에 기록.
+
+**회수 시맨틱 표** — 모든 회수 워크플로우(W2·W3·W6·W8, recall/build)가 이 표를 따른다:
+
+| status | 회수 시 취급 |
+|---|---|
+| `active` (신선) | 정상 사용 — 현재 제약(decision·doc·lesson) 또는 현재 컨텍스트(고정 active 타입) |
+| `active` (오래됨) | 사용하되 반드시 "미확인 N개월" 표기 |
+| `superseded` | 역사로만. 현재 제약으로 인용 금지, 체인 따라 최신 후속으로 이동 |
+| `archived` | 기본 제외. 명시 요청 시에만 노출 |
+| `open` (issue) | 살아있는 문제 — W3/W6에 현재형으로 노출 |
+| `resolved` (issue·completion-report) | 종결. 단 W6 재발 탐지의 핵심 재료 — resolved ≠ 무시 |
+
+클러스터 노트는 archived 결정·문서를 superseded와 함께 역사 섹션에 `(archived)` 표기로 나열한다.
 
 ## Topic slugs (clustering vocabulary)
 
@@ -125,7 +168,7 @@ Given a transcript (file or pasted text):
 
 A cluster note (`clusters/cluster-<topic>.md`) is a human-readable index:
 what this topic is, timeline of meetings that touched it, list of decisions
-(active vs superseded), open issues, key/reference documents (핵심 문서 / 참고 문서), current state summary.
+(active vs superseded/archived), open issues, key/reference documents (핵심 문서 / 참고 문서), current state summary.
 
 - Incremental (during ingestion): update only the clusters whose topics
   appear in the new note.
@@ -138,7 +181,8 @@ wikilink가 실재한다는 전제 위에 서 있다. YAML 한 줄이 깨지면 
 조용히 검색에서 사라진다 — 그래서 주기적 검사가 필요하다. full 패스는 이미 전체
 frontmatter를 스캔하므로 추가 비용 없이 같이 본다. 검사 항목:
 
-1. **frontmatter** — YAML 파싱 실패, type별 필수 키 누락, 해당 type에 없는 `status` 값
+1. **frontmatter** — YAML 파싱 실패, type별 필수 키 누락, 해당 type에 없는 `status` 값,
+   `reviewed` 규칙 위반(decision·doc·lesson 외 타입에 존재, 날짜 형식 오류 — `null`은 미기록으로 허용, `created`보다 이른 날짜)
 2. **wikilink** — `related`/`resolution`/`resolves` 및 cluster·index 본문의 `[[...]]`
    중 실재하지 않는 노트를 가리키는 것
 3. **supersede 체인 대칭** — A에 `superseded_by: B`가 있으면 B에 `supersedes: A`가
@@ -151,6 +195,10 @@ frontmatter를 스캔하므로 추가 비용 없이 같이 본다. 검사 항목
    에도 안 잡힌 노트, `index.md`에 링크되지 않은 클러스터
 7. **source 경로** — `source:`가 로컬 `_sources/...` 경로인데 그 파일이 없는 경우
    (경로 존재만 확인한다. `_sources/` 본문은 열지 않는다)
+
+무결성 검사 보고에 이어, full 패스는 **리뷰 후보**(오래된 active 노트 — "Status 라이프사이클과
+회수 시맨틱"의 3개월 규칙)도 함께 보고한다: id와 마지막 확인 경과를 나열하고, 건별 처분
+(유효 확인 → `reviewed` 갱신 / 폐기 → `archived` / 대체 → supersede 체인)은 사용자가 정한다.
 
 **검사는 절대 자동 수정하지 않는다.** 발견 항목을 파일 경로와 이유와 함께 보고하고,
 고칠지는 사용자가 정한다 — 결정을 조용히 덮지 않는 W4와 같은 이유다. 고아 노트는
@@ -171,7 +219,8 @@ When asked to implement something based on meeting agendas/decisions:
    it before writing code.
 4. Write a **Context Brief** (in chat, not a file): goal, constraints from
    decisions (cite DEC ids), relevant docs (cite DOC ids + authority),
-   relevant past issues (cite ISS ids), open questions.
+   relevant past issues (cite ISS ids), open questions. 인용한 active 노트가
+   오래됨(stale) 판정이면 반드시 "⚠ 마지막 확인 N개월 전"을 함께 표기한다.
 5. THEN proceed to implementation. If a development-methodology harness
    (e.g. Superpowers, ECC) is installed in this project, let its normal
    workflow take over from the Context Brief — do not bypass it. The vault's
@@ -323,6 +372,7 @@ slash or natural language — routes through three verbs:
 - **최신성은 구조로 판정.** `status`와 `supersedes`/`superseded_by` 체인이 현재 상태의
   유일한 기준이다. 의미 유사도나 문장 표현만으로 최신 결정을 고르지 않는다. 상충하는
   active 결정이 둘 이상이면 임의로 날짜를 비교하지 말고 W4로 사용자에게 확인한다.
+  오래됨(stale) 표시는 신뢰도 신호일 뿐, 날짜로 최신성을 고르는 데 쓰지 않는다.
 - **원본 보존.** 인제스트한 원본이 텍스트면, 노트 생성 직후 그 내용을 가공 없이
   (verbatim) `_sources/<type>/<노트와 동일한 id-slug>.md`에 저장하고 노트의
   `source:`를 그 경로로 설정한다 (type = meetings / docs / issues, W1·W6·W7 공통).

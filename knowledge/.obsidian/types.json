@@ -1,0 +1,12 @@
+{
+  "types": {
+    "created": "date",
+    "reviewed": "date",
+    "topics": "multitext",
+    "topics_ref": "multitext",
+    "related": "multitext",
+    "symptoms": "multitext",
+    "attendees": "multitext",
+    "decisions": "multitext"
+  }
+}

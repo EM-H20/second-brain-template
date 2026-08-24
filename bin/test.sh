@@ -12,11 +12,16 @@ echo "changelog selfcheck OK"
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
-for (const p of [".claude/hooks", ".claude/settings.json"]) {
+for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills"]) {
   if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
 }
 ' || fail "package.json files 누락"
 echo "packaging guard OK"
+
+# 두 SKILL.md 사본은 항상 동일해야 한다 — Claude(.claude/skills)와 Codex(.agents/skills)가 같은 스킬을 본다
+diff -q "$ROOT/.claude/skills/second-brain/SKILL.md" "$ROOT/.agents/skills/second-brain/SKILL.md" > /dev/null \
+  || fail "SKILL.md 두 사본 불일치 (.claude/skills vs .agents/skills)"
+echo "skill parity OK"
 
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
@@ -31,6 +36,10 @@ grep -q '무결성 검사' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W2 무결
 grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우팅 없음"
 # 세션 시작 규칙은 툴 중립이어야 한다 — 훅이 없는 CLI(Codex 등)가 지킬 근거가 여기 있다.
 grep -q '세션 시작 컨텍스트' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 세션 시작 규칙 없음"
+grep -q 'Status 라이프사이클과 회수 시맨틱' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 status 시맨틱 섹션 없음"
+grep -q 'reviewed: YYYY-MM-DD' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 reviewed 키 없음"
+grep -q '3개월' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 오래됨 임계값 없음"
+grep -q '리뷰 후보' SECOND-BRAIN.md || fail "SECOND-BRAIN.md W2에 리뷰 후보 보고 없음"
 [ "$(cat CLAUDE.md)" = "@SECOND-BRAIN.md" ] || fail "CLAUDE.md가 import 한 줄이 아님"
 [ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
@@ -66,6 +75,9 @@ grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Co
 grep -q 'cluster-' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 클러스터 우선 읽기 지시 없음"
 # setup-vault 는 W 워크플로우가 아니라, 스킬이 직접 라우팅해야 Codex 에서 도달 가능하다
 grep -q 'setup' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 볼트 초기화 트리거 없음"
+[ -f .claude/skills/second-brain/SKILL.md ] || fail "Claude repo skill 없음"
+grep -q 'second-brain-template' .claude/skills/second-brain/SKILL.md || fail "Claude repo skill에 마커 없음"
+grep -q 'Status 라이프사이클' .claude/skills/second-brain/SKILL.md || fail "skill에 status 시맨틱 참조 없음"
 grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없음"
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
@@ -85,12 +97,25 @@ grep -q '\$ARGUMENTS' .codex/prompts/recall.md || fail "recall 인자 전달 없
 grep -q '관련 교훈' knowledge/_templates/cluster-index.md || fail "cluster 템플릿에 관련 교훈 섹션 없음"
 grep -q '검토한 대안 (Alternatives)' knowledge/_templates/decision.md || fail "결정 템플릿에 Alternatives 섹션 없음"
 grep -q '논의 기록 없음' knowledge/_templates/decision.md || fail "결정 템플릿에 빈 섹션 지침 없음"
+grep -q '^reviewed: null' knowledge/_templates/decision.md || fail "결정 템플릿에 reviewed 키 없음"
+grep -q 'archived' knowledge/_templates/decision.md || fail "결정 템플릿 status 어휘에 archived 없음"
+grep -q '^reviewed: null' knowledge/_templates/doc.md || fail "doc 템플릿에 reviewed 키 없음"
+grep -q 'archived' knowledge/_templates/doc.md || fail "doc 템플릿 status 어휘에 archived 없음"
+grep -q '^reviewed: null' knowledge/_templates/lesson.md || fail "lesson 템플릿에 reviewed 키 없음"
 [ -f knowledge/docs/README.md ] || fail "docs/ 스켈레톤 없음"
 [ -f knowledge/_templates/doc.md ] || fail "doc 템플릿 없음"
 [ -f knowledge/_templates/lesson.md ] || fail "lesson 템플릿 없음"
 grep -q '^status: resolved' knowledge/_templates/completion-report.md || fail "완료 보고서 status 누락"
 [ -f knowledge/lessons/README.md ] || fail "lessons/ 스켈레톤 없음"
 [ -f knowledge/.obsidian/graph.json ] || fail "graph.json 미설치"
+[ -f knowledge/.obsidian/types.json ] || fail "types.json 미설치"
+node -e '
+const t = require("./knowledge/.obsidian/types.json").types;
+if (t.reviewed !== "date" || t.created !== "date") throw new Error("날짜 타입 미등록");
+for (const k of ["topics", "topics_ref", "related", "symptoms", "attendees", "decisions"]) {
+  if (t[k] !== "multitext") throw new Error(k + " 리스트 타입 미등록");
+}
+' || fail "types.json 프로퍼티 타입 검증 실패"
 [ -f knowledge/_bases/README.md ] || fail "_bases 스켈레톤 없음"
 [ -f knowledge/_bases/vault.base ] || fail "_bases/vault.base 미설치"
 # 노트 타입을 추가하면 base 뷰도 따라와야 한다 — 이 루프가 그 드리프트를 잡는다
@@ -181,6 +206,9 @@ printf '{"scale": 2}\n' > knowledge/.obsidian/graph.json
 node "$ROOT/bin/init.js" -y > out5.log
 grep -q 'verbatim original' knowledge/_sources/meetings/2026-07-21-test.md || fail "_sources 저장 원본 덮어씀"
 grep -q '"scale": 2' knowledge/.obsidian/graph.json || fail ".obsidian 사용자 설정 덮어씀"
+printf '{"types": {"custom": "text"}}\n' > knowledge/.obsidian/types.json
+node "$ROOT/bin/init.js" -y > out6.log
+grep -q '"custom"' knowledge/.obsidian/types.json || fail "types.json 사용자 설정 덮어씀"
 
 echo "케이스 3 OK"
 

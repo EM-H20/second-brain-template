@@ -248,6 +248,7 @@ CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with ex
 .claude/commands/ 12 slash commands (9 original + capture/recall/maintain)
 .claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
 .claude/settings.json hook registration (merges one entry if the file already exists)
+.claude/skills/second-brain/ Claude repo skill (auto-detected, identical to the Codex copy)
 .agents/skills/second-brain/ Codex repo skill (auto-detected)
 .codex/prompts/   Legacy Codex custom prompts (deprecated)
 ```
@@ -264,7 +265,7 @@ passes the baton to the harness workflow. It works fine with no harness at all.
 There is a single source of rules, `SECOND-BRAIN.md`, and `AGENTS.md` guides Codex and other CLIs
 to those rules. The supported interfaces are:
 
-- Claude Code: `.claude/commands/` (auto-detected)
+- Claude Code: `.claude/commands/` + `.claude/skills/second-brain/` (both auto-detected)
 - Codex: `.agents/skills/second-brain/` (auto-detected; use natural language or `$second-brain`)
 - Legacy Codex prompts: `.codex/prompts/` (deprecated; requires manual copying and `/prompts:name`)
 
@@ -302,6 +303,10 @@ register one. The same rule is therefore spelled out in `AGENTS.md` and
   Raw originals under `_sources/` are never searched.
 - **Deterministic currency:** `status` and the `supersedes` / `superseded_by` chain decide what is
   current; the agent does not guess from wording or dates.
+- **Staleness is a flag, not a transition:** an active note unconfirmed for over 3 months is
+  annotated ("⚠ unconfirmed for N months") at recall time and reported as a review candidate by
+  the full W2 pass. Time never changes a `status` — disposal (confirm → bump `reviewed` /
+  `archived` / supersede) is always a human decision.
 - **Fail-closed installation:** the installer stops before writing when it finds an unrelated
   `SECOND-BRAIN.md` or a target path that crosses a symbolic link.
 - **Local-first originals:** `_sources/` is Git-ignored by default, and the installer has zero
@@ -568,6 +573,7 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 .claude/commands/ 12 个斜杠命令 (原有 9 个 + capture/recall/maintain)
 .claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
 .claude/settings.json 钩子注册（文件已存在时只合并一个条目）
+.claude/skills/second-brain/ Claude 仓库技能（自动识别，与 Codex 副本相同）
 .agents/skills/second-brain/ Codex 仓库技能（自动识别）
 .codex/prompts/   旧版 Codex 自定义提示词（已弃用）
 ```
@@ -583,7 +589,7 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 规则的唯一来源是 `SECOND-BRAIN.md`，而 `AGENTS.md` 引导 Codex 等其他 CLI
 遵循同一规则。支持的入口如下：
 
-- Claude Code：`.claude/commands/`（自动识别）
+- Claude Code：`.claude/commands/` + `.claude/skills/second-brain/`（两者都自动识别）
 - Codex：`.agents/skills/second-brain/`（自动识别；使用自然语言或 `$second-brain`）
 - 旧版 Codex 提示词：`.codex/prompts/`（已弃用；需手动复制，并以 `/prompts:name` 调用）
 
@@ -618,6 +624,9 @@ node .claude/hooks/session-context.mjs
   `_sources/` 中的原文不会参与检索。
 - **确定性判断最新状态：** 仅以 `status` 和 `supersedes` / `superseded_by` 链为准，
   不根据措辞或日期猜测。
+- **过时是标记，不是状态迁移：** active 笔记若超过 3 个月未确认，检索时会标注
+  "⚠ 上次确认于 N 个月前"，并由完整版 W2 检查列为复查候选。时间流逝本身不会改变
+  `status` —— 处置（确认有效 → 更新 `reviewed` / `archived` / supersede）始终由人决定。
 - **失败即停止安装：** 遇到无模板标记的 `SECOND-BRAIN.md`，或目标路径穿过符号链接时，
   安装器会在写入前停止。
 - **原文默认保留在本地：** `_sources/` 默认被 Git 忽略，安装器没有运行时依赖。
@@ -888,6 +897,7 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 .claude/commands/ スラッシュコマンド 12 個 (既存 9 個 + capture/recall/maintain)
 .claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
 .claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
+.claude/skills/second-brain/ Claude リポジトリスキル（自動認識、Codex コピーと同一）
 .agents/skills/second-brain/ Codex リポジトリスキル（自動認識）
 .codex/prompts/   旧 Codex カスタムプロンプト（非推奨）
 ```
@@ -904,7 +914,7 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 ルールの原本は `SECOND-BRAIN.md` ひとつであり、`AGENTS.md` は Codex など他の CLI を
 同じルールへ導きます。対応インターフェースは次のとおりです：
 
-- Claude Code：`.claude/commands/`（自動認識）
+- Claude Code：`.claude/commands/` + `.claude/skills/second-brain/`（両方とも自動認識）
 - Codex：`.agents/skills/second-brain/`（自動認識。自然言語または `$second-brain` を使用）
 - 旧 Codex プロンプト：`.codex/prompts/`（非推奨。手動コピー後に `/prompts:name` で実行）
 
@@ -941,6 +951,10 @@ node .claude/hooks/session-context.mjs
   開きます。`_sources/` の原文は検索しません。
 - **現在状態を決定的に判定：** `status` と `supersedes` / `superseded_by` チェーンだけを基準にし、
   表現や日付から推測しません。
+- **古さはフラグであり、状態遷移ではない：** active ノートが 3 ヶ月以上未確認の場合、検索時に
+  「⚠ 最終確認から N ヶ月経過」と表示され、フルパスの W2 でレビュー候補として報告されます。
+  時間の経過が `status` を変えることはありません —— 処分（有効確認 → `reviewed` 更新 /
+  `archived` / supersede）は常に人間が行います。
 - **安全側で停止：** 無関係な `SECOND-BRAIN.md`、またはシンボリックリンクを通る対象パスを
   検出すると、書き込み前にインストールを停止します。
 - **原文はローカル優先：** `_sources/` はデフォルトで Git の追跡対象外で、インストーラーの
@@ -1207,6 +1221,7 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 .claude/commands/ 슬래시 커맨드 12개 (기존 9개 + capture/recall/maintain)
 .claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
 .claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
+.claude/skills/second-brain/ Claude 저장소 스킬 (자동 인식, Codex 사본과 동일)
 .agents/skills/second-brain/ Codex 저장소 스킬 (자동 인식)
 .codex/prompts/   레거시 Codex 커스텀 프롬프트 (deprecated)
 ```
@@ -1223,7 +1238,7 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 규칙 원본은 `SECOND-BRAIN.md` 하나이며, `AGENTS.md`는 Codex 등 다른 CLI를
 같은 규칙으로 안내한다. 지원하는 인터페이스는 다음과 같다:
 
-- Claude Code: `.claude/commands/` (자동 인식)
+- Claude Code: `.claude/commands/` + `.claude/skills/second-brain/` (둘 다 자동 인식)
 - Codex: `.agents/skills/second-brain/` (자동 인식, 자연어나 `$second-brain` 사용)
 - 레거시 Codex 프롬프트: `.codex/prompts/` (deprecated, 수동 복사 후 `/prompts:name` 사용)
 
@@ -1258,6 +1273,9 @@ node .claude/hooks/session-context.mjs
   `_sources/` 원본은 검색하지 않는다.
 - **결정적 최신성 판정:** `status`와 `supersedes` / `superseded_by` 체인만 현재 상태의
   기준으로 사용하며 문장 표현이나 날짜로 추측하지 않는다.
+- **오래됨은 표시로만:** active 노트가 3개월 넘게 미확인이면 회수 시 "⚠ 마지막 확인
+  N개월 전"을 표기하고 W2 full 패스가 리뷰 후보로 보고한다. 시간 경과가 status를
+  바꾸는 일은 없다 — 처분(유효 확인 → `reviewed` 갱신 / `archived` / supersede)은 인간만 한다.
 - **안전 우선 설치:** 템플릿 마커가 없는 `SECOND-BRAIN.md`나 심볼릭 링크를 지나는 대상 경로를
   발견하면 파일을 쓰기 전에 설치를 중단한다.
 - **원본 로컬 우선:** `_sources/`는 기본적으로 Git에서 제외되며 설치기는 런타임 의존성이 없다.

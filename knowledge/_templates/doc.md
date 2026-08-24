@@ -4,11 +4,12 @@ id: DOC-NNNN
 doc_type: other       # spec | prd | design | research | article | other
 authority: internal   # official | internal | external
 created: YYYY-MM-DD
+reviewed: null        # 마지막 인간 확인일 YYYY-MM-DD — W2 리뷰 확인 시에만 갱신
 source: ""            # _sources/docs/<id>.md (텍스트 보존 시) 또는 외부 URL
 topics: []            # 핵심 연관 토픽 (검색 우선)
 topics_ref: []        # 참고 연관 토픽 (검색 후순위)
 decisions: []         # 이 문서에서 추출된 DEC-NNNN
-status: active        # active | superseded
+status: active        # active | superseded | archived
 supersedes: null      # DOC-NNNN — 이 문서가 대체한 과거 문서
 superseded_by: null   # DOC-NNNN — 이 문서를 대체한 새 문서
 related: []

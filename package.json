@@ -17,6 +17,7 @@
     ".claude/commands",
     ".claude/hooks",
     ".claude/settings.json",
+    ".claude/skills",
     ".codex/prompts",
     "knowledge"
   ],
