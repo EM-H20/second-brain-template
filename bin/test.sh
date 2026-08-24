@@ -12,7 +12,7 @@ echo "changelog selfcheck OK"
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
-for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills"]) {
+for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/skills"]) {
   if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
 }
 ' || fail "package.json files 누락"
@@ -47,9 +47,9 @@ grep -q 'reviewed: YYYY-MM-DD' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 revie
 grep -q '3개월' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 오래됨 임계값 없음"
 grep -q '리뷰 후보' SECOND-BRAIN.md || fail "SECOND-BRAIN.md W2에 리뷰 후보 보고 없음"
 [ "$(cat CLAUDE.md)" = "@SECOND-BRAIN.md" ] || fail "CLAUDE.md가 import 한 줄이 아님"
-[ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
-grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
-head -1 .claude/commands/ingest-meeting.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
+[ -f .claude/skills/ingest-meeting/SKILL.md ] || fail "ingest-meeting 스킬 없음"
+grep -q 'second-brain-template' .claude/skills/ingest-meeting/SKILL.md || fail "스킬에 마커 없음"
+head -1 .claude/skills/ingest-meeting/SKILL.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
 # .mjs는 항상 모듈 모드로 파싱되므로 Annex B 문법(<!-- 를 한 줄 주석으로 허용)이
 # 적용되지 않는다 — node --check 는 이제 HTML 마커가 붙으면 실제로 문법 오류로
 # 잡아낸다. 그래도 회귀 방어의 진짜 가드는 아래 부재(absence) 단언이다: 위 grep은
@@ -74,7 +74,6 @@ grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
 grep -q '기억해' out.log || fail "다음 단계에 자연어 사용법 없음"
 grep -q '볼트 초기화해줘' out.log || fail "다음 단계에 Codex 초기화 경로 없음"
 grep -q 'session-context.mjs' out.log || fail "훅 확인 방법 안내 없음"
-[ -f .codex/prompts/ingest-meeting.md ] || fail "codex 프롬프트 없음"
 [ -f .agents/skills/second-brain/SKILL.md ] || fail "Codex repo skill 없음"
 grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Codex repo skill에 마커 없음"
 # Codex는 저장소 파일로 훅을 등록할 수 없으므로, 같은 규칙이 읽히는 두 경로에 있어야 한다
@@ -88,16 +87,14 @@ grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
 grep -q '^# second-brain-template' .agents/skills/second-brain/agents/openai.yaml || fail "Codex skill YAML 마커가 주석이 아님"
-[ -f .claude/commands/ingest-doc.md ] || fail "ingest-doc 커맨드 미설치"
-[ -f .codex/prompts/ingest-doc.md ] || fail "ingest-doc codex 프롬프트 미설치"
-[ -f .claude/commands/capture.md ] || fail "capture 커맨드 미설치"
-[ -f .claude/commands/recall.md ] || fail "recall 커맨드 미설치"
-[ -f .claude/commands/maintain.md ] || fail "maintain 커맨드 미설치"
-[ -f .codex/prompts/capture.md ] || fail "capture codex 프롬프트 미설치"
-[ -f .codex/prompts/recall.md ] || fail "recall codex 프롬프트 미설치"
-[ -f .codex/prompts/maintain.md ] || fail "maintain codex 프롬프트 미설치"
-grep -q '\$ARGUMENTS' .codex/prompts/capture.md || fail "capture 인자 전달 없음"
-grep -q '\$ARGUMENTS' .codex/prompts/recall.md || fail "recall 인자 전달 없음"
+for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting maintain recall report setup-vault second-brain; do
+  [ -f .claude/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.claude)"
+  [ -f .agents/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.agents)"
+done
+grep -q '\$ARGUMENTS' .claude/skills/capture/SKILL.md || fail "capture 인자 전달 없음"
+grep -q '\$ARGUMENTS' .claude/skills/recall/SKILL.md || fail "recall 인자 전달 없음"
+[ ! -d .claude/commands ] || fail "구버전 커맨드 디렉터리가 설치됨"
+[ ! -d .codex ] || fail "구버전 codex 프롬프트가 설치됨"
 [ -f knowledge/clusters/_topics.md ] || fail "knowledge 스켈레톤 없음"
 [ -f knowledge/_templates/meeting-note.md ] || fail "_templates 없음"
 grep -q '관련 교훈' knowledge/_templates/cluster-index.md || fail "cluster 템플릿에 관련 교훈 섹션 없음"
@@ -154,10 +151,9 @@ node "$ROOT/bin/init.js" -y > out.log
 grep -q '# My project rules' CLAUDE.md || fail "기존 CLAUDE.md 내용 유실"
 grep -q '@SECOND-BRAIN.md' CLAUDE.md || fail "import 줄 미추가"
 grep -q 'my own build command' .claude/commands/build.md || fail "사용자 커맨드 클로버됨"
-grep -q 'build.md' out.log || fail "스킵 경고 미출력"
 grep -q 'SECOND-BRAIN.md' AGENTS.md || fail "AGENTS.md 포인터 미추가"
 grep -q '# My agents doc' AGENTS.md || fail "기존 AGENTS.md 내용 유실"
-[ -f .claude/commands/report.md ] || fail "다른 커맨드 미설치"
+[ -f .claude/skills/report/SKILL.md ] || fail "다른 스킬 미설치"
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "append 재실행 시 import 줄 중복"
 [ "$(grep -c 'SECOND-BRAIN.md' AGENTS.md)" = "1" ] || fail "append 재실행 시 AGENTS 포인터 중복"
@@ -167,7 +163,7 @@ echo "케이스 2 OK"
 cd "$TMP/fresh"
 printf 'user note\n' > knowledge/meetings/2026-07-21-test.md
 printf 'edited by user\n' >> knowledge/index.md
-printf 'stale content\n' >> .claude/commands/report.md
+printf 'stale content\n' >> .claude/skills/report/SKILL.md
 printf 'STALE TEMPLATE\n' > knowledge/_templates/meeting-note.md
 printf 'user log line\n' >> knowledge/log.md
 printf 'user-topic-slug\n' >> knowledge/clusters/_topics.md
@@ -175,7 +171,7 @@ node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "import 줄 중복"
 grep -q 'edited by user' knowledge/index.md || fail "사용자 수정 index.md 덮어씀"
 [ -f knowledge/meetings/2026-07-21-test.md ] || fail "사용자 노트 유실"
-if grep -q 'stale content' .claude/commands/report.md; then fail "마커 있는 템플릿 파일이 갱신 안 됨"; fi
+if grep -q 'stale content' .claude/skills/report/SKILL.md; then fail "마커 있는 템플릿 파일이 갱신 안 됨"; fi
 if grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md; then fail "스캐폴딩 템플릿이 갱신 안 됨"; fi
 diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting-note.md" > /dev/null || fail "템플릿이 최신본과 불일치"
 [ -f knowledge/_templates/meeting-note.md.bak ] || fail ".bak 백업 없음"
@@ -215,6 +211,18 @@ grep -q '"scale": 2' knowledge/.obsidian/graph.json || fail ".obsidian 사용자
 printf '{"types": {"custom": "text"}}\n' > knowledge/.obsidian/types.json
 node "$ROOT/bin/init.js" -y > out6.log
 grep -q '"custom"' knowledge/.obsidian/types.json || fail "types.json 사용자 설정 덮어씀"
+
+# 은퇴: 마커 있는 구버전 커맨드/프롬프트는 재실행 시 정리되고, 마커 없는 사용자 파일은 산다
+mkdir -p .claude/commands .codex/prompts
+printf 'old command body\n\n<!-- second-brain-template -->\n' > .claude/commands/report.md
+printf 'old prompt body\n\n<!-- second-brain-template -->\n' > .codex/prompts/recall.md
+printf 'my own thing\n' > .claude/commands/mine.md
+node "$ROOT/bin/init.js" -y > out7.log
+[ ! -f .claude/commands/report.md ] || fail "마커 있는 구버전 커맨드가 정리되지 않음"
+[ ! -f .codex/prompts/recall.md ] || fail "마커 있는 구버전 프롬프트가 정리되지 않음"
+[ -f .claude/commands/mine.md ] || fail "마커 없는 사용자 커맨드가 삭제됨"
+[ ! -d .codex ] || fail "빈 .codex 디렉터리가 정리되지 않음"
+grep -q '정리(구버전 파일' out7.log || fail "분석 요약에 정리 줄 없음"
 
 echo "케이스 3 OK"
 
