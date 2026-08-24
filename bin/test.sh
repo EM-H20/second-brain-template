@@ -12,11 +12,16 @@ echo "changelog selfcheck OK"
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
-for (const p of [".claude/hooks", ".claude/settings.json"]) {
+for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills"]) {
   if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
 }
 ' || fail "package.json files 누락"
 echo "packaging guard OK"
+
+# 두 SKILL.md 사본은 항상 동일해야 한다 — Claude(.claude/skills)와 Codex(.agents/skills)가 같은 스킬을 본다
+diff -q "$ROOT/.claude/skills/second-brain/SKILL.md" "$ROOT/.agents/skills/second-brain/SKILL.md" > /dev/null \
+  || fail "SKILL.md 두 사본 불일치 (.claude/skills vs .agents/skills)"
+echo "skill parity OK"
 
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
@@ -70,6 +75,9 @@ grep -q 'second-brain-template' .agents/skills/second-brain/SKILL.md || fail "Co
 grep -q 'cluster-' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 클러스터 우선 읽기 지시 없음"
 # setup-vault 는 W 워크플로우가 아니라, 스킬이 직접 라우팅해야 Codex 에서 도달 가능하다
 grep -q 'setup' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 볼트 초기화 트리거 없음"
+[ -f .claude/skills/second-brain/SKILL.md ] || fail "Claude repo skill 없음"
+grep -q 'second-brain-template' .claude/skills/second-brain/SKILL.md || fail "Claude repo skill에 마커 없음"
+grep -q 'Status 라이프사이클' .claude/skills/second-brain/SKILL.md || fail "skill에 status 시맨틱 참조 없음"
 grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없음"
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
