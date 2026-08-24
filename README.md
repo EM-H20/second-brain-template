@@ -156,7 +156,7 @@ natural moments (when you correct the AI, resolve a conflict, or close an issue)
 with your approval — never silently. No session-end nagging, no fine-tuning; the model stays the
 same, but the material it pulls keeps getting better.
 
-> 💡 Commands are just a convenience — **natural language is the interface.** The workflows are
+> 💡 Skills are just a convenience — **natural language is the interface.** The workflows are
 > defined in `SECOND-BRAIN.md` by intent, so they work identically in a CLI that has no commands.
 
 ---
@@ -201,15 +201,15 @@ are preconfigured in `knowledge/.obsidian/graph.json` — they apply the moment 
 
 ---
 
-## 🗂 Command reference
+## 🗂 Skill reference
 
-These are **Claude Code** slash commands. **Codex has no slash commands** — call
-the same workflows with `$second-brain` or plain natural language, e.g.
-`/ingest-meeting` → "put this transcript in the vault". Every row below is
-reachable that way; the routing lives in `SECOND-BRAIN.md`, not in the command
-names.
+These are all **skills** — invoke as `/name` in Claude Code, `$name` or plain
+natural language in Codex, e.g. `/ingest-meeting` = `$ingest-meeting` = "put
+this transcript in the vault". Routing lives in `SECOND-BRAIN.md`, not in the
+skill names, and description-based auto-detection also fires them from natural
+speech.
 
-| Command | Role |
+| Skill | Role |
 |---|---|
 | `/setup-vault` | One-time initialization right after cloning |
 | `/ingest-meeting` | Transcript → meeting note + decision extraction + cluster update + conflict check |
@@ -245,12 +245,10 @@ knowledge/
 └── _sources/     Verbatim preservation of originals (mirrors meetings/docs/issues)
 SECOND-BRAIN.md   Workflow rules (W1–W8) — the heart of the system
 CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with existing projects)
-.claude/commands/ 12 slash commands (9 original + capture/recall/maintain)
 .claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
 .claude/settings.json hook registration (merges one entry if the file already exists)
-.claude/skills/second-brain/ Claude repo skill (auto-detected, identical to the Codex copy)
-.agents/skills/second-brain/ Codex repo skill (auto-detected)
-.codex/prompts/   Legacy Codex custom prompts (deprecated)
+.claude/skills/   13 Claude repo skills (auto-detected, /name invocation)
+.agents/skills/   13 Codex repo skills (auto-detected, $name or natural language — identical to the Claude copies)
 ```
 
 ## 🤝 Relationship with harnesses
@@ -265,9 +263,8 @@ passes the baton to the harness workflow. It works fine with no harness at all.
 There is a single source of rules, `SECOND-BRAIN.md`, and `AGENTS.md` guides Codex and other CLIs
 to those rules. The supported interfaces are:
 
-- Claude Code: `.claude/commands/` + `.claude/skills/second-brain/` (both auto-detected)
-- Codex: `.agents/skills/second-brain/` (auto-detected; use natural language or `$second-brain`)
-- Legacy Codex prompts: `.codex/prompts/` (deprecated; requires manual copying and `/prompts:name`)
+- Claude Code: `.claude/skills/` — 13 skills (auto-detected, `/name` invocation)
+- Codex: `.agents/skills/` — 13 skills (auto-detected, `$name` or natural language)
 
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
@@ -484,7 +481,7 @@ npx github:EM-H20/second-brain-template
 且只有经你批准才保存 —— 绝不会静默保存。没有会话结束时的打扰，也没有微调；模型本身不变，
 但它取用的材料会越来越好。
 
-> 💡 命令只是便利手段，**自然语言才是接口**。工作流在 `SECOND-BRAIN.md` 中
+> 💡 技能只是便利手段，**自然语言才是接口**。工作流在 `SECOND-BRAIN.md` 中
 > 以意图为基准定义，因此在没有命令的 CLI 中同样有效。
 
 ---
@@ -528,13 +525,14 @@ npx github:EM-H20/second-brain-template
 
 ---
 
-## 🗂 命令参考
+## 🗂 技能参考
 
-以下是 **Claude Code** 的斜杠命令。**Codex 没有斜杠命令** —— 用 `$second-brain`
-或自然语言调用同样的工作流，例如 `/ingest-meeting` → "把这份会议记录放进知识库"。
-下表每一行都能这样触达；路由定义在 `SECOND-BRAIN.md` 里，而不在命令名称上。
+以下均为**技能**（skill）—— 在 Claude Code 中以 `/名称` 调用，在 Codex 中以
+`$名称` 或自然语言调用，例如 `/ingest-meeting` = `$ingest-meeting` = "把这份
+会议记录放进知识库"。路由定义在 `SECOND-BRAIN.md` 里，而不在技能名称上；基于
+description 的自动识别也能让自然语言发话直接触发。
 
-| 命令 | 作用 |
+| 技能 | 作用 |
 |---|---|
 | `/setup-vault` | clone 之后的一次性初始化 |
 | `/ingest-meeting` | 记录 → 会议笔记 + 决策拆分 + 聚类更新 + 冲突检查 |
@@ -570,12 +568,10 @@ knowledge/
 └── _sources/     原文逐字保存 (镜像 meetings/docs/issues)
 SECOND-BRAIN.md   工作流规则 (W1~W8) —— 系统的心脏
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突)
-.claude/commands/ 12 个斜杠命令 (原有 9 个 + capture/recall/maintain)
 .claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
 .claude/settings.json 钩子注册（文件已存在时只合并一个条目）
-.claude/skills/second-brain/ Claude 仓库技能（自动识别，与 Codex 副本相同）
-.agents/skills/second-brain/ Codex 仓库技能（自动识别）
-.codex/prompts/   旧版 Codex 自定义提示词（已弃用）
+.claude/skills/   Claude 仓库技能 13 个（自动识别，/名称 调用）
+.agents/skills/   Codex 仓库技能 13 个（自动识别，$名称 或自然语言 —— 与 Claude 副本相同）
 ```
 
 ## 🤝 与 harness 的关系
@@ -589,9 +585,8 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 规则的唯一来源是 `SECOND-BRAIN.md`，而 `AGENTS.md` 引导 Codex 等其他 CLI
 遵循同一规则。支持的入口如下：
 
-- Claude Code：`.claude/commands/` + `.claude/skills/second-brain/`（两者都自动识别）
-- Codex：`.agents/skills/second-brain/`（自动识别；使用自然语言或 `$second-brain`）
-- 旧版 Codex 提示词：`.codex/prompts/`（已弃用；需手动复制，并以 `/prompts:name` 调用）
+- Claude Code：`.claude/skills/` —— 13 个技能（自动识别，`/名称` 调用）
+- Codex：`.agents/skills/` —— 13 个技能（自动识别，`$名称` 或自然语言）
 
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
@@ -806,7 +801,7 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 黙って保存されることはありません。セッション終了時の催促もなく、ファインチューニングもしません。
 モデル自体は変わりませんが、引き出す材料はどんどん良くなります。
 
-> 💡 コマンドは利便性のためのもので、**自然言語こそがインターフェース**です。ワークフローが
+> 💡 スキルは利便性のためのもので、**自然言語こそがインターフェース**です。ワークフローが
 > `SECOND-BRAIN.md` に意図ベースで定義されているため、コマンドのない CLI でも同じように動作します。
 
 ---
@@ -851,14 +846,14 @@ DEC ノートとして抽出され衝突検知を通過する必要があり、�
 
 ---
 
-## 🗂 コマンドリファレンス
+## 🗂 スキルリファレンス
 
-以下は **Claude Code** のスラッシュコマンドである。**Codex にスラッシュコマンドは
-ない** — `$second-brain` か自然言語で同じワークフローを呼ぶ。例: `/ingest-meeting`
-→ 「この議事録をボールトに入れて」。下表のすべての行がその方法で到達でき、ルーティングは
-コマンド名ではなく `SECOND-BRAIN.md` に定義されている。
+以下はすべて **スキル** である — Claude Code では `/名前`、Codex では `$名前` か
+自然言語で呼び出す。例: `/ingest-meeting` = `$ingest-meeting` = 「この議事録を
+ボールトに入れて」。ルーティングはスキル名ではなく `SECOND-BRAIN.md` に定義されており、
+description ベースの自動認識によって自然な発話からも起動する。
 
-| コマンド | 役割 |
+| スキル | 役割 |
 |---|---|
 | `/setup-vault` | clone 直後の 1 回だけの初期化 |
 | `/ingest-meeting` | 文字起こし → 議事録 + 決定の分離 + クラスタ更新 + 衝突チェック |
@@ -894,12 +889,10 @@ knowledge/
 └── _sources/     原文をそのまま (verbatim) 保存 (meetings/docs/issues のミラー)
 SECOND-BRAIN.md   ワークフロー規則 (W1〜W8) — システムの心臓部
 CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトとの衝突を防ぐ)
-.claude/commands/ スラッシュコマンド 12 個 (既存 9 個 + capture/recall/maintain)
 .claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
 .claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
-.claude/skills/second-brain/ Claude リポジトリスキル（自動認識、Codex コピーと同一）
-.agents/skills/second-brain/ Codex リポジトリスキル（自動認識）
-.codex/prompts/   旧 Codex カスタムプロンプト（非推奨）
+.claude/skills/   Claude リポジトリスキル 13 個（自動認識、/名前 で呼び出し）
+.agents/skills/   Codex リポジトリスキル 13 個（自動認識、$名前・自然言語 — Claude コピーと同一）
 ```
 
 ## 🤝 ハーネスとの関係
@@ -914,9 +907,8 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 ルールの原本は `SECOND-BRAIN.md` ひとつであり、`AGENTS.md` は Codex など他の CLI を
 同じルールへ導きます。対応インターフェースは次のとおりです：
 
-- Claude Code：`.claude/commands/` + `.claude/skills/second-brain/`（両方とも自動認識）
-- Codex：`.agents/skills/second-brain/`（自動認識。自然言語または `$second-brain` を使用）
-- 旧 Codex プロンプト：`.codex/prompts/`（非推奨。手動コピー後に `/prompts:name` で実行）
+- Claude Code：`.claude/skills/` — スキル 13 個（自動認識、`/名前` で呼び出し）
+- Codex：`.agents/skills/` — スキル 13 個（自動認識、`$名前` または自然言語）
 
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
@@ -1131,7 +1123,7 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 충돌을 해결할 때, 이슈를 닫을 때) 제안되고 네 승인으로만 저장된다 — 조용히 저장되는 일은 없다.
 세션 끝에 귀찮게 묻지도, 파인튜닝하지도 않는다 — 모델은 그대로지만 꺼내 쓰는 재료가 계속 좋아진다.
 
-> 💡 커맨드는 편의일 뿐, **자연어가 곧 인터페이스**다. 워크플로우가
+> 💡 스킬은 편의일 뿐, **자연어가 곧 인터페이스**다. 워크플로우가
 > `SECOND-BRAIN.md`에 의도 기준으로 정의되어 있어서 커맨드 없는 CLI에서도 똑같이 동작한다.
 
 ---
@@ -1175,14 +1167,14 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 
 ---
 
-## 🗂 커맨드 레퍼런스
+## 🗂 스킬 레퍼런스
 
-아래는 **Claude Code** 슬래시 커맨드다. **Codex에는 슬래시 커맨드가 없다** —
-`$second-brain` 또는 자연어로 같은 워크플로우를 호출한다. 예: `/ingest-meeting`
-→ "이 회의록 볼트에 넣어줘". 아래 모든 행이 그렇게 도달 가능하며, 라우팅은
-커맨드 이름이 아니라 `SECOND-BRAIN.md`에 정의되어 있다.
+아래는 모두 **스킬**이다 — Claude Code에서는 `/이름`, Codex에서는 `$이름` 또는
+자연어로 호출한다. 예: `/ingest-meeting` = `$ingest-meeting` = "이 회의록 볼트에
+넣어줘". 라우팅은 스킬 이름이 아니라 `SECOND-BRAIN.md`에 정의되어 있고,
+description 기반 자동 인식으로 자연어 발화에도 스스로 발동한다.
 
-| 커맨드 | 역할 |
+| 스킬 | 역할 |
 |---|---|
 | `/setup-vault` | clone 직후 1회 초기화 |
 | `/ingest-meeting` | 전사체 → 회의노트 + 결정 분리 + 클러스터 갱신 + 충돌 검사 |
@@ -1218,12 +1210,10 @@ knowledge/
 └── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
 SECOND-BRAIN.md   워크플로우 규칙 (W1~W8) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
-.claude/commands/ 슬래시 커맨드 12개 (기존 9개 + capture/recall/maintain)
 .claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
 .claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
-.claude/skills/second-brain/ Claude 저장소 스킬 (자동 인식, Codex 사본과 동일)
-.agents/skills/second-brain/ Codex 저장소 스킬 (자동 인식)
-.codex/prompts/   레거시 Codex 커스텀 프롬프트 (deprecated)
+.claude/skills/   Claude 저장소 스킬 13종 (자동 인식, /이름 호출)
+.agents/skills/   Codex 저장소 스킬 13종 (자동 인식, $이름·자연어 — Claude 사본과 동일)
 ```
 
 ## 🤝 하네스와의 관계
@@ -1238,9 +1228,8 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 규칙 원본은 `SECOND-BRAIN.md` 하나이며, `AGENTS.md`는 Codex 등 다른 CLI를
 같은 규칙으로 안내한다. 지원하는 인터페이스는 다음과 같다:
 
-- Claude Code: `.claude/commands/` + `.claude/skills/second-brain/` (둘 다 자동 인식)
-- Codex: `.agents/skills/second-brain/` (자동 인식, 자연어나 `$second-brain` 사용)
-- 레거시 Codex 프롬프트: `.codex/prompts/` (deprecated, 수동 복사 후 `/prompts:name` 사용)
+- Claude Code: `.claude/skills/` 13종 (자동 인식, `/이름` 호출)
+- Codex: `.agents/skills/` 13종 (자동 인식, `$이름` 또는 자연어)
 
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)

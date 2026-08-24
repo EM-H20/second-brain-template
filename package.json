@@ -13,12 +13,10 @@
     "bin",
     "SECOND-BRAIN.md",
     "AGENTS.md",
-    ".agents/skills/second-brain",
-    ".claude/commands",
+    ".agents/skills",
     ".claude/hooks",
     ".claude/settings.json",
     ".claude/skills",
-    ".codex/prompts",
     "knowledge"
   ],
   "license": "MIT"

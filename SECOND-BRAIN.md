@@ -343,8 +343,9 @@ rule appears BEFORE you act.
 
 ### Trigger routing (3 core verbs)
 
-The 9 slash commands remain as power-user aliases. Everyday interaction —
-slash or natural language — routes through three verbs:
+The 12 workflows are individual repository skills, invocable directly
+(`/name` in Claude Code, `$name` in Codex). Everyday interaction — skill
+or natural language — routes through three verbs:
 
 - **capture** (기억해): classify the input → route to meeting / doc / issue /
   lesson ingestion (W1 / W7 / W6 / W8). Ambiguous type → ask, never guess.

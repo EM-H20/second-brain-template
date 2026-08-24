@@ -83,6 +83,29 @@ function planIfMissing(rel) {
     : { kind: 'copy', rel, label: '신규' };
 }
 
+// 은퇴한 구버전 파일 (v2.x 커맨드/프롬프트 → 스킬 승격): 소유 마커가 있을 때만
+// 제거한다. 마커 없는 파일은 사용자 것이므로 절대 건드리지 않는다.
+const RETIRED = [
+  '.claude/commands/build.md', '.claude/commands/capture.md',
+  '.claude/commands/check-conflict.md', '.claude/commands/cluster.md',
+  '.claude/commands/find-similar-issue.md', '.claude/commands/ingest-doc.md',
+  '.claude/commands/ingest-issue.md', '.claude/commands/ingest-meeting.md',
+  '.claude/commands/maintain.md', '.claude/commands/recall.md',
+  '.claude/commands/report.md', '.claude/commands/setup-vault.md',
+  '.codex/prompts/README.md', '.codex/prompts/build.md', '.codex/prompts/capture.md',
+  '.codex/prompts/check-conflict.md', '.codex/prompts/cluster.md',
+  '.codex/prompts/find-similar-issue.md', '.codex/prompts/ingest-doc.md',
+  '.codex/prompts/ingest-issue.md', '.codex/prompts/ingest-meeting.md',
+  '.codex/prompts/maintain.md', '.codex/prompts/recall.md',
+  '.codex/prompts/report.md', '.codex/prompts/setup-vault.md',
+];
+function planRetired(rel) {
+  const to = target(rel);
+  if (!fs.existsSync(to)) return null;
+  if (!fs.readFileSync(to, 'utf8').includes(ownedMarker(rel))) return null;
+  return { kind: 'retire', rel, label: '정리' };
+}
+
 // 스캐폴딩 판정: _templates/ 아래이거나 파일명이 README.md
 // 마커 방식(planOwned) 대신 경로로 판정하는 이유: _templates/*는 새 노트를
 // 만들 때 내용이 그대로 복사되는 원본이라, 파일에 마커를 심으면 그 마커가
@@ -139,11 +162,8 @@ function planSettings() {
 
 function buildPlan() {
   const plan = [planOwned('SECOND-BRAIN.md')];
-  for (const dir of ['.claude/commands', '.claude/hooks', '.claude/skills', '.codex/prompts']) {
+  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/skills']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
-  }
-  for (const f of listFiles(path.join(SRC, '.agents/skills/second-brain'))) {
-    plan.push(planOwned(path.relative(SRC, f)));
   }
   for (const f of listFiles(path.join(SRC, 'knowledge'))) {
     const rel = path.relative(SRC, f);
@@ -154,6 +174,10 @@ function buildPlan() {
   plan.push(planSettings());
   plan.push(planClaudeMd());
   plan.push(planAgentsMd());
+  for (const rel of RETIRED) {
+    const a = planRetired(rel);
+    if (a) plan.push(a);
+  }
   return plan;
 }
 
@@ -165,6 +189,8 @@ function printAnalysis(plan) {
   if (count('갱신')) console.log('  갱신(마커 확인됨): ' + count('갱신') + '개');
   const scaffolds = plan.filter((a) => a.kind === 'scaffold-update').length;
   if (scaffolds) console.log('  갱신(.bak 백업): ' + scaffolds + '개');
+  const retired = plan.filter((a) => a.kind === 'retire').length;
+  if (retired) console.log('  정리(구버전 파일, 마커 확인됨): ' + retired + '개');
   if (keeps) console.log('  유지(기존 파일, 건드리지 않음): ' + keeps + '개');
   plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append' || a.kind === 'settings-merge')
     .forEach((a) => console.log('  ' + a.rel + ': ' + a.label));
@@ -214,6 +240,8 @@ function applyAction(a) {
     cur.hooks.SessionStart.push(src.hooks.SessionStart[0]);
     write(to + '.bak', raw);
     write(to, JSON.stringify(cur, null, 2) + '\n');
+  } else if (a.kind === 'retire') {
+    fs.rmSync(to);
   }
   // 'keep' / 'warn' / 'settings-unparsable': 아무것도 하지 않는다
 }
@@ -230,6 +258,10 @@ confirm((ok) => {
     return;
   }
   plan.forEach(applyAction);
+  // 은퇴로 비워진 디렉터리 정리 — 비어 있을 때만 성공한다. 사용자 파일이 남아 있으면 그대로 둔다.
+  for (const d of ['.claude/commands', '.codex/prompts', '.codex']) {
+    try { fs.rmdirSync(target(d)); } catch (e) {}
+  }
   const done = plan.filter((a) => a.kind !== 'keep' && a.kind !== 'warn').length;
   console.log('\nsecond-brain-template 설치 완료 — ' + done + '개 파일 처리\n');
   const backups = plan.filter((a) => a.kind === 'scaffold-update');
@@ -255,14 +287,14 @@ confirm((ok) => {
     console.log('        "command": "node \\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-context.mjs\\"", "timeout": 5 }] }');
     console.log('  ]\n');
   }
-  // 1~2는 clone 직후 1회 하는 초기 세팅이라 슬래시 커맨드가 맞고,
+  // 1~2는 clone 직후 1회 하는 초기 세팅이라 스킬 호출이 맞고,
   // 3부터가 일상 사용이다. 그 경계를 흐리면 Codex 사용자는 없는 커맨드를 찾게 된다.
   console.log('다음 단계:');
   console.log('  1. 볼트 초기화 — /setup-vault   (Codex: "볼트 초기화해줘")');
   console.log('  2. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
   console.log('  3. 이후엔 자연어면 충분:');
   console.log('       "이 회의록 기억해"  ·  "인증 관련 꺼내줘"  ·  "볼트 정리해"');
-  console.log('     (슬래시 커맨드 12개는 파워유저용 별칭 — README 참고)\n');
+  console.log('     (스킬 13개는 /이름·$이름으로 직접 호출도 가능 — README 참고)\n');
   console.log('훅이 도는지 확인: node .claude/hooks/session-context.mjs');
   console.log('  주제가 있으면 주입될 JSON이, 빈 볼트면 아무것도 출력되지 않습니다.');
 });

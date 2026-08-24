@@ -13,15 +13,16 @@ It defines:
 - Workflows W1–W8: ingestion, clustering, context-driven build, conflict
   detection, reports, issue recurrence, and reusable lessons
 
-## Command equivalents
+## Skill equivalents
 
-Claude Code exposes these workflows as slash commands in `.claude/commands/`
-and auto-discovers the same repository skill at
-`.claude/skills/second-brain/SKILL.md`. Codex discovers its copy at
-`.agents/skills/second-brain/SKILL.md`; invoke it with natural language or
-`$second-brain`. The two SKILL.md files are kept byte-identical (guarded by
-`bin/test.sh`). `.codex/prompts/` is kept only for deprecated custom-prompt
-compatibility.
+Every workflow is a repository skill, paired in `.claude/skills/<name>/`
+(Claude Code) and `.agents/skills/<name>/` (Codex) — 13 skills in all: the
+12 workflows plus the `second-brain` umbrella router for ambiguous intents.
+Invoke as `/name` in Claude Code, `$name` or natural language in Codex.
+Each pair's SKILL.md files are kept byte-identical (guarded by
+`bin/test.sh`). The legacy `.claude/commands/` and `.codex/prompts/`
+surfaces are retired; re-running the installer removes their
+marker-bearing leftovers from older installs.
 
 ## Session start (applies to every CLI)
 
