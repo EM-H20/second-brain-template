@@ -223,6 +223,7 @@ node "$ROOT/bin/init.js" -y > out7.log
 [ -f .claude/commands/mine.md ] || fail "마커 없는 사용자 커맨드가 삭제됨"
 [ ! -d .codex ] || fail "빈 .codex 디렉터리가 정리되지 않음"
 grep -q '정리(구버전 파일' out7.log || fail "분석 요약에 정리 줄 없음"
+grep -q '기능 손실 없음' out7.log || fail "완료 화면에 구버전 정리 안내 없음"
 
 echo "케이스 3 OK"
 
