@@ -2,8 +2,9 @@
 type: decision
 id: DEC-NNNN
 created: YYYY-MM-DD
+reviewed: null        # 마지막 인간 확인일 YYYY-MM-DD — W2 리뷰 확인 시에만 갱신
 topics: []
-status: active        # active | superseded
+status: active        # active | superseded | archived
 supersedes: null      # DEC-NNNN — 이 결정이 대체한 과거 결정
 superseded_by: null   # DEC-NNNN — 이 결정을 대체한 새 결정
 related: []           # 출처 회의 노트 등

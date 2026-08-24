@@ -2,6 +2,7 @@
 type: lesson
 id: LSN-NNNN
 created: YYYY-MM-DD
+reviewed: null        # 마지막 인간 확인일 YYYY-MM-DD — W2 리뷰 확인 시에만 갱신
 topics: []
 trigger: ""           # 이 교훈을 언제 꺼내야 하나. 한 줄, grep 가능하게 (예: "커밋 메시지 작성 시")
 status: active        # active | superseded | archived
