@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.6.0] — 2026-08-24
+
+### Features
+
+- status 라이프사이클(reviewed·archived·오래됨 규칙) + Claude·Codex 스킬 패리티 (#8)
+
 ## [v1.5.0] — 2026-07-31
 
 ### Features
