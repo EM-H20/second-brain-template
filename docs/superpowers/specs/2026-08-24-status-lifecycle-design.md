@@ -122,6 +122,26 @@ Cluster notes list archived decisions/docs under the history section tagged
 - New sub-checks: `reviewed` present on a type that doesn't allow it;
   malformed `reviewed` date; `reviewed` earlier than `created`.
 
+### A6. Obsidian property types (`.obsidian/types.json`)
+
+The vault currently ships only `graph.json` — no property type registry. Add a
+scaffolded `knowledge/.obsidian/types.json` registering the schema's key
+types so Obsidian renders the right editing widget:
+
+- `date`: `created`, `reviewed`
+- `multitext`: `topics`, `topics_ref`, `related`, `symptoms`, `attendees`,
+  `decisions`
+- everything else stays default (text); Obsidian has no enum enforcement, so
+  `status` vocabulary is still guarded by W2 only.
+
+Rationale: retrieval stands entirely on well-formed frontmatter, and a broken
+YAML line silently removes a note from search. Typed widgets make human edits
+in Obsidian produce schema-valid shapes (a date stays a date, a list stays a
+list) — this is harness-performance work, not cosmetics. Like `_bases/`, the
+file is human-facing only: the agent's retrieval path never reads it.
+`.gitignore` already excludes only `workspace*.json`, so the file ships with
+the template.
+
 ## Design — Part B: skill parity (Claude + Codex)
 
 - Copy `.agents/skills/second-brain/SKILL.md` to
@@ -147,12 +167,13 @@ Cluster notes list archived decisions/docs under the history section tagged
 |---|---|
 | `SECOND-BRAIN.md` | vocab table, `reviewed` key, staleness rule, semantics table, W2/W3 additions |
 | `knowledge/_templates/{decision,doc,lesson}.md` | `reviewed: null` line; status comment updated |
+| `knowledge/.obsidian/types.json` | new — property type registry (A6) |
 | `.claude/skills/second-brain/SKILL.md` | new (copy) |
 | `.agents/skills/second-brain/SKILL.md` | step 6 extension (then re-copy) |
 | `AGENTS.md` | Command equivalents section: Claude skill discovery |
 | `README.md` | schema/cross-CLI sections × 4 language versions |
-| `bin/init.js` | scaffold the new skill path |
-| `bin/test.sh` | skill parity `cmp`; scaffold assertion |
+| `bin/init.js` | scaffold the new skill path and `types.json` |
+| `bin/test.sh` | skill parity `cmp`; scaffold assertions (skill + `types.json`) |
 
 CHANGELOG follows the existing release automation (`bin/changelog.js`).
 
@@ -165,7 +186,8 @@ already emit `status: active`, which is exactly the now-explicit fixed value.
 ## Testing
 
 - `bin/test.sh`: SKILL.md parity check; fresh-scaffold contains
-  `.claude/skills/second-brain/SKILL.md`; existing scaffold-content
+  `.claude/skills/second-brain/SKILL.md` and `knowledge/.obsidian/types.json`
+  (valid JSON, `reviewed` registered as `date`); existing scaffold-content
   assertions extended where they grep schema text that this design changes.
 - Schema semantics are prose contracts consumed by LLMs — guarded by the
   parity/scaffold checks and by W2 itself at runtime, not by unit tests.
