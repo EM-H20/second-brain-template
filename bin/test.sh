@@ -31,6 +31,10 @@ grep -q '무결성 검사' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W2 무결
 grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우팅 없음"
 # 세션 시작 규칙은 툴 중립이어야 한다 — 훅이 없는 CLI(Codex 등)가 지킬 근거가 여기 있다.
 grep -q '세션 시작 컨텍스트' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 세션 시작 규칙 없음"
+grep -q 'Status 라이프사이클과 회수 시맨틱' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 status 시맨틱 섹션 없음"
+grep -q 'reviewed: YYYY-MM-DD' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 reviewed 키 없음"
+grep -q '3개월' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 오래됨 임계값 없음"
+grep -q '리뷰 후보' SECOND-BRAIN.md || fail "SECOND-BRAIN.md W2에 리뷰 후보 보고 없음"
 [ "$(cat CLAUDE.md)" = "@SECOND-BRAIN.md" ] || fail "CLAUDE.md가 import 한 줄이 아님"
 [ -f .claude/commands/ingest-meeting.md ] || fail "커맨드 없음"
 grep -q 'second-brain-template' .claude/commands/ingest-meeting.md || fail "커맨드에 마커 없음"
