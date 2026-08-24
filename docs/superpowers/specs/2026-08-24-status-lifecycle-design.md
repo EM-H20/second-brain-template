@@ -150,7 +150,7 @@ the template.
   distributed as a template).
 - `agents/openai.yaml` stays Codex-side only (not copied).
 - The two SKILL.md copies must stay byte-identical; `bin/test.sh` gains an
-  assertion (`cmp`) that fails on drift.
+  assertion (`diff -q`) that fails on drift.
 - `bin/init.js` scaffolding: add the new `.claude/skills/second-brain/`
   path so installed projects receive it; test.sh case 1 asserts it exists
   in a fresh scaffold.

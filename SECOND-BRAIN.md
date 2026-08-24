@@ -47,7 +47,7 @@ Common keys for all notes:
 ```yaml
 type: meeting | decision | issue | completion-report | report | cluster | doc | lesson | index
 created: YYYY-MM-DD
-reviewed: YYYY-MM-DD            # decision·doc·lesson만, 선택 — 마지막 인간 확인일 ("Status 라이프사이클" 참조)
+reviewed: YYYY-MM-DD | null     # decision·doc·lesson만, 선택 — 마지막 인간 확인일; null/부재면 created 기준 ("Status 라이프사이클" 참조)
 topics: [<topic-slug>, ...]     # lowercase kebab-case topic tags
 status: active | superseded | resolved | open | archived   # 타입별 완결 어휘는 "Status 라이프사이클" 표 참조
 related: ["[[note]]", ...]      # wikilinks to related notes
@@ -106,7 +106,7 @@ folder `README.md`, `clusters/_topics.md`, `_bases/*.base`는 운영 파일이�
 본문은 절대 삭제·수정하지 않고 status만 바꾸며, 반드시 사용자의 명시적 결정으로만 전환한다.
 
 **`reviewed:` 키 (decision·doc·lesson 전용, 선택).** `reviewed: YYYY-MM-DD` —
-인간이 이 노트가 여전히 유효함을 마지막으로 확인한 날. 없으면 `created`가 기준일.
+인간이 이 노트가 여전히 유효함을 마지막으로 확인한 날. `null`이거나 키가 없으면 `created`가 기준일.
 갱신은 오직 명시적 인간 확인(주로 W2 full 리뷰 보고에 대한 응답)으로만 한다 —
 에이전트가 노트를 인용했다고 자동으로 올리지 않는다.
 
@@ -168,7 +168,7 @@ Given a transcript (file or pasted text):
 
 A cluster note (`clusters/cluster-<topic>.md`) is a human-readable index:
 what this topic is, timeline of meetings that touched it, list of decisions
-(active vs superseded), open issues, key/reference documents (핵심 문서 / 참고 문서), current state summary.
+(active vs superseded/archived), open issues, key/reference documents (핵심 문서 / 참고 문서), current state summary.
 
 - Incremental (during ingestion): update only the clusters whose topics
   appear in the new note.
@@ -182,7 +182,7 @@ wikilink가 실재한다는 전제 위에 서 있다. YAML 한 줄이 깨지면 
 frontmatter를 스캔하므로 추가 비용 없이 같이 본다. 검사 항목:
 
 1. **frontmatter** — YAML 파싱 실패, type별 필수 키 누락, 해당 type에 없는 `status` 값,
-   `reviewed` 규칙 위반(decision·doc·lesson 외 타입에 존재, 날짜 형식 오류, `created`보다 이른 날짜)
+   `reviewed` 규칙 위반(decision·doc·lesson 외 타입에 존재, 날짜 형식 오류 — `null`은 미기록으로 허용, `created`보다 이른 날짜)
 2. **wikilink** — `related`/`resolution`/`resolves` 및 cluster·index 본문의 `[[...]]`
    중 실재하지 않는 노트를 가리키는 것
 3. **supersede 체인 대칭** — A에 `superseded_by: B`가 있으면 B에 `supersedes: A`가
