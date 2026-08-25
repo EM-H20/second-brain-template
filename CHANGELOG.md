@@ -2,7 +2,13 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
-## [v1.7.0] — 2026-08-25
+## [v1.7.1] — 2026-08-25
+
+### Fixes
+
+- 설치 후 안내 문구 정리 + README 설치 설명 최신화 (#10)
+
+## [v1.7.0] — 2026-08-24
 
 ### Features
 
