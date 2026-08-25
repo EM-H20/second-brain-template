@@ -10,8 +10,8 @@ It defines:
 - The knowledge vault layout under `knowledge/`
 - The strict frontmatter schema (how to find notes without reading everything)
 - The topic vocabulary rules (`knowledge/clusters/_topics.md`)
-- Workflows W1–W8: ingestion, clustering, context-driven build, conflict
-  detection, reports, issue recurrence, and reusable lessons
+- Workflows W1–W9: ingestion, clustering, context-driven build, conflict
+  detection, reports, issue recurrence, reusable lessons, and issue candidates
 
 ## Skill equivalents
 
@@ -58,6 +58,7 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Capture a reusable work rule / lesson | W8 |
 | Recall topic context | W3 + W4 + W6 + W8 |
 | Maintain the vault | W2 full (integrity check + re-cluster) + W8 |
+| File meeting outcomes as tracker issues | W9 (extraction is automatic in W1) |
 
 ## Non-negotiables (repeated here for emphasis)
 

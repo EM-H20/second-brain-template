@@ -22,12 +22,12 @@ echo "packaging guard OK"
 A_SKILLS=$(ls "$ROOT/.agents/skills")
 C_SKILLS=$(ls "$ROOT/.claude/skills")
 [ "$A_SKILLS" = "$C_SKILLS" ] || fail "스킬 집합 불일치 (.agents/skills vs .claude/skills)"
-[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "13" ] || fail "스킬 수가 13이 아님"
+[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "14" ] || fail "스킬 수가 14가 아님"
 for s in $A_SKILLS; do
   diff -q "$ROOT/.claude/skills/$s/SKILL.md" "$ROOT/.agents/skills/$s/SKILL.md" > /dev/null \
     || fail "SKILL.md 사본 불일치: $s"
 done
-echo "skill parity OK (13)"
+echo "skill parity OK (14)"
 
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
@@ -38,6 +38,10 @@ grep -q '신뢰할 수 없는 데이터' SECOND-BRAIN.md || fail "외부 입력 
 grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 미기재"
 grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 grep -q 'W8' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W8 워크플로우 없음"
+grep -q 'W9' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W9 워크플로우 없음"
+# 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
+# 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
+grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"
 grep -q '무결성 검사' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W2 무결성 검사 없음"
 grep -q 'capture' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 3-트리거 라우팅 없음"
 # 세션 시작 규칙은 툴 중립이어야 한다 — 훅이 없는 CLI(Codex 등)가 지킬 근거가 여기 있다.
@@ -83,16 +87,20 @@ grep -q 'setup' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 볼
 [ -f .claude/skills/second-brain/SKILL.md ] || fail "Claude repo skill 없음"
 grep -q 'second-brain-template' .claude/skills/second-brain/SKILL.md || fail "Claude repo skill에 마커 없음"
 grep -q 'Status 라이프사이클' .claude/skills/second-brain/SKILL.md || fail "skill에 status 시맨틱 참조 없음"
+# Codex 는 description 으로 스킬을 고른다 — 여기 트리거가 없으면 W9 는 Codex 에서 도달 불가
+grep -q 'issue candidate' .agents/skills/second-brain/SKILL.md || fail "Codex skill에 이슈 후보 트리거 없음"
+grep -q 'W9' AGENTS.md || fail "AGENTS.md에 W9 라우팅 없음"
 grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없음"
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
 grep -q '^# second-brain-template' .agents/skills/second-brain/agents/openai.yaml || fail "Codex skill YAML 마커가 주석이 아님"
-for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting maintain recall report setup-vault second-brain; do
+for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting issue-candidates maintain recall report setup-vault second-brain; do
   [ -f .claude/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.claude)"
   [ -f .agents/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.agents)"
 done
 grep -q '\$ARGUMENTS' .claude/skills/capture/SKILL.md || fail "capture 인자 전달 없음"
 grep -q '\$ARGUMENTS' .claude/skills/recall/SKILL.md || fail "recall 인자 전달 없음"
+grep -q '\$ARGUMENTS' .claude/skills/issue-candidates/SKILL.md || fail "issue-candidates 인자 전달 없음"
 [ ! -d .claude/commands ] || fail "구버전 커맨드 디렉터리가 설치됨"
 [ ! -d .codex ] || fail "구버전 codex 프롬프트가 설치됨"
 [ -f knowledge/clusters/_topics.md ] || fail "knowledge 스켈레톤 없음"
@@ -105,6 +113,12 @@ grep -q 'archived' knowledge/_templates/decision.md || fail "결정 템플릿 st
 grep -q '^reviewed: null' knowledge/_templates/doc.md || fail "doc 템플릿에 reviewed 키 없음"
 grep -q 'archived' knowledge/_templates/doc.md || fail "doc 템플릿 status 어휘에 archived 없음"
 grep -q '^reviewed: null' knowledge/_templates/lesson.md || fail "lesson 템플릿에 reviewed 키 없음"
+grep -q '## 이슈 후보' knowledge/_templates/meeting-note.md || fail "회의 템플릿에 이슈 후보 섹션 없음"
+# 전사체 참조는 언제나 노트의 마지막이다 (W9 1단계). 섹션을 재배치하다 이 순서가
+# 뒤집히는 회귀는 존재 단언으로는 잡히지 않는다.
+CAND_LINE="$(grep -n '## 이슈 후보' knowledge/_templates/meeting-note.md | cut -d: -f1)"
+SRC_LINE="$(grep -n '## 원본 전사체' knowledge/_templates/meeting-note.md | cut -d: -f1)"
+[ "$CAND_LINE" -lt "$SRC_LINE" ] || fail "이슈 후보 섹션이 원본 전사체보다 뒤에 있음"
 [ -f knowledge/docs/README.md ] || fail "docs/ 스켈레톤 없음"
 [ -f knowledge/_templates/doc.md ] || fail "doc 템플릿 없음"
 [ -f knowledge/_templates/lesson.md ] || fail "lesson 템플릿 없음"
