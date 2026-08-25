@@ -35,7 +35,7 @@ flowchart LR
 
 > **3 core triggers** — plain language is enough, no slash needed:
 > **capture** (save it → meetings / docs / issues / lessons) · **recall** (pull the context brief) · **maintain** (tidy the vault).
-> The 9 original commands still work as aliases (12 total).
+> All 12 workflows plus the umbrella router are directly invocable — **13 skills** via `/name` (Claude Code) · `$name` (Codex).
 
 ---
 
@@ -50,13 +50,15 @@ npx github:EM-H20/second-brain-template
 For reproducible installs, pin a reviewed tag or commit (`...#<tag-or-commit>`) instead of the mutable default branch.
 
 Run it from the root of the project you want to install into. It **analyzes your project first**,
-shows you exactly which files will be newly installed, updated, or left alone, and proceeds **only after a y/n confirmation**.
+shows you exactly which files will be newly installed, updated, cleaned up (retired legacy files), or left alone, and proceeds **only after a y/n confirmation**.
 
 It is safe even if you already have a `CLAUDE.md` — the rules go into `SECOND-BRAIN.md` and only a
 single `@SECOND-BRAIN.md` import line is appended. To pull template updates, just re-run the same
 command — `_templates/` and each folder's `README.md` (the scaffolding) are refreshed to the latest
 version, and any file whose content differed is backed up to `<file>.bak`, which keeps **only the
-immediately previous version** (it is replaced on the next re-run). Your actual notes, `index.md`,
+immediately previous version** (it is replaced on the next re-run). Legacy command/prompt files
+from before the skill promotion are cleaned up automatically once their ownership marker is
+verified — every one of them is superseded by a skill, so nothing is lost. Your actual notes, `index.md`,
 `log.md`, `clusters/_topics.md`, and the originals saved under `_sources/` are never touched.
 In non-interactive environments such as CI, pass the `-y` flag to skip the confirmation.
 
@@ -364,7 +366,7 @@ flowchart LR
 
 > **3 个核心触发词** —— 无需斜杠，自然语言即可：
 > **"记下"** → `/capture`（存入 会议 / 文档 / 问题 / 教训）· **"取出"** → `/recall`（生成上下文简报）· **"整理"** → `/maintain`（维护知识库）。
-> 原有 9 个命令仍作为别名可用（共 12 个）。
+> 12 个工作流加上 umbrella 路由共 **13 个技能**，可通过 `/name`（Claude Code）· `$name`（Codex）直接调用。
 
 ---
 
@@ -379,12 +381,13 @@ npx github:EM-H20/second-brain-template
 如需可复现安装，请固定到已审核的 tag 或 commit（`...#<tag-or-commit>`），不要依赖可变的默认分支。
 
 在要安装的项目根目录下运行。它会**先分析当前项目**，
-列出将被新建、更新或保留的文件清单，并在**确认 y/n 之后**才继续。
+列出将被新建、更新、清理（旧版遗留文件）或保留的文件清单，并在**确认 y/n 之后**才继续。
 
 即使已有 `CLAUDE.md` 也是安全的 —— 规则会写入 `SECOND-BRAIN.md`，
 只会追加一行 `@SECOND-BRAIN.md` 导入语句。想获取模板更新时，重新运行同一条命令即可：
 `_templates/` 和各文件夹的 `README.md`（脚手架文件）会更新到最新版本，
 内容有差异的文件会备份为 `<文件>.bak`，且**只保留紧邻的上一个版本**（下次重新运行时会被替换）。
+技能升级之前遗留的旧版命令/提示文件，会在确认所有权标记后自动清理 —— 每一个都已被技能取代，不会有任何功能损失。
 你真正的笔记、`index.md`、`log.md`、`clusters/_topics.md` 以及 `_sources/` 中保存的原文，绝不会被改动。
 在 CI 等非交互环境中，可用 `-y` 参数跳过确认。
 
@@ -680,7 +683,7 @@ flowchart LR
 
 > **3 つのコアトリガー** —— スラッシュ不要、自然言語で十分：
 > **「記録して」** → `/capture`（会議 / ドキュメント / 課題 / 教訓を保存）· **「呼び出して」** → `/recall`（コンテキストブリーフ）· **「整理して」** → `/maintain`（ボールト整備）。
-> 既存 9 コマンドもエイリアスとして動作（計 12 個）。
+> 12 のワークフローとアンブレラルーターを合わせた **13 スキル** は `/name`（Claude Code）· `$name`（Codex）で直接呼び出せます。
 
 ---
 
@@ -695,13 +698,14 @@ npx github:EM-H20/second-brain-template
 再現可能なインストールには、可変のデフォルトブランチではなく、確認済みの tag または commit（`...#<tag-or-commit>`）を指定してください。
 
 インストール先プロジェクトのルートで実行すると、**まず現在のプロジェクトを解析**し、
-新規インストール／更新／維持されるファイルの一覧を表示したうえで、**y/n の確認後**に進みます。
+新規インストール／更新／整理（旧版レガシーファイル）／維持されるファイルの一覧を表示したうえで、**y/n の確認後**に進みます。
 
 既存の `CLAUDE.md` があっても安全です —— ルールは `SECOND-BRAIN.md` に入り、
 `@SECOND-BRAIN.md` という import 行が 1 行追加されるだけです。テンプレートの更新を取り込むには
 同じコマンドを再実行するだけ —— `_templates/` と各フォルダの `README.md`（スキャフォールディング）は
 最新版に更新され、内容が異なっていたファイルは `<ファイル>.bak` としてバックアップされます。
 この `.bak` は**直前のバージョン 1 つだけ**を保持します（次回の再実行時に置き換わります）。
+スキル昇格以前の旧コマンド／プロンプトファイルは、所有権マーカーを確認したうえで自動的に整理されます —— いずれもスキルに置き換え済みで、機能の損失はありません。
 実際のノート、`index.md`、`log.md`、`clusters/_topics.md`、`_sources/` に保存された原文は決して触れられません。
 CI などの非対話環境では `-y` フラグで確認をスキップできます。
 
@@ -1004,7 +1008,7 @@ flowchart LR
 
 > **핵심 트리거 3개** — 슬래시 없이 자연어면 충분:
 > **"기억해"** → `/capture` (회의 / 문서 / 이슈 / 교훈 저장) · **"꺼내줘"** → `/recall` (컨텍스트 브리프) · **"정리해"** → `/maintain` (볼트 정리).
-> 기존 9개 명령도 별칭으로 그대로 동작 (총 12개).
+> 12개 워크플로우 + 엄브렐라 라우터, 총 **13개 스킬** — `/이름`(Claude Code) · `$이름`(Codex)으로 직접 호출도 가능.
 
 ---
 
@@ -1019,13 +1023,14 @@ npx github:EM-H20/second-brain-template
 재현 가능한 설치가 필요하면 가변적인 기본 브랜치 대신 검토한 태그나 커밋(`...#<tag-or-commit>`)을 고정한다.
 
 설치할 프로젝트 루트에서 실행하면 **현재 프로젝트를 먼저 분석**해서
-신규 설치/갱신/유지될 파일 내역을 보여주고, **y/n 확인 후** 진행한다.
+신규 설치/갱신/정리(구버전)/유지될 파일 내역을 보여주고, **y/n 확인 후** 진행한다.
 
 기존 `CLAUDE.md`가 있어도 안전하다 — 규칙은 `SECOND-BRAIN.md`로 들어가고
 `@SECOND-BRAIN.md` import 한 줄만 추가된다. 템플릿 업데이트를 받으려면
 같은 명령을 재실행하면 된다 — `_templates/`와 각 폴더의 `README.md`(스캐폴딩)는
 최신본으로 갱신되고, 내용이 달랐던 파일은 `<파일>.bak`으로 직전 버전 1개만
-백업된다(다음 재실행 시 교체). 실제 노트·`index.md`·`log.md`·
+백업된다(다음 재실행 시 교체). 스킬 승격 이전의 구버전 커맨드·프롬프트는 소유 마커
+확인 후 자동 정리된다 — 전부 스킬로 대체되어 기능 손실이 없다. 실제 노트·`index.md`·`log.md`·
 `clusters/_topics.md`·`_sources/` 저장 원본은 절대 건드리지 않는다.
 CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 

@@ -264,6 +264,10 @@ confirm((ok) => {
   }
   const done = plan.filter((a) => a.kind !== 'keep' && a.kind !== 'warn').length;
   console.log('\nsecond-brain-template 설치 완료 — ' + done + '개 파일 처리\n');
+  const retiredDone = plan.filter((a) => a.kind === 'retire').length;
+  if (retiredDone) {
+    console.log('구버전 커맨드·프롬프트 ' + retiredDone + '개 정리됨 — 전부 스킬로 대체되어 기능 손실 없음\n');
+  }
   const backups = plan.filter((a) => a.kind === 'scaffold-update');
   if (backups.length) {
     console.log('직전 버전으로 백업된 파일 (.bak, 다음 재실행 시 최신본으로 교체됨):');
@@ -290,11 +294,11 @@ confirm((ok) => {
   // 1~2는 clone 직후 1회 하는 초기 세팅이라 스킬 호출이 맞고,
   // 3부터가 일상 사용이다. 그 경계를 흐리면 Codex 사용자는 없는 커맨드를 찾게 된다.
   console.log('다음 단계:');
-  console.log('  1. 볼트 초기화 — /setup-vault   (Codex: "볼트 초기화해줘")');
+  console.log('  1. 볼트 초기화 — /setup-vault   (Codex: $setup-vault 또는 "볼트 초기화해줘")');
   console.log('  2. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
   console.log('  3. 이후엔 자연어면 충분:');
   console.log('       "이 회의록 기억해"  ·  "인증 관련 꺼내줘"  ·  "볼트 정리해"');
-  console.log('     (스킬 13개는 /이름·$이름으로 직접 호출도 가능 — README 참고)\n');
+  console.log('     (스킬 13개는 /이름·$이름으로 직접 호출도 가능)\n');
   console.log('훅이 도는지 확인: node .claude/hooks/session-context.mjs');
   console.log('  주제가 있으면 주입될 JSON이, 빈 볼트면 아무것도 출력되지 않습니다.');
 });
