@@ -269,8 +269,8 @@ SECOND-BRAIN.md   Workflow rules (W1–W9) — the heart of the system
 CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with existing projects)
 .claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
 .claude/settings.json hook registration (merges one entry if the file already exists)
-.claude/skills/   13 Claude repo skills (auto-detected, /name invocation)
-.agents/skills/   13 Codex repo skills (auto-detected, $name or natural language — identical to the Claude copies)
+.claude/skills/   14 Claude repo skills (auto-detected, /name invocation)
+.agents/skills/   14 Codex repo skills (auto-detected, $name or natural language — identical to the Claude copies)
 ```
 
 ## 🤝 Relationship with harnesses
@@ -285,8 +285,8 @@ passes the baton to the harness workflow. It works fine with no harness at all.
 There is a single source of rules, `SECOND-BRAIN.md`, and `AGENTS.md` guides Codex and other CLIs
 to those rules. The supported interfaces are:
 
-- Claude Code: `.claude/skills/` — 13 skills (auto-detected, `/name` invocation)
-- Codex: `.agents/skills/` — 13 skills (auto-detected, `$name` or natural language)
+- Claude Code: `.claude/skills/` — 14 skills (auto-detected, `/name` invocation)
+- Codex: `.agents/skills/` — 14 skills (auto-detected, `$name` or natural language)
 
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
@@ -611,8 +611,8 @@ SECOND-BRAIN.md   工作流规则 (W1~W9) —— 系统的心脏
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突)
 .claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
 .claude/settings.json 钩子注册（文件已存在时只合并一个条目）
-.claude/skills/   Claude 仓库技能 13 个（自动识别，/名称 调用）
-.agents/skills/   Codex 仓库技能 13 个（自动识别，$名称 或自然语言 —— 与 Claude 副本相同）
+.claude/skills/   Claude 仓库技能 14 个（自动识别，/名称 调用）
+.agents/skills/   Codex 仓库技能 14 个（自动识别，$名称 或自然语言 —— 与 Claude 副本相同）
 ```
 
 ## 🤝 与 harness 的关系
@@ -626,8 +626,8 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 规则的唯一来源是 `SECOND-BRAIN.md`，而 `AGENTS.md` 引导 Codex 等其他 CLI
 遵循同一规则。支持的入口如下：
 
-- Claude Code：`.claude/skills/` —— 13 个技能（自动识别，`/名称` 调用）
-- Codex：`.agents/skills/` —— 13 个技能（自动识别，`$名称` 或自然语言）
+- Claude Code：`.claude/skills/` —— 14 个技能（自动识别，`/名称` 调用）
+- Codex：`.agents/skills/` —— 14 个技能（自动识别，`$名称` 或自然语言）
 
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
@@ -952,8 +952,8 @@ SECOND-BRAIN.md   ワークフロー規則 (W1〜W9) — システムの心臓�
 CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトとの衝突を防ぐ)
 .claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
 .claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
-.claude/skills/   Claude リポジトリスキル 13 個（自動認識、/名前 で呼び出し）
-.agents/skills/   Codex リポジトリスキル 13 個（自動認識、$名前・自然言語 — Claude コピーと同一）
+.claude/skills/   Claude リポジトリスキル 14 個（自動認識、/名前 で呼び出し）
+.agents/skills/   Codex リポジトリスキル 14 個（自動認識、$名前・自然言語 — Claude コピーと同一）
 ```
 
 ## 🤝 ハーネスとの関係
@@ -968,8 +968,8 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 ルールの原本は `SECOND-BRAIN.md` ひとつであり、`AGENTS.md` は Codex など他の CLI を
 同じルールへ導きます。対応インターフェースは次のとおりです：
 
-- Claude Code：`.claude/skills/` — スキル 13 個（自動認識、`/名前` で呼び出し）
-- Codex：`.agents/skills/` — スキル 13 個（自動認識、`$名前` または自然言語）
+- Claude Code：`.claude/skills/` — スキル 14 個（自動認識、`/名前` で呼び出し）
+- Codex：`.agents/skills/` — スキル 14 個（自動認識、`$名前` または自然言語）
 
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
@@ -1292,8 +1292,8 @@ SECOND-BRAIN.md   워크플로우 규칙 (W1~W9) — 시스템의 심장
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
 .claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
 .claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
-.claude/skills/   Claude 저장소 스킬 13종 (자동 인식, /이름 호출)
-.agents/skills/   Codex 저장소 스킬 13종 (자동 인식, $이름·자연어 — Claude 사본과 동일)
+.claude/skills/   Claude 저장소 스킬 14종 (자동 인식, /이름 호출)
+.agents/skills/   Codex 저장소 스킬 14종 (자동 인식, $이름·자연어 — Claude 사본과 동일)
 ```
 
 ## 🤝 하네스와의 관계
@@ -1308,8 +1308,8 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 규칙 원본은 `SECOND-BRAIN.md` 하나이며, `AGENTS.md`는 Codex 등 다른 CLI를
 같은 규칙으로 안내한다. 지원하는 인터페이스는 다음과 같다:
 
-- Claude Code: `.claude/skills/` 13종 (자동 인식, `/이름` 호출)
-- Codex: `.agents/skills/` 13종 (자동 인식, `$이름` 또는 자연어)
+- Claude Code: `.claude/skills/` 14종 (자동 인식, `/이름` 호출)
+- Codex: `.agents/skills/` 14종 (자동 인식, `$이름` 또는 자연어)
 
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)

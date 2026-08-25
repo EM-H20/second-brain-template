@@ -298,7 +298,7 @@ confirm((ok) => {
   console.log('  2. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
   console.log('  3. 이후엔 자연어면 충분:');
   console.log('       "이 회의록 기억해"  ·  "인증 관련 꺼내줘"  ·  "볼트 정리해"');
-  console.log('     (스킬 13개는 /이름·$이름으로 직접 호출도 가능)\n');
+  console.log('     (스킬 14개는 /이름·$이름으로 직접 호출도 가능)\n');
   console.log('훅이 도는지 확인: node .claude/hooks/session-context.mjs');
   console.log('  주제가 있으면 주입될 JSON이, 빈 볼트면 아무것도 출력되지 않습니다.');
 });
