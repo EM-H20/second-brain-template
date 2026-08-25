@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.8.0] — 2026-08-25
+
+### Features
+
+- 회의 결과를 이슈 후보로 뽑고 고른 것만 등록 (W9) (#11, port of #7)
+
 ## [v1.7.1] — 2026-08-25
 
 ### Fixes
