@@ -17,7 +17,7 @@
 > From meeting transcript → knowledge → code → conflict detection → reports → recurring-issue detection,
 > all in one loop: a **per-project second brain** starter template.
 
-**Zero dependencies.** No API keys, no embeddings, no Python scripts. It runs on pure Markdown plus rules and commands for AI coding agents.
+**Zero dependencies.** No API keys, no embeddings, no Python scripts. It runs on pure Markdown plus rules and skills for AI coding agents.
 Open the `knowledge/` folder in Obsidian and you can see how your knowledge connects in graph view.
 
 ```mermaid
@@ -368,7 +368,7 @@ only when the repository is private and tracking them is intentional.
 > 从会议记录 → 知识化 → 编写代码 → 冲突检测 → 报告 → 问题复现检测，
 > 一条闭环走完的**项目专属第二大脑**启动模板。
 
-**零依赖。** 无需 API 密钥、嵌入向量或 Python 脚本。仅靠纯 Markdown 加上 AI 编码代理的规则与命令即可运行。
+**零依赖。** 无需 API 密钥、嵌入向量或 Python 脚本。仅靠纯 Markdown 加上 AI 编码代理的规则与技能即可运行。
 用 Obsidian 打开 `knowledge/` 文件夹，就能在图谱视图中直观地看到知识之间的连接。
 
 ```mermaid
@@ -703,7 +703,7 @@ supersede 链）。Claude 不是读取整个文件，而是 grep frontmatter 缩
 > 会議の文字起こし → 知識化 → コード実装 → 衝突検知 → レポート → 課題の再発検知まで
 > 一つのループで回る、**プロジェクトごとのセカンドブレイン**スターターテンプレート。
 
-**依存ゼロ。** API キー、埋め込み、Python スクリプトは不要。純粋な Markdown と AI コーディングエージェント用のルール／コマンドだけで動作します。
+**依存ゼロ。** API キー、埋め込み、Python スクリプトは不要。純粋な Markdown と AI コーディングエージェント用のルール／スキルだけで動作します。
 Obsidian で `knowledge/` フォルダを開けば、グラフビューで知識のつながりを視覚的に確認できます。
 
 ```mermaid
@@ -1047,7 +1047,7 @@ grep して候補を絞り込み、必要なノートだけを開きます。ク
 > 회의 전사체 → 지식화 → 코드 작성 → 충돌 감지 → 보고서 → 이슈 재발 탐지까지
 > 하나로 도는, **프로젝트별 세컨드 브레인** 스타터 템플릿.
 
-**의존성 제로.** API 키, 임베딩, 파이썬 스크립트 없음. 순수 Markdown + AI 코딩 에이전트 규칙/커맨드만으로 동작한다.
+**의존성 제로.** API 키, 임베딩, 파이썬 스크립트 없음. 순수 Markdown + AI 코딩 에이전트 규칙/스킬만으로 동작한다.
 Obsidian으로 `knowledge/` 폴더를 열면 그래프 뷰로 지식 연결을 시각적으로 볼 수 있다.
 
 ```mermaid
