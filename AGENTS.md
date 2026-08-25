@@ -10,14 +10,14 @@ It defines:
 - The knowledge vault layout under `knowledge/`
 - The strict frontmatter schema (how to find notes without reading everything)
 - The topic vocabulary rules (`knowledge/clusters/_topics.md`)
-- Workflows W1–W8: ingestion, clustering, context-driven build, conflict
-  detection, reports, issue recurrence, and reusable lessons
+- Workflows W1–W9: ingestion, clustering, context-driven build, conflict
+  detection, reports, issue recurrence, reusable lessons, and issue candidates
 
 ## Skill equivalents
 
 Every workflow is a repository skill, paired in `.claude/skills/<name>/`
-(Claude Code) and `.agents/skills/<name>/` (Codex) — 13 skills in all: the
-12 workflows plus the `second-brain` umbrella router for ambiguous intents.
+(Claude Code) and `.agents/skills/<name>/` (Codex) — 14 skills in all: the
+13 workflows plus the `second-brain` umbrella router for ambiguous intents.
 Invoke as `/name` in Claude Code, `$name` or natural language in Codex.
 Each pair's SKILL.md files are kept byte-identical (guarded by
 `bin/test.sh`). The legacy `.claude/commands/` and `.codex/prompts/`
@@ -58,6 +58,7 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Capture a reusable work rule / lesson | W8 |
 | Recall topic context | W3 + W4 + W6 + W8 |
 | Maintain the vault | W2 full (integrity check + re-cluster) + W8 |
+| File meeting outcomes as tracker issues | W9 (extraction is automatic in W1) |
 
 ## Non-negotiables (repeated here for emphasis)
 
