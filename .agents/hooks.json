@@ -1,0 +1,10 @@
+{
+  "second-brain-session-context": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node .agents/hooks/session-context.mjs"
+      }
+    ]
+  }
+}

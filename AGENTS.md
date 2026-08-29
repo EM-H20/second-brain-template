@@ -16,9 +16,10 @@ It defines:
 ## Skill equivalents
 
 Every workflow is a repository skill, paired in `.claude/skills/<name>/`
-(Claude Code) and `.agents/skills/<name>/` (Codex) — 14 skills in all: the
-13 workflows plus the `second-brain` umbrella router for ambiguous intents.
-Invoke as `/name` in Claude Code, `$name` or natural language in Codex.
+(Claude Code) and `.agents/skills/<name>/` (Codex / Antigravity / Gemini) — 14
+skills in all: the 13 workflows plus the `second-brain` umbrella router for
+ambiguous intents. Invoke as `/name` in Claude Code, `$name` or natural
+language in Codex, or automatically / via skill in Antigravity (Gemini).
 Each pair's SKILL.md files are kept byte-identical (guarded by
 `bin/test.sh`). The legacy `.claude/commands/` and `.codex/prompts/`
 surfaces are retired; re-running the installer removes their
@@ -34,6 +35,8 @@ documents for that topic. See the "세션 시작 컨텍스트" rule in SECOND-BR
 
 Claude Code automates this with a SessionStart hook
 (`.claude/hooks/session-context.mjs`, registered in `.claude/settings.json`).
+Antigravity (Gemini) automates this with a PreInvocation hook
+(`.agents/hooks/session-context.mjs`, registered in `.agents/hooks.json`).
 **Codex has an equivalent hook engine, but it only loads hooks from
 `~/.codex/hooks.json` or from an installed plugin — never from a file committed
 to the repository.** A repo-scoped template therefore cannot register it for

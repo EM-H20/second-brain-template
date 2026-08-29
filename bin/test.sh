@@ -12,7 +12,7 @@ echo "changelog selfcheck OK"
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
-for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/skills"]) {
+for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/hooks", ".agents/hooks.json", ".agents/skills", "GEMINI.md"]) {
   if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
 }
 ' || fail "package.json files 누락"
@@ -51,6 +51,8 @@ grep -q 'reviewed: YYYY-MM-DD' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 revie
 grep -q '3개월' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 오래됨 임계값 없음"
 grep -q '리뷰 후보' SECOND-BRAIN.md || fail "SECOND-BRAIN.md W2에 리뷰 후보 보고 없음"
 [ "$(cat CLAUDE.md)" = "@SECOND-BRAIN.md" ] || fail "CLAUDE.md가 import 한 줄이 아님"
+[ -f GEMINI.md ] || fail "GEMINI.md 없음"
+[ "$(cat GEMINI.md)" = "@SECOND-BRAIN.md" ] || fail "GEMINI.md가 import 한 줄이 아님"
 [ -f .claude/skills/ingest-meeting/SKILL.md ] || fail "ingest-meeting 스킬 없음"
 grep -q 'second-brain-template' .claude/skills/ingest-meeting/SKILL.md || fail "스킬에 마커 없음"
 head -1 .claude/skills/ingest-meeting/SKILL.md | grep -q -- '---' || fail "마커가 frontmatter를 깨뜨림"
@@ -73,7 +75,21 @@ if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) {
   throw new Error("SessionStart 훅 미등록");
 }
 ' || fail "settings.json 에 훅 미등록"
-grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
+[ -f .agents/hooks/session-context.mjs ] || fail "Antigravity 훅 스크립트 미설치"
+node --check .agents/hooks/session-context.mjs || fail "Antigravity 훅 스크립트 문법 오류 (마커가 JS를 깨뜨림)"
+grep -q '^// second-brain-template' .agents/hooks/session-context.mjs || fail "Antigravity JS 마커가 // 주석이 아님"
+if grep -q -- '<!-- second-brain-template -->' .agents/hooks/session-context.mjs; then
+  fail "Antigravity JS 소유 파일에 HTML 마커가 붙음"
+fi
+[ -f .agents/hooks.json ] || fail "hooks.json 미생성"
+node -e '
+const h = require("./.agents/hooks.json");
+if (!JSON.stringify(h).includes("session-context.mjs")) {
+  throw new Error("hooks.json 에 훅 미등록");
+}
+' || fail "hooks.json 에 훅 미등록"
+grep -q 'Claude Code 세션 컨텍스트 훅 등록됨' out.log || fail "설치 후 Claude 훅 안내 없음"
+grep -q 'Antigravity (Gemini) 세션 컨텍스트 훅 등록됨' out.log || fail "설치 후 Antigravity 훅 안내 없음"
 # 초기 세팅은 슬래시, 일상 사용은 자연어 — 첫 화면에서 이 경계가 흐려지면 Codex 사용자가 헤맨다
 grep -q '기억해' out.log || fail "다음 단계에 자연어 사용법 없음"
 grep -q '볼트 초기화해줘' out.log || fail "다음 단계에 Codex 초기화 경로 없음"
@@ -156,20 +172,24 @@ grep -q 'path:_sources' knowledge/.obsidian/graph.json || fail "graph 필터에 
 [ ! -d docs ] || fail "docs/ 유출"
 echo "케이스 1 OK"
 
-# ── 케이스 2: 기존 CLAUDE.md + 자기 커맨드가 있는 프로젝트 ──
+# ── 케이스 2: 기존 CLAUDE.md + GEMINI.md + 자기 커맨드가 있는 프로젝트 ──
 mkdir -p "$TMP/existing/.claude/commands" && cd "$TMP/existing"
 printf '# My project rules\n' > CLAUDE.md
+printf '# My gemini rules\n' > GEMINI.md
 printf 'my own build command\n' > .claude/commands/build.md
 printf '# My agents doc\n' > AGENTS.md
 node "$ROOT/bin/init.js" -y > out.log
 grep -q '# My project rules' CLAUDE.md || fail "기존 CLAUDE.md 내용 유실"
-grep -q '@SECOND-BRAIN.md' CLAUDE.md || fail "import 줄 미추가"
+grep -q '@SECOND-BRAIN.md' CLAUDE.md || fail "CLAUDE import 줄 미추가"
+grep -q '# My gemini rules' GEMINI.md || fail "기존 GEMINI.md 내용 유실"
+grep -q '@SECOND-BRAIN.md' GEMINI.md || fail "GEMINI import 줄 미추가"
 grep -q 'my own build command' .claude/commands/build.md || fail "사용자 커맨드 클로버됨"
 grep -q 'SECOND-BRAIN.md' AGENTS.md || fail "AGENTS.md 포인터 미추가"
 grep -q '# My agents doc' AGENTS.md || fail "기존 AGENTS.md 내용 유실"
 [ -f .claude/skills/report/SKILL.md ] || fail "다른 스킬 미설치"
 node "$ROOT/bin/init.js" -y > out2.log
-[ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "append 재실행 시 import 줄 중복"
+[ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "append 재실행 시 CLAUDE import 줄 중복"
+[ "$(grep -c '@SECOND-BRAIN.md' GEMINI.md)" = "1" ] || fail "append 재실행 시 GEMINI import 줄 중복"
 [ "$(grep -c 'SECOND-BRAIN.md' AGENTS.md)" = "1" ] || fail "append 재실행 시 AGENTS 포인터 중복"
 echo "케이스 2 OK"
 
@@ -283,7 +303,7 @@ if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) throw
 [ -f .claude/settings.json.bak ] || fail "settings .bak 백업 없음"
 grep -q 'permissions' .claude/settings.json.bak || fail ".bak 에 원본 내용 없음"
 grep -q 'SessionStart 훅' out.log || fail "확인 전 분석 요약에 settings 줄 없음"
-grep -q '훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
+grep -q 'Claude Code 세션 컨텍스트 훅 등록됨' out.log || fail "설치 후 훅 안내 없음"
 grep -q 'settings.json.bak' out.log || fail "백업 경로 안내 없음"
 
 # 8b. 재실행해도 중복 추가하지 않고 .bak 도 만들지 않는다
@@ -326,7 +346,7 @@ if node "$ROOT/bin/init.js" -y > out.log 2>&1; then EC=0; else EC=$?; fi
 [ "$(cat .claude/settings.json)" = "null" ] || fail "settings 가 null 인데 파일이 변경됨"
 [ ! -f .claude/settings.json.bak ] || fail "settings 가 null 인데 .bak 생성"
 grep -q '파싱하지 못해' out.log || fail "null settings 에 폴백 안내 없음"
-if grep -q '훅 등록됨' out.log; then fail "null settings 인데 성공했다고 안내함"; fi
+if grep -q 'Claude Code 세션 컨텍스트 훅 등록됨' out.log; then fail "null settings 인데 성공했다고 안내함"; fi
 
 # 8f. hooks 가 객체가 아닌 경우(문자열) 크래시하지 않고 안전하게 객체로 교체해 병합한다
 mkdir -p "$TMP/settings5/.claude" && cd "$TMP/settings5"
@@ -352,6 +372,33 @@ node -e '
 const s = require("./.claude/settings.json");
 if (!JSON.stringify(s.hooks.SessionStart).includes("session-context.mjs")) throw new Error("hooks 가 배열이라 JSON.stringify 가 훅을 조용히 삭제함");
 ' || fail "settings.hooks 배열인데 훅이 조용히 유실됨"
+
+# 8h. Antigravity .agents/hooks.json 병합: 기존 훅을 보존하며 우리 훅을 추가한다
+mkdir -p "$TMP/agents-hooks/.agents" && cd "$TMP/agents-hooks"
+printf '{\n  "custom-hook": { "PreInvocation": [{ "command": "echo custom" }] }\n}\n' > .agents/hooks.json
+node "$ROOT/bin/init.js" -y > out.log
+node -e '
+const h = require("./.agents/hooks.json");
+if (!h["custom-hook"]) throw new Error("기존 custom-hook 유실");
+if (!JSON.stringify(h["second-brain-session-context"]).includes("session-context.mjs")) throw new Error("우리 훅 미추가");
+' || fail "agents hooks 병합 실패"
+[ -f .agents/hooks.json.bak ] || fail "agents hooks .bak 백업 없음"
+grep -q 'custom-hook' .agents/hooks.json.bak || fail ".bak 에 원본 내용 없음"
+grep -q 'PreInvocation 훅' out.log || fail "확인 전 분석 요약에 hooks.json 줄 없음"
+
+# 8i. 재실행 시 중복 추가하지 않고 .bak 도 만들지 않는다
+rm .agents/hooks.json.bak
+node "$ROOT/bin/init.js" -y > out2.log
+[ ! -f .agents/hooks.json.bak ] || fail "이미 등록됐는데 agents hooks .bak 재생성"
+
+# 8j. 깨진 hooks.json 은 건드리지 않고 폴백한다
+mkdir -p "$TMP/agents-hooks-broken/.agents" && cd "$TMP/agents-hooks-broken"
+printf '{ broken json\n' > .agents/hooks.json
+node "$ROOT/bin/init.js" -y > out.log
+grep -q 'broken json' .agents/hooks.json || fail "깨진 hooks.json 을 덮어씀"
+[ ! -f .agents/hooks.json.bak ] || fail "깨진 hooks.json 인데 .bak 생성"
+grep -q '파싱하지 못해' out.log || fail "폴백 안내 없음"
+[ -f .agents/hooks/session-context.mjs ] || fail "폴백인데 훅 스크립트도 미설치"
 
 echo "케이스 8 OK"
 
@@ -418,6 +465,46 @@ const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecifi
 if (!c.includes("FINAL_MARKER_LINE")) throw new Error("최근 작업에 마지막 줄 없음");
 if (c.includes("early-0")) throw new Error("최근 작업에 파일 시작 줄 있음");
 ' || fail "로그 8KB 초과 꼬리 검증 실패"
+
+# ── 7g ~ 7j: Antigravity 세션 컨텍스트 훅 검증 ──────────
+mkdir -p "$TMP/agy-hook/.agents/hooks" && cd "$TMP/agy-hook"
+cp "$ROOT/.agents/hooks/session-context.mjs" .agents/hooks/
+AGY_H=".agents/hooks/session-context.mjs"
+
+# 7g. 볼트 없을 때 빈 injectSteps 출력
+node "$AGY_H" > out_agy.json < /dev/null || fail "볼트 없을 때 Antigravity 훅 실패"
+node -e '
+const o = JSON.parse(require("fs").readFileSync("out_agy.json", "utf8"));
+if (!Array.isArray(o.injectSteps) || o.injectSteps.length !== 0) throw new Error("볼트 없는데 injectSteps 비어있지 않음");
+' || fail "볼트 없을 때 Antigravity 훅 출력 검증 실패"
+
+# 7h. 토픽이 0개일 때 빈 injectSteps 출력
+mkdir -p knowledge/clusters
+cp "$ROOT/knowledge/clusters/_topics.md" knowledge/clusters/
+node "$AGY_H" > out_agy.json < /dev/null
+node -e '
+const o = JSON.parse(require("fs").readFileSync("out_agy.json", "utf8"));
+if (!Array.isArray(o.injectSteps) || o.injectSteps.length !== 0) throw new Error("토픽 0개인데 injectSteps 비어있지 않음");
+' || fail "토픽 0개일 때 Antigravity 훅 출력 검증 실패"
+
+# 7i. 토픽이 있으면 invocationNum: 1 에 ephemeralMessage 주입
+printf '`auth` — 인증 방식\n`cache` — 캐시 전략\n' >> knowledge/clusters/_topics.md
+printf '{"invocationNum": 1}' | node "$AGY_H" > out_agy.json
+node -e '
+const o = JSON.parse(require("fs").readFileSync("out_agy.json", "utf8"));
+if (!Array.isArray(o.injectSteps) || o.injectSteps.length !== 1) throw new Error("injectSteps 항목 수 불일치");
+const msg = o.injectSteps[0].ephemeralMessage;
+if (!msg.includes("auth")) throw new Error("토픽 슬러그 누락");
+if (!msg.includes("cluster-")) throw new Error("클러스터 지시문 누락");
+if (!msg.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 누락");
+' || fail "Antigravity 훅 컨텍스트 주입 검증 실패"
+
+# 7j. invocationNum > 1 이면 빈 배열 반환 (세션 첫 턴에만 주입)
+printf '{"invocationNum": 2}' | node "$AGY_H" > out_agy.json
+node -e '
+const o = JSON.parse(require("fs").readFileSync("out_agy.json", "utf8"));
+if (!Array.isArray(o.injectSteps) || o.injectSteps.length !== 0) throw new Error("invocationNum > 1 인데 컨텍스트 주입됨");
+' || fail "invocationNum > 1 주입 차단 검증 실패"
 
 echo "케이스 7 OK"
 

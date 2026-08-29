@@ -12,8 +12,9 @@ description: Operate this repository's Markdown knowledge vault. Use when captur
    before acting. If the task touches any topic in that vocabulary, open
    `knowledge/clusters/cluster-<topic>.md` first — one file read gives you the
    active decisions, superseded decisions, issues, lessons, and key documents
-   for that topic. Claude Code automates this with a SessionStart hook; Codex
-   cannot load repo-scoped hooks, so do it yourself.
+   for that topic. Claude Code and Antigravity (Gemini) automate this with
+   hooks (SessionStart / PreInvocation); Codex cannot load repo-scoped hooks,
+   so do it yourself.
 3. Classify the user's intent and execute the matching workflow in
    `SECOND-BRAIN.md` end to end, including its General rules.
    Vault setup is the one intent with no W-workflow: when the user asks to

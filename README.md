@@ -5,6 +5,7 @@
 ![Pure Markdown](https://img.shields.io/badge/format-pure%20markdown-blue)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-ready-orange)
 ![Codex](https://img.shields.io/badge/Codex-supported-lightgrey)
+![Antigravity](https://img.shields.io/badge/Antigravity%20(Gemini)-ready-blue)
 ![Obsidian](https://img.shields.io/badge/Obsidian-graph%20view-7C3AED)
 
 **🌐 Language / 언어 / 语言 / 言語** — 본문은 한국어입니다. 아래를 펼치면 다른 언어로 읽을 수 있습니다.
@@ -36,7 +37,7 @@ flowchart LR
 
 > **3 core triggers** — plain language is enough, no slash needed:
 > **capture** (save it → meetings / docs / issues / lessons) · **recall** (pull the context brief) · **maintain** (tidy the vault).
-> All 13 workflows plus the umbrella router are directly invocable — **14 skills** via `/name` (Claude Code) · `$name` (Codex).
+> All 13 workflows plus the umbrella router are directly invocable — **14 skills** via `/name` (Claude Code, Antigravity) · `$name` (Codex).
 
 ---
 
@@ -266,11 +267,15 @@ knowledge/
 ├── _templates/   Note templates (including frontmatter schema)
 └── _sources/     Verbatim preservation of originals (mirrors meetings/docs/issues)
 SECOND-BRAIN.md   Workflow rules (W1–W9) — the heart of the system
-CLAUDE.md         A single @SECOND-BRAIN.md import line (avoids clashing with existing projects)
-.claude/hooks/    session-start hook — auto-injects vault topics (Claude Code only)
+CLAUDE.md         A single @SECOND-BRAIN.md import line (Claude Code)
+GEMINI.md         A single @SECOND-BRAIN.md import line (Antigravity / Gemini)
+AGENTS.md         Agent guidelines pointing to SECOND-BRAIN.md (Codex / Antigravity / Gemini)
+.claude/hooks/    session-start hook — auto-injects vault topics (Claude Code)
 .claude/settings.json hook registration (merges one entry if the file already exists)
 .claude/skills/   14 Claude repo skills (auto-detected, /name invocation)
-.agents/skills/   14 Codex repo skills (auto-detected, $name or natural language — identical to the Claude copies)
+.agents/hooks/    PreInvocation session context hook (Antigravity / Gemini)
+.agents/hooks.json Antigravity hook configuration (auto-detected)
+.agents/skills/   14 repo skills (auto-detected by Codex & Antigravity — identical to the Claude copies)
 ```
 
 ## 🤝 Relationship with harnesses
@@ -280,13 +285,14 @@ This template owns **"what to build and why"** (the context).
 is installed in the project (Superpowers, ECC, etc.). `/build` assembles the context brief and then
 passes the baton to the harness workflow. It works fine with no harness at all.
 
-## 🔁 Cross-CLI support (Claude Code + Codex)
+## 🔁 Cross-CLI support (Claude Code + Codex + Antigravity / Gemini)
 
-There is a single source of rules, `SECOND-BRAIN.md`, and `AGENTS.md` guides Codex and other CLIs
-to those rules. The supported interfaces are:
+There is a single source of rules, `SECOND-BRAIN.md`, and `AGENTS.md` / `GEMINI.md` guide Codex,
+Antigravity (Gemini), and other CLIs to those rules. The supported interfaces are:
 
 - Claude Code: `.claude/skills/` — 14 skills (auto-detected, `/name` invocation)
 - Codex: `.agents/skills/` — 14 skills (auto-detected, `$name` or natural language)
+- Antigravity (Gemini): `.agents/skills/` — 14 skills (auto-detected, `/name` or natural language)
 
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
@@ -296,19 +302,20 @@ defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = ru
 and the tail of `log.md`, and if the task touches a listed topic, open that
 cluster note before writing code.
 
-**Claude Code automates it** — a session-start hook
-(`.claude/hooks/session-context.mjs`) is installed and registered, so relevant
-decisions, issues, and lessons surface without typing `/recall`.
+**Claude Code and Antigravity (Gemini) automate it**:
+- Claude Code: a session-start hook (`.claude/hooks/session-context.mjs`) is registered in `.claude/settings.json`.
+- Antigravity (Gemini): a `PreInvocation` hook (`.agents/hooks/session-context.mjs`) is registered in `.agents/hooks.json`.
 
-The hook works silently, so nothing appears on screen. To check that it runs,
-invoke it directly:
+The hooks work silently, so nothing appears on screen. To check that they run,
+invoke directly:
 
 ```bash
 node .claude/hooks/session-context.mjs
+node .agents/hooks/session-context.mjs
 ```
 
 If the vault has at least one topic you get the JSON it would inject; an empty
-vault (zero topics) prints nothing — that is also correct.
+vault (zero topics) prints nothing or an empty inject array — that is also correct.
 
 **Codex has an equivalent hook engine but cannot be automated here.** Codex
 loads hooks only from `~/.codex/hooks.json` or an installed plugin, never from a
@@ -387,7 +394,7 @@ flowchart LR
 
 > **3 个核心触发词** —— 无需斜杠，自然语言即可：
 > **"记下"** → `/capture`（存入 会议 / 文档 / 问题 / 教训）· **"取出"** → `/recall`（生成上下文简报）· **"整理"** → `/maintain`（维护知识库）。
-> 13 个工作流加上 umbrella 路由共 **14 个技能**，可通过 `/name`（Claude Code）· `$name`（Codex）直接调用。
+> 13 个工作流加上 umbrella 路由共 **14 个技能**，可通过 `/name`（Claude Code、Antigravity）· `$name`（Codex）直接调用。
 
 ---
 
@@ -608,11 +615,15 @@ knowledge/
 ├── _templates/   笔记模板 (含 frontmatter 规格)
 └── _sources/     原文逐字保存 (镜像 meetings/docs/issues)
 SECOND-BRAIN.md   工作流规则 (W1~W9) —— 系统的心脏
-CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突)
+CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (Claude Code)
+GEMINI.md         仅一行 @SECOND-BRAIN.md 导入 (Antigravity / Gemini)
+AGENTS.md         Agent 指南，指向 SECOND-BRAIN.md (Codex / Antigravity / Gemini)
 .claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
 .claude/settings.json 钩子注册（文件已存在时只合并一个条目）
 .claude/skills/   Claude 仓库技能 14 个（自动识别，/名称 调用）
-.agents/skills/   Codex 仓库技能 14 个（自动识别，$名称 或自然语言 —— 与 Claude 副本相同）
+.agents/hooks/    PreInvocation 会话启动钩子（Antigravity / Gemini）
+.agents/hooks.json Antigravity 钩子配置（自动识别）
+.agents/skills/   仓库技能 14 个（Codex 与 Antigravity 自动识别 —— 与 Claude 副本相同）
 ```
 
 ## 🤝 与 harness 的关系
@@ -621,13 +632,14 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 **"怎样做好"（TDD、头脑风暴、调试）** 由项目中安装的 harness（Superpowers、ECC 等）负责。
 `/build` 生成上下文简报后，把接力棒交给 harness 工作流。没有 harness 也能运行。
 
-## 🔁 跨 CLI 支持（Claude Code + Codex）
+## 🔁 跨 CLI 支持（Claude Code + Codex + Antigravity / Gemini）
 
-规则的唯一来源是 `SECOND-BRAIN.md`，而 `AGENTS.md` 引导 Codex 等其他 CLI
+规则的唯一来源是 `SECOND-BRAIN.md`，而 `AGENTS.md` / `GEMINI.md` 引导 Codex、Antigravity (Gemini) 等其他 CLI
 遵循同一规则。支持的入口如下：
 
 - Claude Code：`.claude/skills/` —— 14 个技能（自动识别，`/名称` 调用）
 - Codex：`.agents/skills/` —— 14 个技能（自动识别，`$名称` 或自然语言）
+- Antigravity (Gemini)：`.agents/skills/` —— 14 个技能（自动识别，`/名称` 或自然语言）
 
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
@@ -636,18 +648,19 @@ CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (避免与既有项目冲突
 对所有 CLI 一视同仁：读取 `clusters/_topics.md` 与 `log.md` 的末尾；若本次任务
 涉及词表中的某个主题，就在写代码之前先打开该主题的 cluster 笔记。
 
-**Claude Code 会自动完成这一步** —— 会话启动钩子
-（`.claude/hooks/session-context.mjs`）已安装并注册，因此不必输入 `/recall`，
-相关的决策、问题与教训就会先于代码浮现。
+**Claude Code 与 Antigravity (Gemini) 会自动完成这一步**：
+- Claude Code：会话启动钩子（`.claude/hooks/session-context.mjs`）注册于 `.claude/settings.json`。
+- Antigravity (Gemini)：`PreInvocation` 钩子（`.agents/hooks/session-context.mjs`）注册于 `.agents/hooks.json`。
 
 钩子静默运行，屏幕上不会有任何提示。想确认它是否生效，直接执行：
 
 ```bash
 node .claude/hooks/session-context.mjs
+node .agents/hooks/session-context.mjs
 ```
 
 知识库中只要有一个主题，就会输出将要注入的 JSON；空知识库（0 个主题）不输出任何
-内容 —— 这同样是正确的。
+内容或输出空注入数组 —— 这同样是正确的。
 
 **Codex 同样具备钩子引擎，但这里无法自动化。** Codex 只从 `~/.codex/hooks.json`
 或已安装的插件加载钩子，绝不从提交进仓库的文件加载 —— 以仓库为作用域的模板因此
@@ -722,7 +735,7 @@ flowchart LR
 
 > **3 つのコアトリガー** —— スラッシュ不要、自然言語で十分：
 > **「記録して」** → `/capture`（会議 / ドキュメント / 課題 / 教訓を保存）· **「呼び出して」** → `/recall`（コンテキストブリーフ）· **「整理して」** → `/maintain`（ボールト整備）。
-> 13 のワークフローとアンブレラルーターを合わせた **14 スキル** は `/name`（Claude Code）· `$name`（Codex）で直接呼び出せます。
+> 13 のワークフローとアンブレラルーターを合わせた **14 スキル** は `/name`（Claude Code、Antigravity）· `$name`（Codex）で直接呼び出せます。
 
 ---
 
@@ -949,11 +962,15 @@ knowledge/
 ├── _templates/   ノートのテンプレート (frontmatter 規格を含む)
 └── _sources/     原文をそのまま (verbatim) 保存 (meetings/docs/issues のミラー)
 SECOND-BRAIN.md   ワークフロー規則 (W1〜W9) — システムの心臓部
-CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトとの衝突を防ぐ)
-.claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code 専用）
+CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (Claude Code)
+GEMINI.md         @SECOND-BRAIN.md の import 1 行 (Antigravity / Gemini)
+AGENTS.md         エージェントガイド、SECOND-BRAIN.md への参照 (Codex / Antigravity / Gemini)
+.claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code）
 .claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
 .claude/skills/   Claude リポジトリスキル 14 個（自動認識、/名前 で呼び出し）
-.agents/skills/   Codex リポジトリスキル 14 個（自動認識、$名前・自然言語 — Claude コピーと同一）
+.agents/hooks/    PreInvocation セッション開始フック（Antigravity / Gemini）
+.agents/hooks.json Antigravity フック設定（自動認識）
+.agents/skills/   リポジトリスキル 14 個（Codex と Antigravity が自動認識 — Claude コピーと同一）
 ```
 
 ## 🤝 ハーネスとの関係
@@ -963,13 +980,14 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 ハーネス（Superpowers、ECC など）が担います。`/build` はコンテキストブリーフを作った後、
 ハーネスのワークフローにバトンを渡します。ハーネスがなくても動作します。
 
-## 🔁 クロス CLI 対応（Claude Code + Codex）
+## 🔁 クロス CLI 対応（Claude Code + Codex + Antigravity / Gemini）
 
-ルールの原本は `SECOND-BRAIN.md` ひとつであり、`AGENTS.md` は Codex など他の CLI を
-同じルールへ導きます。対応インターフェースは次のとおりです：
+ルールの原本は `SECOND-BRAIN.md` ひとつであり、`AGENTS.md` / `GEMINI.md` は Codex、
+Antigravity (Gemini) など他の CLI を同じルールへ導きます。対応インターフェースは次のとおりです：
 
 - Claude Code：`.claude/skills/` — スキル 14 個（自動認識、`/名前` で呼び出し）
 - Codex：`.agents/skills/` — スキル 14 個（自動認識、`$名前` または自然言語）
+- Antigravity (Gemini)：`.agents/skills/` — スキル 14 個（自動認識、`/名前` または自然言語）
 
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
@@ -979,18 +997,19 @@ CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (既存プロジェクトと
 と `log.md` の末尾を読み、今回のタスクが語彙内の主題に触れるなら、コードを書く前に
 その cluster ノートを開く。
 
-**Claude Code はこれを自動化する** — セッション開始フック
-（`.claude/hooks/session-context.mjs`）がインストール・登録されるため、`/recall` を
-打たなくても関連する決定・課題・教訓が先に浮かび上がる。
+**Claude Code と Antigravity (Gemini) はこれを自動化する**：
+- Claude Code：セッション開始フック（`.claude/hooks/session-context.mjs`）が `.claude/settings.json` に登録される。
+- Antigravity (Gemini)：`PreInvocation` フック（`.agents/hooks/session-context.mjs`）が `.agents/hooks.json` に登録される。
 
 フックは静かに動くため画面には何も出ない。動いているか確かめるには直接実行する:
 
 ```bash
 node .claude/hooks/session-context.mjs
+node .agents/hooks/session-context.mjs
 ```
 
 主題が 1 つでもあれば注入される JSON が出力され、空のボールト（主題 0 件）では何も
-出力されない — 後者も正常である。
+出力されないか空の注入配列が出力される — 後者も正常である。
 
 **Codex にも同等のフック機構はあるが、ここでは自動化できない。** Codex は
 `~/.codex/hooks.json` かインストール済みプラグインからしかフックを読まず、リポジトリに
@@ -1066,7 +1085,7 @@ flowchart LR
 
 > **핵심 트리거 3개** — 슬래시 없이 자연어면 충분:
 > **"기억해"** → `/capture` (회의 / 문서 / 이슈 / 교훈 저장) · **"꺼내줘"** → `/recall` (컨텍스트 브리프) · **"정리해"** → `/maintain` (볼트 정리).
-> 13개 워크플로우 + 엄브렐라 라우터, 총 **14개 스킬** — `/이름`(Claude Code) · `$이름`(Codex)으로 직접 호출도 가능.
+> 13개 워크플로우 + 엄브렐라 라우터, 총 **14개 스킬** — `/이름`(Claude Code, Antigravity) · `$이름`(Codex)으로 직접 호출도 가능.
 
 ---
 
@@ -1289,11 +1308,15 @@ knowledge/
 ├── _templates/   노트 양식 (frontmatter 규격 포함)
 └── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
 SECOND-BRAIN.md   워크플로우 규칙 (W1~W9) — 시스템의 심장
-CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌 방지)
-.claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code 전용)
+CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (Claude Code)
+GEMINI.md         @SECOND-BRAIN.md import 한 줄 (Antigravity / Gemini)
+AGENTS.md         에이전트 가이드, SECOND-BRAIN.md 참조 (Codex / Antigravity / Gemini)
+.claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code)
 .claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
 .claude/skills/   Claude 저장소 스킬 14종 (자동 인식, /이름 호출)
-.agents/skills/   Codex 저장소 스킬 14종 (자동 인식, $이름·자연어 — Claude 사본과 동일)
+.agents/hooks/    PreInvocation 세션 시작 훅 (Antigravity / Gemini)
+.agents/hooks.json Antigravity 훅 설정 (자동 인식)
+.agents/skills/   저장소 스킬 14종 (Codex 및 Antigravity 자동 인식 — Claude 사본과 동일)
 ```
 
 ## 🤝 하네스와의 관계
@@ -1303,13 +1326,14 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 하네스(Superpowers, ECC 등)가 책임진다. `/build`는 컨텍스트 브리프를 만든 뒤
 하네스 워크플로우에 바통을 넘긴다. 하네스가 없어도 동작한다.
 
-## 🔁 크로스-CLI 지원 (Claude Code + Codex)
+## 🔁 크로스-CLI 지원 (Claude Code + Codex + Antigravity / Gemini)
 
-규칙 원본은 `SECOND-BRAIN.md` 하나이며, `AGENTS.md`는 Codex 등 다른 CLI를
-같은 규칙으로 안내한다. 지원하는 인터페이스는 다음과 같다:
+규칙 원본은 `SECOND-BRAIN.md` 하나이며, `AGENTS.md` / `GEMINI.md`는 Codex,
+Antigravity (Gemini) 등 다른 CLI를 같은 규칙으로 안내한다. 지원하는 인터페이스는 다음과 같다:
 
 - Claude Code: `.claude/skills/` 14종 (자동 인식, `/이름` 호출)
 - Codex: `.agents/skills/` 14종 (자동 인식, `$이름` 또는 자연어)
+- Antigravity (Gemini): `.agents/skills/` 14종 (자동 인식, `/이름` 또는 자연어)
 
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
@@ -1318,17 +1342,19 @@ CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (기존 프로젝트와 충돌
 있고 모든 CLI에 동일하게 적용된다: `clusters/_topics.md`와 `log.md` 꼬리를 읽고,
 걸리는 주제가 있으면 그 클러스터 노트를 코드보다 먼저 연다.
 
-**Claude Code는 이 읽기를 자동화한다** — 세션 시작 훅(`.claude/hooks/session-context.mjs`)이
-설치·등록되어, `/recall`을 치지 않아도 관련 결정·이슈·교훈이 먼저 떠오른다.
+**Claude Code와 Antigravity (Gemini)는 이 읽기를 자동화한다**:
+- Claude Code: 세션 시작 훅(`.claude/hooks/session-context.mjs`)이 `.claude/settings.json`에 등록된다.
+- Antigravity (Gemini): `PreInvocation` 훅(`.agents/hooks/session-context.mjs`)이 `.agents/hooks.json`에 등록된다.
 
 훅은 조용히 동작하므로 화면에 아무것도 뜨지 않는다. 도는지 확인하려면 직접 실행한다:
 
 ```bash
 node .claude/hooks/session-context.mjs
+node .agents/hooks/session-context.mjs
 ```
 
 주제가 하나라도 있으면 주입될 JSON이 출력되고, 빈 볼트(토픽 0개)면 아무것도
-출력되지 않는다 — 후자도 정상이다.
+출력되지 않거나 빈 주입 배열이 출력된다 — 후자도 정상이다.
 
 **Codex도 훅 엔진이 있지만 자동화할 수 없다.** Codex는 `~/.codex/hooks.json`이나
 설치된 플러그인에서만 훅을 읽고, 저장소에 커밋된 파일에서는 읽지 않는다 — 레포에
