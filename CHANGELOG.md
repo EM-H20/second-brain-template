@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.9.0] — 2026-08-29
+
+### Features
+
+- Antigravity(Gemini) 스킬, 규칙 및 세션 훅 지원 추가
+
 ## [v1.8.0] — 2026-08-25
 
 ### Features
