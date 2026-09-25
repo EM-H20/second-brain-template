@@ -54,6 +54,10 @@ grep -q '무결성 검사' second-brain/workflows/W2.md || fail "W2.md에 무결
 node second-brain/tools/vault.mjs check > chk.log || { cat chk.log; fail "빈 골격에서 check 오류"; }
 grep -qx '무결성 이상 없음' chk.log || fail "빈 골격 check 결과가 깨끗하지 않음"
 node second-brain/tools/vault.mjs search 아무거나 | grep -q 'hits 0' || fail "빈 볼트 search 실패"
+grep -q 'vault.mjs search' SECOND-BRAIN.md || fail "회수 규칙에 search 도구 안내 없음"
+grep -q 'vault.mjs check' SECOND-BRAIN.md || fail "General rules에 쓰기 직후 check 없음"
+grep -q 'vault.mjs check' second-brain/workflows/W2.md || fail "W2가 check 도구를 쓰지 않음"
+grep -q 'vault.mjs search' AGENTS.md || fail "AGENTS.md에 search 도구 안내 없음"
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "아웃바운드 게이트가 General rules에 없음"
 [ "$(wc -c < SECOND-BRAIN.md)" -lt 16000 ] || echo "WARN: SECOND-BRAIN.md $(wc -c < SECOND-BRAIN.md)B (목표 ~10KB)"
 grep -q '### 회수 규칙' SECOND-BRAIN.md || fail "회수 규칙 절 없음"
@@ -464,6 +468,7 @@ const c = h.additionalContext;
 if (!c.includes("auth")) throw new Error("토픽 슬러그 누락");
 if (!c.includes("cluster-")) throw new Error("클러스터 지시문 누락");
 if (!c.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 누락");
+if (!c.includes("vault.mjs")) throw new Error("훅에 도구 안내 누락");
 if (c.includes("최근 작업")) throw new Error("log.md 없는데 최근 작업 섹션 있음");
 ' || fail "훅 출력 검증 실패"
 
@@ -518,6 +523,7 @@ const msg = o.injectSteps[0].ephemeralMessage;
 if (!msg.includes("auth")) throw new Error("토픽 슬러그 누락");
 if (!msg.includes("cluster-")) throw new Error("클러스터 지시문 누락");
 if (!msg.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 누락");
+if (!msg.includes("vault.mjs")) throw new Error("Antigravity 훅에 도구 안내 누락");
 if (msg.includes("최근 작업")) throw new Error("Antigravity 로그 주입");
 ' || fail "Antigravity 훅 컨텍스트 주입 검증 실패"
 

@@ -268,6 +268,7 @@ knowledge/
 └── _sources/     Verbatim preservation of originals (mirrors meetings/docs/issues)
 SECOND-BRAIN.md   Core rules + workflow index — the heart of the system
 second-brain/workflows/  W1–W9 procedures, read only when that workflow runs
+second-brain/tools/      Search · section · integrity tools the agent runs on its own
 CLAUDE.md         A single @SECOND-BRAIN.md import line (Claude Code)
 GEMINI.md         A single @SECOND-BRAIN.md import line (Antigravity / Gemini)
 AGENTS.md         Agent guidelines pointing to SECOND-BRAIN.md (Codex / Antigravity / Gemini)
@@ -617,6 +618,7 @@ knowledge/
 └── _sources/     原文逐字保存 (镜像 meetings/docs/issues)
 SECOND-BRAIN.md   核心规则 + 工作流索引 —— 系统的心脏
 second-brain/workflows/  W1~W9 流程，仅在执行该工作流时读取
+second-brain/tools/      智能体自动使用的检索·章节·完整性检查工具
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (Claude Code)
 GEMINI.md         仅一行 @SECOND-BRAIN.md 导入 (Antigravity / Gemini)
 AGENTS.md         Agent 指南，指向 SECOND-BRAIN.md (Codex / Antigravity / Gemini)
@@ -1311,6 +1313,7 @@ knowledge/
 └── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
 SECOND-BRAIN.md   핵심 규칙 + 워크플로우 색인 — 시스템의 심장
 second-brain/workflows/  W1~W9 절차 — 해당 워크플로우 실행 시에만 읽음
+second-brain/tools/      에이전트가 알아서 쓰는 검색·절 읽기·무결성 검사 도구
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (Claude Code)
 GEMINI.md         @SECOND-BRAIN.md import 한 줄 (Antigravity / Gemini)
 AGENTS.md         에이전트 가이드, SECOND-BRAIN.md 참조 (Codex / Antigravity / Gemini)
