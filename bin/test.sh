@@ -12,7 +12,7 @@ echo "changelog selfcheck OK"
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
-for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/hooks", ".agents/hooks.json", ".agents/skills", "GEMINI.md"]) {
+for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/hooks", ".agents/hooks.json", ".agents/skills", "GEMINI.md", "second-brain"]) {
   if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
 }
 ' || fail "package.json files 누락"
@@ -39,6 +39,14 @@ grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 �
 grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 grep -q 'W8' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W8 워크플로우 없음"
 grep -q 'W9' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W9 워크플로우 없음"
+for n in 1 2 3 4 5 6 7 8 9; do
+  [ -f second-brain/workflows/W$n.md ] || fail "W$n 워크플로우 파일 미설치"
+  grep -q "^### W$n " second-brain/workflows/W$n.md || fail "W$n.md 제목 불일치"
+  grep -q "second-brain/workflows/W$n.md" SECOND-BRAIN.md || fail "SECOND-BRAIN.md 색인에 W$n 경로 없음"
+done
+grep -q '무결성 검사' second-brain/workflows/W2.md || fail "W2.md에 무결성 검사 없음"
+grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "아웃바운드 게이트가 General rules에 없음"
+[ "$(wc -c < SECOND-BRAIN.md)" -lt 16000 ] || echo "WARN: SECOND-BRAIN.md $(wc -c < SECOND-BRAIN.md)B (목표 ~10KB)"
 # 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
 # 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"

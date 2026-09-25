@@ -266,7 +266,8 @@ knowledge/
 ├── _bases/       Obsidian Bases table views (for humans, not the agent's retrieval path)
 ├── _templates/   Note templates (including frontmatter schema)
 └── _sources/     Verbatim preservation of originals (mirrors meetings/docs/issues)
-SECOND-BRAIN.md   Workflow rules (W1–W9) — the heart of the system
+SECOND-BRAIN.md   Core rules + workflow index — the heart of the system
+second-brain/workflows/  W1–W9 procedures, read only when that workflow runs
 CLAUDE.md         A single @SECOND-BRAIN.md import line (Claude Code)
 GEMINI.md         A single @SECOND-BRAIN.md import line (Antigravity / Gemini)
 AGENTS.md         Agent guidelines pointing to SECOND-BRAIN.md (Codex / Antigravity / Gemini)
@@ -614,7 +615,8 @@ knowledge/
 ├── _bases/       Obsidian Bases 表格视图 (给人看的，不是 agent 的检索路径)
 ├── _templates/   笔记模板 (含 frontmatter 规格)
 └── _sources/     原文逐字保存 (镜像 meetings/docs/issues)
-SECOND-BRAIN.md   工作流规则 (W1~W9) —— 系统的心脏
+SECOND-BRAIN.md   核心规则 + 工作流索引 —— 系统的心脏
+second-brain/workflows/  W1~W9 流程，仅在执行该工作流时读取
 CLAUDE.md         仅一行 @SECOND-BRAIN.md 导入 (Claude Code)
 GEMINI.md         仅一行 @SECOND-BRAIN.md 导入 (Antigravity / Gemini)
 AGENTS.md         Agent 指南，指向 SECOND-BRAIN.md (Codex / Antigravity / Gemini)
@@ -1307,7 +1309,8 @@ knowledge/
 ├── _bases/       Obsidian Bases 표 뷰 (사람용, 에이전트 회수 경로 아님)
 ├── _templates/   노트 양식 (frontmatter 규격 포함)
 └── _sources/     원본 텍스트 verbatim 보존 (meetings/docs/issues 미러)
-SECOND-BRAIN.md   워크플로우 규칙 (W1~W9) — 시스템의 심장
+SECOND-BRAIN.md   핵심 규칙 + 워크플로우 색인 — 시스템의 심장
+second-brain/workflows/  W1~W9 절차 — 해당 워크플로우 실행 시에만 읽음
 CLAUDE.md         @SECOND-BRAIN.md import 한 줄 (Claude Code)
 GEMINI.md         @SECOND-BRAIN.md import 한 줄 (Antigravity / Gemini)
 AGENTS.md         에이전트 가이드, SECOND-BRAIN.md 참조 (Codex / Antigravity / Gemini)
