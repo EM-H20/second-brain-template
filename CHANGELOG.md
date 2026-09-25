@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.10.0] — 2026-09-25
+
+### Features
+
+- 볼트 읽기 경로 다이어트 — 규칙 분리·회수 규칙·세션 로드 축소·클러스터 계층 색인 (#12)
+
 ## [v1.9.0] — 2026-08-29
 
 ### Features
