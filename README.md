@@ -70,6 +70,8 @@ immediately previous version** (it is replaced on the next re-run). Legacy comma
 from before the skill promotion are cleaned up automatically once their ownership marker is
 verified — every one of them is superseded by a skill, so nothing is lost. Your actual notes, `index.md`,
 `log.md`, `clusters/_topics.md`, and the originals saved under `_sources/` are never touched.
+After updating, say **"apply the template update"** (`/update-vault`) in Claude Code or Codex to bring your
+existing notes and `AGENTS.md` up to the new rules — the installer prints this reminder too.
 In non-interactive environments such as CI, pass the `-y` flag to skip the confirmation.
 
 ### Option B — Start a new project from the template
@@ -242,6 +244,7 @@ speech.
 | Skill | Role |
 |---|---|
 | `/setup-vault` | One-time initialization right after cloning |
+| `/update-vault` | After re-running npx, apply the template update to your existing vault ("apply the template update") |
 | `/ingest-meeting` | Transcript → meeting note + decision extraction + cluster update + conflict check |
 | `/ingest-doc` | Turn PRDs, specs, and articles into knowledge — authority/relevance weighting + decision extraction |
 | `/cluster` | Integrity check + re-cluster the whole vault, merge duplicate topics |
@@ -433,6 +436,7 @@ npx github:EM-H20/second-brain-template
 内容有差异的文件会备份为 `<文件>.bak`，且**只保留紧邻的上一个版本**（下次重新运行时会被替换）。
 技能升级之前遗留的旧版命令/提示文件，会在确认所有权标记后自动清理 —— 每一个都已被技能取代，不会有任何功能损失。
 你真正的笔记、`index.md`、`log.md`、`clusters/_topics.md` 以及 `_sources/` 中保存的原文，绝不会被改动。
+更新后在 Claude Code 或 Codex 中说 **"应用模板更新"**（`/update-vault`），即可让现有笔记和 `AGENTS.md` 符合新规则 —— 安装程序也会提示这一点。
 在 CI 等非交互环境中，可用 `-y` 参数跳过确认。
 
 ### 方式 B — 以模板开启新项目
@@ -598,6 +602,7 @@ description 的自动识别也能让自然语言发话直接触发。
 | 技能 | 作用 |
 |---|---|
 | `/setup-vault` | clone 之后的一次性初始化 |
+| `/update-vault` | 重新运行 npx 后，把模板更新应用到现有知识库（"应用模板更新"） |
 | `/ingest-meeting` | 记录 → 会议笔记 + 决策拆分 + 聚类更新 + 冲突检查 |
 | `/ingest-doc` | 将策划书、规格书、文章等文档知识化 —— 权威性/关联度加权 + 决策提取 |
 | `/cluster` | 知识库完整性检查 + 对整个知识库重新聚类，合并重复主题 |
@@ -782,6 +787,7 @@ npx github:EM-H20/second-brain-template
 この `.bak` は**直前のバージョン 1 つだけ**を保持します（次回の再実行時に置き換わります）。
 スキル昇格以前の旧コマンド／プロンプトファイルは、所有権マーカーを確認したうえで自動的に整理されます —— いずれもスキルに置き換え済みで、機能の損失はありません。
 実際のノート、`index.md`、`log.md`、`clusters/_topics.md`、`_sources/` に保存された原文は決して触れられません。
+更新後は Claude Code か Codex で **「テンプレートの更新を反映して」**（`/update-vault`）と伝えれば、既存のノートと `AGENTS.md` が新しいルールに揃います —— インストーラーもそう案内します。
 CI などの非対話環境では `-y` フラグで確認をスキップできます。
 
 ### 方法 B — テンプレートから新規プロジェクトを開始
@@ -952,6 +958,7 @@ description ベースの自動認識によって自然な発話からも起動�
 | スキル | 役割 |
 |---|---|
 | `/setup-vault` | clone 直後の 1 回だけの初期化 |
+| `/update-vault` | npx 再実行後、テンプレートの更新を既存ボールトに反映（「テンプレートの更新を反映して」） |
 | `/ingest-meeting` | 文字起こし → 議事録 + 決定の分離 + クラスタ更新 + 衝突チェック |
 | `/ingest-doc` | 企画書・仕様書・記事などのドキュメントを知識化 —— 権威性/関連度の重み付け + 決定抽出 |
 | `/cluster` | ボールトの整合性チェック + 全体を再クラスタリング、重複トピックを統合 |
@@ -1135,6 +1142,8 @@ npx github:EM-H20/second-brain-template
 백업된다(다음 재실행 시 교체). 스킬 승격 이전의 구버전 커맨드·프롬프트는 소유 마커
 확인 후 자동 정리된다 — 전부 스킬로 대체되어 기능 손실이 없다. 실제 노트·`index.md`·`log.md`·
 `clusters/_topics.md`·`_sources/` 저장 원본은 절대 건드리지 않는다.
+업데이트한 뒤 Claude Code·Codex에서 **"업데이트 반영해"**(`/update-vault`)라고 하면 기존 노트와 `AGENTS.md`가
+새 규칙에 맞춰진다 — 설치기도 끝에 이 안내를 출력한다.
 CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 
 ### 방법 B — 템플릿으로 새 프로젝트 시작
@@ -1301,6 +1310,7 @@ description 기반 자동 인식으로 자연어 발화에도 스스로 발동�
 | 스킬 | 역할 |
 |---|---|
 | `/setup-vault` | clone 직후 1회 초기화 |
+| `/update-vault` | npx 재실행 후 템플릿 업데이트를 기존 볼트에 반영 ("업데이트 반영해") |
 | `/ingest-meeting` | 전사체 → 회의노트 + 결정 분리 + 클러스터 갱신 + 충돌 검사 |
 | `/ingest-doc` | 기획서·스펙·아티클 등 문서 지식화 — 권위·연관 가중치 + 결정 추출 |
 | `/cluster` | 볼트 무결성 검사 + 전체 재클러스터링, 중복 토픽 병합 |
