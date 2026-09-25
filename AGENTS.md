@@ -33,6 +33,8 @@ If the task touches any topic in that vocabulary, read the needed sections
 (current-state summary, active decisions) of
 `knowledge/clusters/cluster-<topic>.md` — not the whole file. Do not read
 `knowledge/log.md` at session start. See "세션 시작 컨텍스트" and "회수 규칙" in SECOND-BRAIN.md.
+To find notes, run `node second-brain/tools/vault.mjs search <keywords> --type <type>`;
+read long notes with `section` — run them yourself, never ask the user to.
 
 Claude Code automates this with a SessionStart hook
 (`.claude/hooks/session-context.mjs`, registered in `.claude/settings.json`).

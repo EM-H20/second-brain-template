@@ -36,10 +36,11 @@ folder and take max+1. Never reuse a number, even if a note was deleted.
 ## Frontmatter schema (STRICT — every note must comply)
 
 Frontmatter is how you find things without reading every file.
-When searching the vault, ALWAYS scan frontmatter first (grep the YAML
-blocks), filter by structured fields such as `topics`, `status`, `authority`,
-`symptoms`, and `trigger`, then use lexical search (`rg`) only on the narrowed
-candidates. Open full bodies only for the final matches. Do not add embeddings
+When searching the vault, ALWAYS filter by frontmatter first —
+`node second-brain/tools/vault.mjs search` does this in one call (see 「회수 규칙」).
+By hand (only if the tool fails): grep the YAML blocks, filter by structured fields
+such as `topics`, `status`, `authority`, `symptoms`, and `trigger`, then use lexical
+search (`rg`) only on the narrowed candidates. Open full bodies only for the final matches. Do not add embeddings
 or a graph database unless this deterministic path is measured and found insufficient.
 `_sources/`는 스키마 없는 원본 보존본이므로 검색 대상이 아니다 — 절대 스캔하지 않는다.
 
@@ -85,7 +86,7 @@ Type-specific keys:
 `cluster`는 복수 `topics` 대신 단일 `topic`을 사용한다. `index.md`, `log.md`,
 folder `README.md`, `clusters/_topics.md`, `_bases/*.base`는 운영 파일이며 콘텐츠
 검색 후보에서 제외한다. `_bases/`는 사람이 Obsidian에서 보는 표 뷰일 뿐이며,
-에이전트의 회수 경로는 언제나 frontmatter grep이다 — base 파일을 읽어서 노트를 찾지 않는다.
+에이전트의 회수 경로는 언제나 frontmatter 우선 검색(`vault.mjs search`, 도구 실패 시 grep)이다 — base 파일을 읽어서 노트를 찾지 않는다.
 
 `source:` (meeting/issue/completion-report/doc): 원본의 위치. 텍스트 원본을
 보존하면 로컬 `_sources/<type>/<id>.md` 경로, 바이너리 등 미보존이면 외부 URL.
@@ -172,12 +173,13 @@ frontmatter 우선 검색(위 「Frontmatter schema」의 검색 순서)과 「S
 회수 시맨틱」 표는 그대로 적용한다. 그 위에서:
 
 1. **답변 모드.** 질문형(왜·무엇·언제·현재 상태)은: 주제 식별(`_topics.md`) → frontmatter의
-   `topics`·`status`로 근거 결정 후보를 좁힌다 → 그 결정 노트 **본문**을 읽는다 →
+   `topics`·`status`로 근거 결정 후보를 좁힌다(`search` — 질문 원문이 아니라 핵심 키워드
+   1–3개, 결정을 묻는 질문이면 `--type decision`) → 그 결정 노트 **본문**을 읽는다 →
    status·supersede 체인으로 현재성 확인 → 같은 topic의 `open` 이슈 확인 → 하위 질문마다
    답하고 id를 인용한다. W4·W6·W8 전체 수집은 구현 전 브리프(W3), 버그 질문(W6),
    새 결정(W4)일 때만 한다.
-2. **클러스터는 절 단위로 읽는다.** 필요한 절(현재 상태 요약, 활성 결정 등)을 제목으로
-   찾아 그 줄 범위만 읽는다. 클러스터 한 줄은 포인터이고, 답의 근거는 노트 본문이다.
+2. **클러스터는 절 단위로 읽는다.** `section`으로 목차를 보고 필요한 절(현재 상태 요약,
+   활성 결정 등)만 읽는다. 클러스터 한 줄은 포인터이고, 답의 근거는 노트 본문이다.
 3. 여러 파일을 한 명령으로 이어 붙여 읽지 않는다 — 긴 출력은 가운데가 잘린다.
 4. 출력이 잘렸으면 보지 못한 범위를 밝히고 "없음"·"충돌 없음"을 단정하지 않는다.
    부분 읽기는 전체 검토가 아니다.
@@ -185,6 +187,18 @@ frontmatter 우선 검색(위 「Frontmatter schema」의 검색 순서)과 「S
 6. `log.md`는 회수 자료가 아니다. 특정 id·날짜·용어를 찾을 때만 검색한다.
 7. 답하기 전에 근거 결정의 「결과」·「영향 범위」를 확인하고, 질문의 하위 질문 중
    빠진 것이 없는지 점검한다.
+
+**도구.** 위 검색·절 읽기·검사는 에이전트가 직접 실행한다 — 사용자에게 명령을 안내하거나 묻지 않는다.
+
+```
+node second-brain/tools/vault.mjs search 분실물 --type decision                 # 후보 찾기 (필터 → 순위)
+node second-brain/tools/vault.mjs section cluster-<topic> "현재 상태 요약" "활성 결정"  # 필요한 절만
+node second-brain/tools/vault.mjs check <방금 쓴 파일...>                        # 무결성 검사 (읽기 전용)
+```
+
+결과 머리줄이 `complete=false`면 필요할 때만 `# next:`가 알려 주는 옵션으로 이어 읽는다.
+도구가 실패하면(종료 코드 2: 노드 없음·잘못된 인자·볼트 없음) frontmatter 우선 검색을 손으로 한다.
+`check`의 종료 코드 1은 실패가 아니라 문제를 찾았다는 뜻이다.
 
 ### Trigger routing (3 core verbs)
 
@@ -247,5 +261,9 @@ Everyday interaction — skill or natural language — routes through three verb
 - Never modify files under `_templates/` unless the user explicitly asks.
 - When updating any note, keep frontmatter valid YAML — broken frontmatter
   breaks retrieval.
+- **쓰기 직후 검사.** 볼트에 노트를 쓰거나 고친 직후 `node second-brain/tools/vault.mjs check <쓴 파일...>`을
+  실행한다. 자신이 방금 만든 오류(E1–E7)와 W8(원본 경로)·W10(클러스터 정합)은 고친 뒤 `log.md`에 기록한다.
+  W11(클러스터 형태)·W12(리뷰 후보)는 보고만 한다 — 크기를 줄이려고 세부를 지우거나 `reviewed`를 올리지 않는다.
+  기존 노트의 문제는 W2처럼 보고만 한다.
 - Keep notes atomic: one meeting per note, one decision per note, one issue
   per note. Split rather than append unrelated content.
