@@ -2,8 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { LIFECYCLE_TYPES, asList, lifecycleIndex, listAllNames, parseDay, readNote, staleMonths } from './notes.mjs';
+import { outline } from './section.mjs';
 
-const STATUS = {
+export const STATUS = {
   decision: ['active', 'superseded', 'archived'], doc: ['active', 'superseded', 'archived'],
   lesson: ['active', 'superseded', 'archived'], issue: ['open', 'resolved'],
   'completion-report': ['resolved'], meeting: ['active'], report: ['active'], cluster: ['active'], index: ['active'],
@@ -19,10 +20,11 @@ const REQUIRED = {
   report: [], index: [],
 };
 const LINK_FIELDS = ['related', 'resolution', 'resolves'];
+const NON_EMPTY = new Set(['type', 'id', 'created', 'status', 'topic', 'members']);
 const CLUSTER_MAX = 12 * 1024;
 const SUMMARY_MAX = 4 * 1024;
 
-const linksIn = (text) => [...String(text ?? '').matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)].map((m) => path.posix.basename(m[1].trim()));
+const linksIn = (text) => [...String(text ?? '').matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)].map((m) => path.posix.basename(m[1].trim()).normalize('NFC'));
 const bodyOf = (n) => n.lines.slice(n.bodyStart).join('\n');
 
 function readVocab(root) {
@@ -32,14 +34,6 @@ function readVocab(root) {
   } catch { return new Set(); }
 }
 
-function summarySection(n) {
-  let start = -1;
-  for (let i = n.bodyStart; i < n.lines.length; i++) {
-    if (start < 0 && /^#{2,3}\s+현재 상태 요약/.test(n.lines[i])) { start = i; continue; }
-    if (start >= 0 && /^#{1,3}\s/.test(n.lines[i])) return n.lines.slice(start, i);
-  }
-  return start < 0 ? null : n.lines.slice(start);
-}
 
 // root: knowledge/ 경로, notes: loadVault 결과, opt: { today(UTC ms) }
 // 반환: { errors: [{file, code, message}], warnings: [...] }
@@ -63,7 +57,11 @@ export function check(root, notes, opt = {}) {
     const t = fm.type;
     if (!STATUS[t]) { E(n.file, 'E2', `알 수 없는 type: ${t ?? '(없음)'}`); continue; }
     const required = ['created', 'status', ...(t === 'cluster' ? [] : ['topics']), ...REQUIRED[t]];
-    for (const k of required) if (!(k in fm)) E(n.file, 'E2', `필수 키 없음: ${k}`);
+    for (const k of required) {
+      if (!(k in fm)) E(n.file, 'E2', `필수 키 없음: ${k}`);
+      else if (NON_EMPTY.has(k) && (fm[k] === null || fm[k] === '')) E(n.file, 'E2', `필수 키 비어 있음: ${k}`);
+    }
+    if (fm.created != null && fm.created !== '' && parseDay(fm.created) === null) E(n.file, 'E2', `created 날짜 형식 오류: ${fm.created}`);
     if (fm.status != null && !STATUS[t].includes(fm.status)) E(n.file, 'E2', `${t}에 허용되지 않는 status: ${fm.status}`);
     if ('reviewed' in fm) {
       if (!LIFECYCLE_TYPES.has(t)) E(n.file, 'E3', `reviewed는 decision·doc·lesson 전용 (type: ${t})`);
@@ -145,11 +143,11 @@ export function check(root, notes, opt = {}) {
     if (c.bytes > CLUSTER_MAX) W(c.file, 'W11', `클러스터 ${(c.bytes / 1024).toFixed(0)}KB > 12KB — 세부를 멤버 노트나 하위 클러스터로 옮길 것`);
     const narrative = c.lines.filter((l) => /^#{2,3}\s+갱신/.test(l)).length;
     if (narrative) W(c.file, 'W11', `서술형 「갱신」 절 ${narrative}개 — 요약을 제자리에서 다시 쓸 것`);
-    const summary = summarySection(c);
-    if (summary) {
-      const sb = Buffer.byteLength(summary.join('\n'));
-      if (sb > SUMMARY_MAX) W(c.file, 'W11', `「현재 상태 요약」 ${(sb / 1024).toFixed(1)}KB > 4KB`);
-      const date = summary.slice(0, 3).join(' ').match(/\d{4}-\d{2}-\d{2}/)?.[0];
+    // 요약 절은 같은·상위 수준 제목까지 (안의 ### 소제목 포함)
+    const sh = outline(c).find((h) => h.level >= 2 && h.text.startsWith('현재 상태 요약'));
+    if (sh) {
+      if (sh.bytes > SUMMARY_MAX) W(c.file, 'W11', `「현재 상태 요약」 ${(sh.bytes / 1024).toFixed(1)}KB > 4KB`);
+      const date = c.lines.slice(sh.start - 1, sh.start + 2).join(' ').match(/\d{4}-\d{2}-\d{2}/)?.[0];
       if (!c.base.includes('--') && date) {
         const newest = members(String(c.fm.topic)).map((n) => String(n.fm.created ?? '')).filter((d) => parseDay(d) !== null).sort().at(-1);
         if (newest && newest > date) W(c.file, 'W11', `「현재 상태 요약」(${date})이 최신 멤버(${newest})보다 오래됨`);

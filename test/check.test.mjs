@@ -105,3 +105,44 @@ test('별칭·제목·경로가 붙은 wikilink도 대상 이름으로 해석한
   const r = run({ ...CLEAN, 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md': src });
   assert.ok(!r.errors.some((x) => x.code === 'E5'), JSON.stringify(r.errors));
 });
+
+test('필수 키가 비어 있거나 created가 실제 날짜가 아니면 오류', () => {
+  const k5 = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const k6 = 'decisions/DEC-0006-clarity로-공개-화면-재생을-기록한다.md';
+  const k3 = 'decisions/DEC-0003-로그인-없이-서버-발급-쿠키-토큰으로-식별한다.md';
+  const r = run({ ...CLEAN,
+    [k5]: CLEAN[k5].replace('status: active        # active | superseded | archived', 'status:'),
+    [k6]: CLEAN[k6].replace('created: 2025-02-10', 'created: YYYY-MM-DD'),
+    [k3]: CLEAN[k3].replace('created: 2025-02-01', 'created: 2025-02-30') });
+  assert.ok(has(r.errors, 'E2', k5, /필수 키 비어 있음: status/));
+  assert.ok(has(r.errors, 'E2', k6, /created 날짜 형식 오류/));
+  assert.ok(has(r.errors, 'E2', k3, /created 날짜 형식 오류/));
+});
+
+test('「현재 상태 요약」 안의 ### 소제목까지 요약 크기로 잰다', () => {
+  const k = 'clusters/cluster-lost-items.md';
+  const big = CLEAN[k].replace('분실물은 축제 기능 뒤로 미뤘다.\n', `분실물은 축제 기능 뒤로 미뤘다.\n\n### 배경\n${'배경 설명이 길어진다.\n'.repeat(200)}`);
+  assert.ok(has(run({ ...CLEAN, [k]: big }).warnings, 'W11', k, /「현재 상태 요약」 .*KB > 4KB/));
+});
+
+test('_sources·_templates 에만 있는 이름으로의 링크는 끊긴 링크', () => {
+  const k = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const r = run({ ...CLEAN, '_sources/docs/DOC-0009-삭제된-문서.md': '원본\n',
+    [k]: CLEAN[k].replace('related: ["[[2025-01-02-kickoff]]"]', 'related: ["[[DOC-0009-삭제된-문서]]"]') });
+  assert.ok(has(r.errors, 'E5', k, /DOC-0009-삭제된-문서/));
+});
+
+test('NFD 파일명으로의 NFC 링크는 끊긴 링크가 아니다', () => {
+  const key = 'meetings/2025-01-02-kickoff.md';
+  const k5 = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const { [k5]: src, ...rest } = CLEAN;
+  const r = run({ ...rest, [k5.normalize('NFD')]: src });
+  assert.ok(!r.errors.some((x) => x.code === 'E5'), JSON.stringify(r.errors));
+  assert.ok(Object.keys(CLEAN).includes(key));
+});
+
+test('YAML이 거부하는 frontmatter(흐름 목록 뒤 블록 항목)는 E1', () => {
+  const k = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const r = run({ ...CLEAN, [k]: CLEAN[k].replace('related: ["[[2025-01-02-kickoff]]"]', 'related: []\n  - "[[2025-01-02-kickoff]]"') });
+  assert.ok(has(r.errors, 'E1', k, /블록 항목/));
+});

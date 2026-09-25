@@ -13,7 +13,7 @@ const cli = (...args) => spawnSync('node', [CLI, ...args], { encoding: 'utf8' })
 test('search: 결과를 출력하고 종료 코드 0', () => {
   const r = cli('search', '분실물', '--type', 'decision', '--vault', clean);
   assert.equal(r.status, 0);
-  assert.match(r.stdout, /^# search "분실물" · hits \d+/);
+  assert.match(r.stdout, /^# search "분실물" · type=decision · hits \d+/);
   assert.match(r.stdout, /DEC-0005 · decision · active/);
 });
 
@@ -51,4 +51,35 @@ test('사용법·잘못된 입력은 종료 코드 2', () => {
   assert.equal(cli('bogus', '--vault', clean).status, 2);
   assert.equal(cli('search', 'x', '--vault', '/nonexistent/vault').status, 2);
   assert.match(cli('search', 'x', '--vault', clean, '--today', '2025/01/01').stderr, /--today 형식 오류/);
+});
+
+test('check 인자가 볼트 노트가 아니면(폴더·대소문자 다른 경로·운영 파일) 거짓 통과 대신 종료 코드 2', () => {
+  assert.equal(cli('check', 'decisions', '--vault', dirty).status, 2);
+  assert.equal(cli('check', 'Decisions/DEC-0108-dangling.md', '--vault', dirty).status, 2);
+  assert.equal(cli('check', 'log.md', '--vault', clean).status, 2);
+  assert.equal(cli('check', 'index.md', '--vault', clean, '--today', '2025-03-01').status, 0);
+});
+
+test('인자: --key=value 허용, 모르는 키·빈 값·잘못된 값은 종료 코드 2', () => {
+  const eq = cli('search', '--type=decision', '분실물', '--vault', clean);
+  assert.equal(eq.status, 0);
+  assert.match(eq.stdout, /^# search "분실물" · type=decision · hits/);
+  for (const args of [
+    ['search', '분실물', '--typ', 'decision'],
+    ['search', '식별', '--type', '--all'],
+    ['search', '분실물', '--type', 'decisions'],
+    ['search', '분실물', '--status', 'Active'],
+    ['search', '분실물', '--offset', '-2'],
+    ['section', 'DEC-0005', '--from', '1.5'],
+  ]) assert.equal(cli(...args, '--vault', clean).status, 2, args.join(' '));
+});
+
+test('--vault 가 폴더가 아니면 종료 코드 2', () => {
+  assert.equal(cli('check', '--vault', path.join(clean, 'log.md')).status, 2);
+});
+
+test('--help 에 종료 코드 설명', () => {
+  const h = cli('--help').stdout;
+  assert.match(h, /종료 코드: 0 정상 · 1 .+ · 2 도구 실패/);
+  assert.match(h, /--all/);
 });

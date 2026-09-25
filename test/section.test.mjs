@@ -86,3 +86,18 @@ test('한 줄이 상한보다 길면 그 줄을 잘라 표시하고 상한을 �
   assert.ok(Buffer.byteLength(t) <= CAP, `bytes ${Buffer.byteLength(t)}`);
   assert.match(t, /…\(L\d+ 줄이 너무 길어 잘림\)/);
 });
+
+test('완료 리포트가 여러 개인 이슈도 이슈를 열고 리포트를 모두 알린다', () => {
+  const rep = 'issues/ISS-0001-clarity-재생이-전부-마스킹된다-완료-리포트.md';
+  const two = makeVault({ ...CLEAN, 'issues/ISS-0001-clarity-재생이-전부-마스킹된다-2차-리포트.md': CLEAN[rep] });
+  const r = resolveNote(two, loadVault(two), 'ISS-0001');
+  assert.equal(r.note.type, 'issue');
+  assert.ok(r.extra.includes('완료-리포트.md') && r.extra.includes('2차-리포트.md'), r.extra);
+});
+
+test('NFD 파일명 노트도 NFC 이름으로 연다', () => {
+  const key = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const { [key]: src, ...rest } = CLEAN;
+  const nfd = makeVault({ ...rest, [key.normalize('NFD')]: src });
+  assert.equal(resolveNote(nfd, loadVault(nfd), 'DEC-0005-분실물은-축제-기능-뒤로-미룬다').note.id, 'DEC-0005');
+});

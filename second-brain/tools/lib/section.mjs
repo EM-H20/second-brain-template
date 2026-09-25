@@ -11,16 +11,15 @@ export function resolveNote(root, notes, arg) {
   for (const p of [arg, path.join(root, arg)]) {
     if (p.endsWith('.md') && fs.existsSync(p) && fs.statSync(p).isFile()) return { note: readNote(root, path.resolve(p)), extra: null };
   }
-  const name = arg.replace(/\.md$/, '');
+  const name = arg.replace(/\.md$/, '').normalize('NFC');
   const byName = notes.filter((n) => n.base === name);
   if (byName.length === 1) return { note: byName[0], extra: null };
   const byId = notes.filter((n) => (n.id && n.id.toUpperCase() === name.toUpperCase()) || n.base.toUpperCase().startsWith(`${name.toUpperCase()}-`));
   if (byId.length === 1) return { note: byId[0], extra: null };
-  if (byId.length === 2) {
-    const main = byId.filter((n) => n.type !== 'completion-report');
-    const reports = byId.filter((n) => n.type === 'completion-report');
-    if (main.length === 1 && reports.length === 1) return { note: main[0], extra: `완료 리포트: ${reports[0].file}` };
-  }
+  // 이슈 + 완료 리포트(여러 단계면 여러 개)는 같은 id 를 쓴다 → 이슈를 열고 리포트를 알린다
+  const main = byId.filter((n) => n.type !== 'completion-report');
+  const reports = byId.filter((n) => n.type === 'completion-report');
+  if (main.length === 1 && reports.length >= 1) return { note: main[0], extra: `완료 리포트: ${reports.map((n) => n.file).join(', ')}` };
   if (!byId.length && !byName.length) return { error: 'not-found', candidates: [] };
   return { error: 'ambiguous', candidates: [...byName, ...byId].map((n) => n.file) };
 }

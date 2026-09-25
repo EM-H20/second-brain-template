@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { latestOf, lifecycleIndex, loadVault, parseDay, parseFrontmatter, staleMonths } from '../second-brain/tools/lib/notes.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { latestOf, lifecycleIndex, listAllNames, loadVault, parseDay, parseFrontmatter, staleMonths } from '../second-brain/tools/lib/notes.mjs';
 import { CLEAN, makeVault } from './fixture.mjs';
 
 const fmOf = (src) => parseFrontmatter(src.split('\n'));
@@ -78,4 +80,84 @@ test('CRLF 줄바꿈 노트도 LF와 똑같이 읽는다', () => {
   assert.equal(n.fm.status, 'active');
   assert.equal(n.title, 'DEC-0005: 분실물은 축제 기능 뒤로 미룬다');
   assert.ok(n.lines.every((l) => !l.endsWith('\r')));
+});
+
+// 기대값은 실제 YAML 파서(Ruby Psych) 판정 — YAML이 거부하면 오류, 받아들이면 같은 값.
+// 앵커·여러 줄 문자열은 YAML은 받지만 이 부분집합 밖이라 오류로 둔다.
+const PARSE_CASES = [
+  ['흐름 목록 뒤 블록 항목', 'related: []\n  - "[[x]]"', /블록 항목/],
+  ['값 안의 ": "', 'root_cause: 원인: 타임아웃', /따옴표/],
+  ['콜론으로 끝나는 값', 'root_cause: 원인:', /따옴표/],
+  ['백틱으로 시작', 'trigger: `rg` 쓸 때', /따옴표/],
+  ['@로 시작', 'trigger: @user', /따옴표/],
+  ['%로 시작', 'trigger: %done', /따옴표/],
+  ['*로 시작', 'root_cause: **굵게**', /따옴표/],
+  ['"- "로 시작', 'x: - a', /따옴표/],
+  ['"? "로 시작', 'x: ? a', /따옴표/],
+  ['탭 들여쓰기', 'a:\n\t- b', /탭/],
+  ['빈 흐름 항목', 'a: [x, , y]', /빈 목록 항목/],
+  ['닫는 따옴표 뒤 잡음', 'x: "a" b', /따옴표 뒤/],
+  ['흐름 목록 안 주석', 'x: [a #b]', /따옴표/],
+  ['따옴표 없는 wikilink 목록', 'x: [[[a]]]', /따옴표로 감쌀/],
+  ['앵커', 'x: &a b', /지원하지 않음/],
+  ['여러 줄 문자열', 'x: a\n  b', /허용되지 않는 문법/],
+  ['끝 쉼표', 'a: [x, y, ]', { a: ['x', 'y'] }],
+  ['목록 안 아포스트로피', "symptoms: [can't log in, ok]", { symptoms: ["can't log in", 'ok'] }],
+  ['평문 아포스트로피 + 주석', "root_cause: don't retry # memo", { root_cause: "don't retry" }],
+  ['공백 없는 #', 'x: C#', { x: 'C#' }],
+  ['URL 안의 #', 'source: https://example.com/a#b', { source: 'https://example.com/a#b' }],
+  ['작은따옴표 이스케이프', "x: 'it''s'", { x: "it's" }],
+  ['따옴표 안 쉼표', 'x: ["a, b", c]', { x: ['a, b', 'c'] }],
+  ['값 없이 주석만', 'x: # only comment', { x: null }],
+  ['-로 시작하는 단어', 'x: -abc', { x: '-abc' }],
+];
+
+test('파서: 실제 YAML 파서(Ruby Psych) 판정과 같은 결과', () => {
+  for (const [name, body, want] of PARSE_CASES) {
+    const r = fmOf(`---\n${body}\n---\n`);
+    if (want instanceof RegExp) assert.match(r.err ?? '(오류 없음)', want, name);
+    else {
+      assert.equal(r.err, null, `${name}: ${r.err}`);
+      assert.deepEqual(r.fm, want, name);
+    }
+  }
+});
+
+test('BOM이 붙은 노트도 읽는다', () => {
+  const key = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const n = loadVault(makeVault({ ...CLEAN, [key]: '\uFEFF' + CLEAN[key] })).find((x) => x.base.startsWith('DEC-0005'));
+  assert.equal(n.err, null);
+  assert.equal(n.id, 'DEC-0005');
+});
+
+test('NFD 파일명도 NFC 이름으로 다룬다', () => {
+  const key = 'decisions/DEC-0005-분실물은-축제-기능-뒤로-미룬다.md';
+  const { [key]: src, ...rest } = CLEAN;
+  const root = makeVault({ ...rest, [key.normalize('NFD')]: src });
+  const n = loadVault(root).find((x) => x.id === 'DEC-0005');
+  assert.equal(n.base, 'DEC-0005-분실물은-축제-기능-뒤로-미룬다');
+  assert.equal(n.file, key);
+  assert.ok(listAllNames(root).has('DEC-0005-분실물은-축제-기능-뒤로-미룬다'));
+});
+
+test('읽을 수 없는 폴더는 조용히 건너뛰지 않고 오류', { skip: process.getuid?.() === 0 }, () => {
+  const root = makeVault(CLEAN);
+  fs.chmodSync(path.join(root, 'lessons'), 0o000);
+  try { assert.throws(() => loadVault(root), /EACCES|EPERM/); }
+  finally { fs.chmodSync(path.join(root, 'lessons'), 0o755); }
+});
+
+test('심볼릭 링크 폴더를 따라가고 순환 링크에서 멈춘다', () => {
+  const root = makeVault(CLEAN);
+  const ext = makeVault({ 'x/DEC-0100-외부.md': '---\ntype: decision\nid: DEC-0100\n---\n# 외부\n' });
+  fs.symlinkSync(path.join(ext, 'x'), path.join(root, 'decisions', 'linked'));
+  fs.symlinkSync(root, path.join(root, 'decisions', 'loop'));
+  const files = loadVault(root).map((n) => n.file);
+  assert.ok(files.includes('decisions/linked/DEC-0100-외부.md'));
+  assert.equal(files.filter((f) => f.includes('DEC-0005')).length, 1);
+});
+
+test('날짜 해석: 없는 날짜는 거부', () => {
+  assert.equal(parseDay('2025-02-30'), null);
+  assert.equal(parseDay('2025-02-28'), Date.UTC(2025, 1, 28));
 });

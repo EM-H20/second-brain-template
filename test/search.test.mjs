@@ -94,3 +94,18 @@ test('문장형 검색어에는 힌트, 결과 0건에도 힌트', () => {
 test('검색어 없이 필터만 주면 최신순 목록', () => {
   assert.deepEqual(run('', { type: 'decision', topic: 'auth' }).ranked, ['DEC-0003', 'DEC-0002', 'DEC-0001']);
 });
+
+test('--status archived 는 --all 없이도 archived 를 찾는다', () => {
+  assert.ok(run('이메일', { status: 'archived' }).ranked.includes('DEC-0004'));
+});
+
+test('깨진 노트는 --status·--topic 필터에서도 사라지지 않는다', () => {
+  const extra = loadVault(makeVault({ ...CLEAN, 'decisions/DEC-0099-분실물-깨짐.md': '---\ntype: decision\n# 분실물\n' }));
+  assert.ok(search(extra, '분실물', { today, status: 'active' }).ranked.includes('DEC-0099-분실물-깨짐'));
+  assert.ok(search(extra, '분실물', { today, topic: 'lost-items' }).ranked.includes('DEC-0099-분실물-깨짐'));
+});
+
+test('머리줄에 적용된 필터를 적는다', () => {
+  assert.match(run('분실물', { type: 'decision', status: 'active' }).text, /^# search "분실물" · type=decision status=active · hits \d+/);
+  assert.match(run('분실물').text, /^# search "분실물" · hits \d+/);
+});

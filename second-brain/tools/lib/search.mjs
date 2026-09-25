@@ -22,13 +22,16 @@ function looksLikeSentence(query, q) {
   return q.length > 12 || /[?？]\s*$|(요|까|니|냐|죠)\s*$/.test(query.trim());
 }
 
+// 깨진 노트(n.err)는 status·topic 을 알 수 없으므로 그 필터로 걸러내지 않는다 — 조용히 사라지지 않게
 function passesFilter(n, opt) {
   if (opt.type && n.type !== opt.type) return false;
-  if (opt.status && n.status !== opt.status) return false;
-  if (!opt.all && n.status === 'archived') return false;
-  if (opt.topic && ![...asList(n.fm?.topics), ...asList(n.fm?.topics_ref), ...asList(n.fm?.topic)].includes(opt.topic)) return false;
+  if (opt.status && !n.err && n.status !== opt.status) return false;
+  if (!opt.all && opt.status !== 'archived' && n.status === 'archived') return false;
+  if (opt.topic && !n.err && ![...asList(n.fm?.topics), ...asList(n.fm?.topics_ref), ...asList(n.fm?.topic)].includes(opt.topic)) return false;
   return true;
 }
+
+const filterLabel = (opt) => [...['type', 'topic', 'status'].filter((k) => opt[k]).map((k) => `${k}=${opt[k]}`), ...(opt.all ? ['all'] : [])].join(' ');
 
 function docTokens(n) {
   const fm = n.fm ?? {};
@@ -118,7 +121,8 @@ export function search(notes, query, opt = {}) {
     bytes += b;
   }
   const complete = offset + blocks.length >= scored.length;
-  const out = [`# search "${query}" · hits ${scored.length} · shown ${blocks.length}${offset ? ` (offset ${offset})` : ''} · complete=${complete}`];
+  const filters = filterLabel(opt);
+  const out = [`# search "${query}"${filters ? ` · ${filters}` : ''} · hits ${scored.length} · shown ${blocks.length}${offset ? ` (offset ${offset})` : ''} · complete=${complete}`];
   if (q.length && looksLikeSentence(query, q)) out.push(HINT_SENTENCE);
   if (!scored.length) out.push(HINT_EMPTY);
   const text = out.join('\n') + '\n' + blocks.join('') + (complete ? '' : `# next: --offset ${offset + blocks.length}\n`);

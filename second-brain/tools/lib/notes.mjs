@@ -2,7 +2,8 @@
 //
 // frontmatter 는 템플릿이 쓰는 YAML 부분집합만 받는다 (스키마가 STRICT 이므로 엄격한 쪽이 맞다):
 // 스칼라, "큰따옴표"(JSON 이스케이프), '작은따옴표'('' 이스케이프), null·~·빈 값,
-// [흐름, 목록], 다음 줄의 "- 항목" 블록 목록, 따옴표 밖의 " # 주석".
+// [흐름, 목록], 값이 빈 키 다음 줄의 "- 항목" 블록 목록, " # 주석".
+// 실제 YAML 파서가 거부하는 모양(": "가 든 평문, `·@·*로 시작하는 값, 흐름 목록 뒤 블록 항목 등)은 오류로 본다.
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -14,14 +15,27 @@ const FOLDER_TYPE = {
 };
 export const LIFECYCLE_TYPES = new Set(['decision', 'doc', 'lesson']);
 
-function walk(dir, keep, out = []) {
+// 폴더를 읽지 못하면 조용히 건너뛰지 않는다 — "없음"으로 보고되면 거짓 결과가 된다.
+// 심볼릭 링크 폴더는 따라가되, 이미 본 실제 경로는 다시 들어가지 않는다(순환 방지).
+function walk(dir, keep, out = [], seen = new Set()) {
+  const real = fs.realpathSync(dir);
+  if (seen.has(real)) return out;
+  seen.add(real);
   let entries;
-  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) {
+    if (e.code === 'ENOENT') return out;
+    throw e;
+  }
   for (const e of entries) {
     if (e.name.startsWith('.')) continue;
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) { if (keep.dir(e.name)) walk(p, keep, out); }
-    else if (e.name.endsWith('.md') && keep.file(e.name)) out.push(p);
+    let isDir = e.isDirectory();
+    let isFile = e.isFile();
+    if (e.isSymbolicLink()) {
+      try { const st = fs.statSync(p); isDir = st.isDirectory(); isFile = st.isFile(); } catch { continue; } // 끊긴 링크
+    }
+    if (isDir) { if (keep.dir(e.name)) walk(p, keep, out, seen); }
+    else if (isFile && e.name.endsWith('.md') && keep.file(e.name)) out.push(p);
   }
   return out;
 }
@@ -31,63 +45,94 @@ export function listNoteFiles(root) {
   return walk(root, { dir: (d) => !SKIP_DIRS.has(d), file: (f) => !OPS_FILES.has(f) }).sort();
 }
 
-// wikilink 해석용: knowledge/ 아래 모든 .md 이름
+// wikilink 해석용: 원본·템플릿·Bases 를 뺀 모든 .md 이름(NFC) — 원본의 같은 이름 사본으로 끊긴 링크가 가려지지 않게
 export function listAllNames(root) {
-  return new Set(walk(root, { dir: () => true, file: () => true }).map((f) => path.basename(f, '.md')));
+  return new Set(walk(root, { dir: (d) => !SKIP_DIRS.has(d), file: () => true }).map((f) => path.basename(f, '.md').normalize('NFC')));
 }
 
-function stripComment(s) {
-  let q = null;
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i];
-    if (q) {
-      if (c === '\\' && q === '"') { i++; continue; }
-      if (c === q) q = null;
-      continue;
-    }
-    if (c === '"' || c === "'") q = c;
-    else if (c === '#' && (i === 0 || /\s/.test(s[i - 1]))) return s.slice(0, i).trimEnd();
-  }
-  return s.trimEnd();
-}
+const QUOTE_HINT = '따옴표로 감쌀 것';
 
-function scalar(raw) {
-  const v = raw.trim();
+// 평문 스칼라: YAML이 거부하는 모양은 거부한다(따옴표 안내), 지원하지 않는 문법도 거부한다
+function plain(v, flow) {
   if (v === '' || v === 'null' || v === '~') return null;
-  if (v[0] === '"') {
-    if (v.length < 2 || v.at(-1) !== '"') throw new Error('닫히지 않은 큰따옴표');
-    return JSON.parse(v);
-  }
-  if (v[0] === "'") {
-    if (v.length < 2 || v.at(-1) !== "'") throw new Error('닫히지 않은 작은따옴표');
-    return v.slice(1, -1).replaceAll("''", "'");
-  }
+  if (/^[&!]/.test(v)) throw new Error('앵커·태그는 지원하지 않음');
   if (/^[|>]/.test(v)) throw new Error('여러 줄 문자열은 지원하지 않음');
   if (v[0] === '{') throw new Error('중첩 맵은 지원하지 않음');
+  if (/^[`@%*]/.test(v)) throw new Error(`"${v[0]}"로 시작하는 값은 ${QUOTE_HINT}`);
+  if (/^[-?:](\s|$)/.test(v)) throw new Error(`"${v[0]} "로 시작하는 값은 ${QUOTE_HINT}`);
+  if (/:(\s|$)/.test(v)) throw new Error(`": "가 들었거나 ":"로 끝나는 값은 ${QUOTE_HINT}`);
+  if (flow && /[[\]{}]/.test(v)) throw new Error(`괄호가 든 목록 항목은 ${QUOTE_HINT}`);
   return v;
 }
 
-function flowList(v) {
-  const out = [];
-  let cur = '';
-  let q = null;
-  const inner = v.slice(1, -1);
-  for (let i = 0; i < inner.length; i++) {
-    const c = inner[i];
-    if (q) {
-      cur += c;
-      if (c === '\\' && q === '"') { cur += inner[++i] ?? ''; continue; }
-      if (c === q) q = null;
-      continue;
-    }
-    if (c === '"' || c === "'") { q = c; cur += c; continue; }
-    if (c === '[' || c === '{') throw new Error('중첩 목록은 지원하지 않음');
-    if (c === ',') { if (cur.trim()) out.push(scalar(cur)); cur = ''; continue; }
-    cur += c;
+// s[i] 의 따옴표로 시작하는 문자열 → [값, 닫는 따옴표 다음 위치]
+function quoted(s, i) {
+  if (s[i] === '"') {
+    let j = i + 1;
+    while (j < s.length && s[j] !== '"') j += s[j] === '\\' ? 2 : 1;
+    if (j >= s.length) throw new Error('닫히지 않은 큰따옴표');
+    try { return [JSON.parse(s.slice(i, j + 1)), j + 1]; } catch { throw new Error('큰따옴표 안의 이스케이프를 해석할 수 없음'); }
   }
-  if (q) throw new Error('닫히지 않은 따옴표');
-  if (cur.trim()) out.push(scalar(cur));
-  return out;
+  let out = '';
+  for (let j = i + 1; j < s.length; j++) {
+    if (s[j] !== "'") { out += s[j]; continue; }
+    if (s[j + 1] === "'") { out += "'"; j++; continue; }
+    return [out, j + 1];
+  }
+  throw new Error('닫히지 않은 작은따옴표');
+}
+
+// s[0] === '[' → [목록, 닫는 괄호 다음 위치]. 따옴표는 항목 첫 글자일 때만 따옴표다
+function flowList(s) {
+  const out = [];
+  let i = 1;
+  const ws = () => { while (i < s.length && /\s/.test(s[i])) i++; };
+  ws();
+  if (s[i] === ']') return [out, i + 1];
+  for (;;) {
+    ws();
+    if (i >= s.length) throw new Error('닫히지 않은 목록');
+    const c = s[i];
+    if (c === ',') throw new Error('빈 목록 항목');
+    if (c === ']') return [out, i + 1];
+    if (c === '"' || c === "'") {
+      const [v, j] = quoted(s, i);
+      out.push(v);
+      i = j;
+    } else if (c === '[' || c === '{') {
+      throw new Error(`wikilink·중첩 목록은 ${QUOTE_HINT} ("[[노트]]")`);
+    } else {
+      let j = i;
+      while (j < s.length && s[j] !== ',' && s[j] !== ']') j++;
+      if (j >= s.length) throw new Error('닫히지 않은 목록');
+      const raw = s.slice(i, j).trimEnd();
+      if (/\s#/.test(raw)) throw new Error(`" #"이 든 목록 항목은 ${QUOTE_HINT}`);
+      out.push(plain(raw, true));
+      i = j;
+    }
+    ws();
+    if (s[i] === ',') { i++; continue; }
+    if (s[i] === ']') return [out, i + 1];
+    throw new Error(`목록 항목 뒤에는 쉼표나 ]가 와야 함 — ${QUOTE_HINT}`);
+  }
+}
+
+// 키 뒤(또는 "- " 뒤)의 값 → { value, kind: 'empty' | 'scalar' | 'flow' }
+function parseValue(raw) {
+  const s = raw.trim();
+  if (s === '' || s[0] === '#') return { value: null, kind: 'empty' };
+  if (s[0] === '"' || s[0] === "'") {
+    const [v, j] = quoted(s, 0);
+    if (s.slice(j).trim() && !/^\s+#/.test(s.slice(j))) throw new Error(`닫는 따옴표 뒤에 값이 더 있음 — ${QUOTE_HINT}`);
+    return { value: v, kind: 'scalar' };
+  }
+  if (s[0] === '[') {
+    const [v, j] = flowList(s);
+    if (s.slice(j).trim() && !/^\s+#/.test(s.slice(j))) throw new Error('닫는 괄호 뒤에 값이 더 있음');
+    return { value: v, kind: 'flow' };
+  }
+  const m = s.match(/\s#/);
+  return { value: plain((m ? s.slice(0, m.index) : s).trimEnd(), false), kind: 'scalar' };
 }
 
 // lines: 파일 전체 줄 배열. 반환: { fm, bodyStart(0-based 줄 번호), err }
@@ -97,40 +142,46 @@ export function parseFrontmatter(lines) {
   if (end < 0) return { fm: null, bodyStart: 0, err: 'frontmatter가 닫히지 않음' };
   const fm = {};
   let last = null;
+  let lastKind = null;
   for (let i = 1; i < end; i++) {
-    const line = stripComment(lines[i]);
-    if (!line.trim()) continue;
+    const line = lines[i];
+    const t = line.trim();
+    if (!t || t[0] === '#') continue;
     try {
-      const kv = line.match(/^([A-Za-z_][\w-]*):(?:\s+(.*))?$/);
+      if (/^[ \t]*\t/.test(line)) throw new Error('탭 들여쓰기는 YAML에서 허용되지 않음');
+      const kv = line.match(/^([A-Za-z_][\w-]*):(?:[ \t]+(.*))?$/);
       if (kv) {
         last = kv[1];
-        const v = (kv[2] ?? '').trim();
-        if (v.startsWith('[')) {
-          if (!v.endsWith(']')) throw new Error('닫히지 않은 목록');
-          fm[last] = flowList(v);
-        } else fm[last] = scalar(v);
+        const { value, kind } = parseValue(kv[2] ?? '');
+        fm[last] = value;
+        lastKind = kind;
         continue;
       }
-      const item = line.match(/^\s*-\s+(.*)$/);
-      if (item && last && (fm[last] === null || Array.isArray(fm[last]))) {
+      const item = line.match(/^ *-(?: +(.*))?$/);
+      if (item && last) {
+        if (lastKind === 'flow' || lastKind === 'scalar') throw new Error('블록 항목(- ...)은 값이 빈 키 아래에만 올 수 있음');
+        const { value, kind } = parseValue(item[1] ?? '');
+        if (kind === 'empty') throw new Error('빈 목록 항목');
+        if (kind === 'flow') throw new Error('중첩 목록은 지원하지 않음');
         if (!Array.isArray(fm[last])) fm[last] = [];
-        fm[last].push(scalar(item[1]));
+        fm[last].push(value);
+        lastKind = 'block';
         continue;
       }
-      throw new Error('허용되지 않는 문법');
+      throw new Error('허용되지 않는 문법 (여러 줄 값·중첩 맵 등)');
     } catch (e) {
-      return { fm: null, bodyStart: end + 1, err: `L${i + 1}: ${e.message} — ${lines[i].trim().slice(0, 60)}` };
+      return { fm: null, bodyStart: end + 1, err: `L${i + 1}: ${e.message} — ${t.slice(0, 60)}` };
     }
   }
   return { fm, bodyStart: end + 1, err: null };
 }
 
 export function readNote(root, abs) {
-  const text = fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n');
+  const text = fs.readFileSync(abs, 'utf8').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
   const lines = text.split('\n');
   const { fm, bodyStart, err } = parseFrontmatter(lines);
-  const file = path.relative(root, abs).split(path.sep).join('/');
-  const base = path.basename(abs, '.md');
+  const file = path.relative(root, abs).split(path.sep).join('/').normalize('NFC');
+  const base = path.basename(abs, '.md').normalize('NFC');
   const folderType = FOLDER_TYPE[file.split('/')[0]] ?? null;
   const h1 = lines.slice(bodyStart).find((l) => /^#\s+\S/.test(l));
   return {
@@ -170,9 +221,14 @@ export function latestOf(note, index) {
 }
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+// 형식과 달력 모두 맞아야 한다 (2025-02-30 → null)
 export function parseDay(s) {
   const v = s == null ? '' : String(s);
-  return DAY_RE.test(v) ? Date.UTC(+v.slice(0, 4), +v.slice(5, 7) - 1, +v.slice(8, 10)) : null;
+  if (!DAY_RE.test(v)) return null;
+  const [y, m, d] = [+v.slice(0, 4), +v.slice(5, 7), +v.slice(8, 10)];
+  const t = Date.UTC(y, m - 1, d);
+  const back = new Date(t);
+  return back.getUTCFullYear() === y && back.getUTCMonth() === m - 1 && back.getUTCDate() === d ? t : null;
 }
 export function todayUTC(opt = {}) {
   if (opt.today) {

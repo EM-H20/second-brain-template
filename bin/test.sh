@@ -58,6 +58,9 @@ grep -q 'vault.mjs search' SECOND-BRAIN.md || fail "회수 규칙에 search 도�
 grep -q 'vault.mjs check' SECOND-BRAIN.md || fail "General rules에 쓰기 직후 check 없음"
 grep -q 'vault.mjs check' second-brain/workflows/W2.md || fail "W2가 check 도구를 쓰지 않음"
 grep -q 'vault.mjs search' AGENTS.md || fail "AGENTS.md에 search 도구 안내 없음"
+grep -q 'W11(클러스터 형태)·W12(리뷰 후보)는 보고만' SECOND-BRAIN.md || fail "쓰기 직후 검사 규칙이 W11·W12 수정을 막지 않음"
+grep -q '종료 코드 2' SECOND-BRAIN.md || fail "도구 실패 기준(종료 코드 2) 안내 없음"
+if grep -q '언제나 frontmatter grep이다' SECOND-BRAIN.md; then fail "회수 경로 문장이 도구 규칙과 모순"; fi
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "아웃바운드 게이트가 General rules에 없음"
 [ "$(wc -c < SECOND-BRAIN.md)" -lt 16000 ] || echo "WARN: SECOND-BRAIN.md $(wc -c < SECOND-BRAIN.md)B (목표 ~10KB)"
 grep -q '### 회수 규칙' SECOND-BRAIN.md || fail "회수 규칙 절 없음"
