@@ -10,6 +10,11 @@
 
 **🌐 Language / 언어 / 语言 / 言語** — 본문은 한국어입니다. 아래를 펼치면 다른 언어로 읽을 수 있습니다.
 
+> **🔄 이미 설치한 프로젝트 업데이트하기**
+> 1. 그 프로젝트 루트에서 `npx github:EM-H20/second-brain-template`를 다시 실행하고 `y`를 누른다. 규칙·스킬·도구·훅만 최신으로 바뀌고, 노트·`log.md`·`_topics.md`는 그대로 남는다.
+> 2. `AGENTS.md`(Codex가 읽는 파일)는 처음 설치할 때 복사된 파일이라 자동으로 바뀌지 않는다. [최신 AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md)로 교체한다 — 직접 추가한 내용이 있으면 그 부분만 남긴다.
+> 3. Claude Code·Codex에서 **"정리해"** (`/maintain` · `$maintain`). 새 규칙으로 무결성 검사와 클러스터 재구성을 하고, 보고를 보여 준 뒤 승인한 것만 고친다. 볼트가 크면 "큰 클러스터부터 하나씩 해줘"라고 하면 된다.
+
 <details>
 <summary><b>🇺🇸 Read in English</b></summary>
 
@@ -17,6 +22,11 @@
 
 > From meeting transcript → knowledge → code → conflict detection → reports → recurring-issue detection,
 > all in one loop: a **per-project second brain** starter template.
+
+> **🔄 Updating a project where it's already installed**
+> 1. From that project's root, re-run `npx github:EM-H20/second-brain-template` and answer `y`. Only rules, skills, tools, and hooks are refreshed — your notes, `log.md`, and `_topics.md` stay as they are.
+> 2. `AGENTS.md` (read by Codex) was copied at first install and is not updated automatically. Replace it with the [latest AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md), keeping any lines you added yourself.
+> 3. In Claude Code or Codex, say **"tidy the vault"** (`/maintain` · `$maintain`). It runs the integrity check and rebuilds clusters under the new rules, shows you the report, and fixes only what you approve. For a large vault, ask it to go "one cluster at a time, biggest first".
 
 **Zero dependencies.** No API keys, no embeddings, no Python scripts. It runs on pure Markdown plus rules and skills for AI coding agents.
 Open the `knowledge/` folder in Obsidian and you can see how your knowledge connects in graph view.
@@ -379,6 +389,11 @@ only when the repository is private and tracking them is intentional.
 > 从会议记录 → 知识化 → 编写代码 → 冲突检测 → 报告 → 问题复现检测，
 > 一条闭环走完的**项目专属第二大脑**启动模板。
 
+> **🔄 更新已安装的项目**
+> 1. 在该项目根目录重新运行 `npx github:EM-H20/second-brain-template` 并输入 `y`。只会更新规则、技能、工具和钩子——笔记、`log.md`、`_topics.md` 保持不变。
+> 2. `AGENTS.md`（Codex 读取）是首次安装时复制的文件，不会自动更新。请替换为[最新 AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md)，保留你自己添加的内容。
+> 3. 在 Claude Code 或 Codex 中说 **"整理知识库"**（`/maintain` · `$maintain`）。它会按新规则做完整性检查并重建聚类，先展示报告，只修改你批准的部分。知识库较大时，可以说"从最大的聚类开始，一个一个来"。
+
 **零依赖。** 无需 API 密钥、嵌入向量或 Python 脚本。仅靠纯 Markdown 加上 AI 编码代理的规则与技能即可运行。
 用 Obsidian 打开 `knowledge/` 文件夹，就能在图谱视图中直观地看到知识之间的连接。
 
@@ -722,6 +737,11 @@ supersede 链）。智能体不读取整个文件，而是自动调用内置的�
 
 > 会議の文字起こし → 知識化 → コード実装 → 衝突検知 → レポート → 課題の再発検知まで
 > 一つのループで回る、**プロジェクトごとのセカンドブレイン**スターターテンプレート。
+
+> **🔄 インストール済みプロジェクトの更新**
+> 1. そのプロジェクトのルートで `npx github:EM-H20/second-brain-template` を再実行し `y` を押します。更新されるのはルール・スキル・ツール・フックだけで、ノート・`log.md`・`_topics.md` はそのままです。
+> 2. `AGENTS.md`（Codex が読むファイル）は初回インストール時にコピーされたもので、自動では更新されません。[最新の AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md) に置き換えてください。自分で追記した部分は残します。
+> 3. Claude Code か Codex で **「ボールトを整理して」**（`/maintain` · `$maintain`）。新しいルールで整合性検査とクラスタ再構成を行い、報告を見せてから承認したものだけを直します。大きなボールトなら「大きいクラスタから一つずつ」と頼めます。
 
 **依存ゼロ。** API キー、埋め込み、Python スクリプトは不要。純粋な Markdown と AI コーディングエージェント用のルール／スキルだけで動作します。
 Obsidian で `knowledge/` フォルダを開けば、グラフビューで知識のつながりを視覚的に確認できます。
