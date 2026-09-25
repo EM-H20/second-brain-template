@@ -449,7 +449,7 @@ if (!c.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 �
 if (c.includes("최근 작업")) throw new Error("log.md 없는데 최근 작업 섹션 있음");
 ' || fail "훅 출력 검증 실패"
 
-# 7d. log.md 가 있으면 꼬리 15줄만 붙인다
+# 7d. log.md 가 있어도 주입하지 않는다 (회수 자료가 아님)
 node -e '
 const lines = Array.from({ length: 40 }, (_, i) => "- line-" + i);
 require("fs").writeFileSync("knowledge/log.md", lines.join("\n") + "\n");
@@ -457,10 +457,9 @@ require("fs").writeFileSync("knowledge/log.md", lines.join("\n") + "\n");
 node "$H" > out.json < /dev/null
 node -e '
 const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecificOutput.additionalContext;
-if (!c.includes("최근 작업")) throw new Error("최근 작업 섹션 없음");
-if (!c.includes("line-39")) throw new Error("로그 마지막 줄 누락");
-if (c.includes("line-0")) throw new Error("로그 꼬리가 15줄로 제한되지 않음");
-' || fail "log.md 꼬리 검증 실패"
+if (c.includes("최근 작업") || c.includes("line-39")) throw new Error("로그가 주입됨");
+if (!c.includes("회수 규칙")) throw new Error("회수 규칙 안내 누락");
+' || fail "로그 비주입 검증 실패"
 
 # 7e. 비정상적으로 큰 파일에서도 죽지 않고 유효 JSON 을 낸다
 node -e '
@@ -469,19 +468,6 @@ require("fs").writeFileSync("knowledge/clusters/_topics.md", "`t` — x\n" + "�
 node "$H" > out.json < /dev/null || fail "거대 파일에서 훅이 실패로 종료"
 node -e 'JSON.parse(require("fs").readFileSync("out.json", "utf8"))' || fail "거대 파일에서 JSON 깨짐"
 [ "$(wc -c < out.json)" -lt 20000 ] || fail "8KB 상한이 적용되지 않음"
-
-# 7f. log.md 가 8KB를 초과해도 마지막 줄을 보여준다 (첫 8KB 아님)
-node -e '
-const lines = Array.from({ length: 2000 }, (_, i) => "- early-" + i);
-lines.push("- FINAL_MARKER_LINE");
-require("fs").writeFileSync("knowledge/log.md", lines.join("\n"));
-'
-node "$H" > out.json < /dev/null
-node -e '
-const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecificOutput.additionalContext;
-if (!c.includes("FINAL_MARKER_LINE")) throw new Error("최근 작업에 마지막 줄 없음");
-if (c.includes("early-0")) throw new Error("최근 작업에 파일 시작 줄 있음");
-' || fail "로그 8KB 초과 꼬리 검증 실패"
 
 # ── 7g ~ 7j: Antigravity 세션 컨텍스트 훅 검증 ──────────
 mkdir -p "$TMP/agy-hook/.agents/hooks" && cd "$TMP/agy-hook"
@@ -514,6 +500,7 @@ const msg = o.injectSteps[0].ephemeralMessage;
 if (!msg.includes("auth")) throw new Error("토픽 슬러그 누락");
 if (!msg.includes("cluster-")) throw new Error("클러스터 지시문 누락");
 if (!msg.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 누락");
+if (msg.includes("최근 작업")) throw new Error("Antigravity 로그 주입");
 ' || fail "Antigravity 훅 컨텍스트 주입 검증 실패"
 
 # 7j. invocationNum > 1 이면 빈 배열 반환 (세션 첫 턴에만 주입)
