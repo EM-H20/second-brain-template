@@ -203,7 +203,8 @@ function planAgentsHooks() {
 
 function buildPlan() {
   const plan = [planOwned('SECOND-BRAIN.md')];
-  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/hooks', '.agents/skills', 'second-brain/workflows', 'second-brain/tools']) {
+  plan.push({ ...planOwned('second-brain/AGENTS.template.md'), srcRel: 'AGENTS.md' });
+  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/hooks', '.agents/skills', 'second-brain/workflows', 'second-brain/tools', 'second-brain/migrations']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
   for (const f of listFiles(path.join(SRC, 'knowledge'))) {
@@ -261,7 +262,7 @@ function confirm(cb) {
 function applyAction(a) {
   const to = target(a.rel);
   if (a.kind === 'owned') {
-    const content = fs.readFileSync(path.join(SRC, a.rel), 'utf8');
+    const content = fs.readFileSync(path.join(SRC, a.srcRel || a.rel), 'utf8');
     write(to, content.trimEnd() + '\n\n' + ownedMarker(a.rel) + '\n');
   } else if (a.kind === 'copy') {
     write(to, fs.readFileSync(path.join(SRC, a.srcRel || a.rel)));

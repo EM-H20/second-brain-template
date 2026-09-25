@@ -22,6 +22,18 @@ for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".a
 ' || fail "package.json files 누락"
 echo "packaging guard OK"
 
+# 이관 노트 형식 — frontmatter id = 파일명, 절 5개
+for f in "$ROOT"/second-brain/migrations/*.md; do
+  [ -f "$f" ] || continue
+  id=$(basename "$f" .md)
+  echo "$id" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+$' || fail "이관 id 형식: $id"
+  grep -qx "id: $id" "$f" || fail "이관 frontmatter id 불일치: $id"
+  for sec in '## 무엇이 바뀌었나' '## 필요한지 판별' '## 적용 방법' '## 승인 단위' '## 적용 후 확인'; do
+    grep -qx "$sec" "$f" || fail "이관 노트 절 누락: $id $sec"
+  done
+done
+[ "$(ls "$ROOT"/second-brain/migrations/*.md 2>/dev/null | wc -l | tr -d ' ')" -ge 3 ] || fail "이관 노트 3개 미만"
+
 # 두 스킬 트리는 항상 같은 스킬 집합의 바이트 동일 사본이어야 한다 — Claude와 Codex가 같은 스킬을 본다
 A_SKILLS=$(ls "$ROOT/.agents/skills")
 C_SKILLS=$(ls "$ROOT/.claude/skills")
@@ -204,6 +216,9 @@ grep -q 'path:_sources' knowledge/.obsidian/graph.json || fail "graph 필터에 
 [ -f AGENTS.md ] || fail "AGENTS.md 없음"
 head -1 AGENTS.md | grep -qx '<!-- second-brain-template:begin full -->' || fail "새 AGENTS.md가 full 관리 블록으로 시작하지 않음"
 grep -qx '<!-- second-brain-template:end -->' AGENTS.md || fail "관리 블록 끝 마커 없음"
+[ -f second-brain/AGENTS.template.md ] || fail "AGENTS.template.md 미설치"
+grep -q 'vault.mjs search' second-brain/AGENTS.template.md || fail "AGENTS.template.md 가 최신 본문이 아님"
+[ "$(ls second-brain/migrations/*.md | wc -l | tr -d ' ')" -ge 3 ] || fail "이관 노트 미설치"
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
 [ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
