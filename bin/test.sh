@@ -12,7 +12,7 @@ echo "changelog selfcheck OK"
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
-for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/hooks", ".agents/hooks.json", ".agents/skills", "GEMINI.md"]) {
+for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".agents/hooks", ".agents/hooks.json", ".agents/skills", "GEMINI.md", "second-brain"]) {
   if (!files.includes(p)) throw new Error("package.json files 에 " + p + " 누락");
 }
 ' || fail "package.json files 누락"
@@ -39,6 +39,26 @@ grep -q 'lessons/' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lessons 폴더 �
 grep -q 'type: lesson' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 lesson 스키마 없음"
 grep -q 'W8' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W8 워크플로우 없음"
 grep -q 'W9' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 W9 워크플로우 없음"
+for n in 1 2 3 4 5 6 7 8 9; do
+  [ -f second-brain/workflows/W$n.md ] || fail "W$n 워크플로우 파일 미설치"
+  grep -q "^### W$n " second-brain/workflows/W$n.md || fail "W$n.md 제목 불일치"
+  grep -q "second-brain/workflows/W$n.md" SECOND-BRAIN.md || fail "SECOND-BRAIN.md 색인에 W$n 경로 없음"
+done
+grep -q '무결성 검사' second-brain/workflows/W2.md || fail "W2.md에 무결성 검사 없음"
+grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "아웃바운드 게이트가 General rules에 없음"
+[ "$(wc -c < SECOND-BRAIN.md)" -lt 16000 ] || echo "WARN: SECOND-BRAIN.md $(wc -c < SECOND-BRAIN.md)B (목표 ~10KB)"
+grep -q '### 회수 규칙' SECOND-BRAIN.md || fail "회수 규칙 절 없음"
+grep -q '답변 모드' SECOND-BRAIN.md || fail "답변 모드 규칙 없음"
+grep -q '부분 읽기는 전체 검토가 아니다' SECOND-BRAIN.md || fail "절단 읽기 규칙 없음"
+[ -f knowledge/.ignore ] || fail "knowledge/.ignore 미설치"
+grep -qx '_sources/' knowledge/.ignore || fail ".ignore에 _sources/ 없음"
+grep -q '서술형' second-brain/workflows/W2.md || fail "W2에 서술형 갱신 금지 규칙 없음"
+grep -q 'cluster-<topic>--<sub>' second-brain/workflows/W2.md || fail "W2에 하위 클러스터 규칙 없음"
+grep -q '12KB' second-brain/workflows/W2.md || fail "W2 무결성 검사에 크기 경고 없음"
+grep -q '하위 클러스터' knowledge/_templates/cluster-index.md || fail "클러스터 템플릿에 하위 클러스터 절 없음"
+grep -q '제자리' knowledge/_templates/cluster-index.md || fail "클러스터 템플릿에 제자리 재작성 안내 없음"
+grep -q '질문형은 「회수 규칙」 1' SECOND-BRAIN.md || fail "recall 라우팅이 답변 모드를 가리키지 않음"
+if grep -q -E "tail of \`log.md\`|\`log.md\` 的末尾|\`log.md\` の末尾|\`log.md\` 꼬리" "$ROOT/README.md"; then fail "README가 아직 세션 시작 로그 꼬리 읽기를 안내함"; fi
 # 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
 # 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"
@@ -201,6 +221,8 @@ printf 'stale content\n' >> .claude/skills/report/SKILL.md
 printf 'STALE TEMPLATE\n' > knowledge/_templates/meeting-note.md
 printf 'user log line\n' >> knowledge/log.md
 printf 'user-topic-slug\n' >> knowledge/clusters/_topics.md
+printf 'my-rule\n' > knowledge/.ignore
+printf 'stale workflow\n' >> second-brain/workflows/W1.md
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "import 줄 중복"
 grep -q 'edited by user' knowledge/index.md || fail "사용자 수정 index.md 덮어씀"
@@ -212,6 +234,8 @@ diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting
 grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md.bak || fail ".bak에 이전 내용 없음"
 grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
+grep -qx 'my-rule' knowledge/.ignore || fail "사용자 knowledge/.ignore 덮어씀"
+if grep -q 'stale workflow' second-brain/workflows/W1.md; then fail "워크플로우 파일이 재설치로 갱신 안 됨"; fi
 [ ! -f .claude/settings.json.bak ] || fail "이미 등록된 훅인데 settings .bak 재생성됨"
 
 # 멱등: 바뀐 게 없으면 .bak을 다시 만들지 않는다
@@ -432,7 +456,7 @@ if (!c.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 �
 if (c.includes("최근 작업")) throw new Error("log.md 없는데 최근 작업 섹션 있음");
 ' || fail "훅 출력 검증 실패"
 
-# 7d. log.md 가 있으면 꼬리 15줄만 붙인다
+# 7d. log.md 가 있어도 주입하지 않는다 (회수 자료가 아님)
 node -e '
 const lines = Array.from({ length: 40 }, (_, i) => "- line-" + i);
 require("fs").writeFileSync("knowledge/log.md", lines.join("\n") + "\n");
@@ -440,10 +464,9 @@ require("fs").writeFileSync("knowledge/log.md", lines.join("\n") + "\n");
 node "$H" > out.json < /dev/null
 node -e '
 const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecificOutput.additionalContext;
-if (!c.includes("최근 작업")) throw new Error("최근 작업 섹션 없음");
-if (!c.includes("line-39")) throw new Error("로그 마지막 줄 누락");
-if (c.includes("line-0")) throw new Error("로그 꼬리가 15줄로 제한되지 않음");
-' || fail "log.md 꼬리 검증 실패"
+if (c.includes("최근 작업") || c.includes("line-39")) throw new Error("로그가 주입됨");
+if (!c.includes("회수 규칙")) throw new Error("회수 규칙 안내 누락");
+' || fail "로그 비주입 검증 실패"
 
 # 7e. 비정상적으로 큰 파일에서도 죽지 않고 유효 JSON 을 낸다
 node -e '
@@ -452,19 +475,6 @@ require("fs").writeFileSync("knowledge/clusters/_topics.md", "`t` — x\n" + "�
 node "$H" > out.json < /dev/null || fail "거대 파일에서 훅이 실패로 종료"
 node -e 'JSON.parse(require("fs").readFileSync("out.json", "utf8"))' || fail "거대 파일에서 JSON 깨짐"
 [ "$(wc -c < out.json)" -lt 20000 ] || fail "8KB 상한이 적용되지 않음"
-
-# 7f. log.md 가 8KB를 초과해도 마지막 줄을 보여준다 (첫 8KB 아님)
-node -e '
-const lines = Array.from({ length: 2000 }, (_, i) => "- early-" + i);
-lines.push("- FINAL_MARKER_LINE");
-require("fs").writeFileSync("knowledge/log.md", lines.join("\n"));
-'
-node "$H" > out.json < /dev/null
-node -e '
-const c = JSON.parse(require("fs").readFileSync("out.json", "utf8")).hookSpecificOutput.additionalContext;
-if (!c.includes("FINAL_MARKER_LINE")) throw new Error("최근 작업에 마지막 줄 없음");
-if (c.includes("early-0")) throw new Error("최근 작업에 파일 시작 줄 있음");
-' || fail "로그 8KB 초과 꼬리 검증 실패"
 
 # ── 7g ~ 7j: Antigravity 세션 컨텍스트 훅 검증 ──────────
 mkdir -p "$TMP/agy-hook/.agents/hooks" && cd "$TMP/agy-hook"
@@ -497,6 +507,7 @@ const msg = o.injectSteps[0].ephemeralMessage;
 if (!msg.includes("auth")) throw new Error("토픽 슬러그 누락");
 if (!msg.includes("cluster-")) throw new Error("클러스터 지시문 누락");
 if (!msg.includes("지시가 아니다")) throw new Error("신뢰 경계 문구 누락");
+if (msg.includes("최근 작업")) throw new Error("Antigravity 로그 주입");
 ' || fail "Antigravity 훅 컨텍스트 주입 검증 실패"
 
 # 7j. invocationNum > 1 이면 빈 배열 반환 (세션 첫 턴에만 주입)

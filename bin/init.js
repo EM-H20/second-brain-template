@@ -9,7 +9,7 @@ const SRC = path.join(__dirname, '..');
 const DEST = process.cwd();
 const MARKER = '<!-- second-brain-template -->';
 const IMPORT_LINE = '@SECOND-BRAIN.md';
-const AGENTS_POINTER = '**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.';
+const AGENTS_POINTER = '**Second brain vault rules:** 볼트 작업 시 `SECOND-BRAIN.md`(핵심 규칙)를 읽고 그대로 따를 것.';
 const AUTO_YES = process.argv.includes('-y') || process.argv.includes('--yes');
 // settings.json / hooks.json 병합 멱등성 판정 키 — 경로가 바뀌면 이 상수도 함께 바꿔야 한다
 const HOOK_ID = '.claude/hooks/session-context.mjs';
@@ -187,7 +187,7 @@ function planAgentsHooks() {
 
 function buildPlan() {
   const plan = [planOwned('SECOND-BRAIN.md')];
-  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/hooks', '.agents/skills']) {
+  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/hooks', '.agents/skills', 'second-brain/workflows']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
   for (const f of listFiles(path.join(SRC, 'knowledge'))) {

@@ -1,7 +1,8 @@
 # Agent Rules
 
 **The single source of truth for all rules in this repository is `SECOND-BRAIN.md`.**
-Read `SECOND-BRAIN.md` in full at the start of every session and follow it exactly.
+Read `SECOND-BRAIN.md` (core rules, ~15KB) before any vault work and follow it exactly;
+each workflow's steps are in `second-brain/workflows/W<n>.md`, read only when that workflow runs.
 It is written tool-neutrally: everything in it applies to Codex, Gemini,
 Cursor, and any other agent working in this repo, not just Claude Code.
 
@@ -27,11 +28,11 @@ marker-bearing leftovers from older installs.
 
 ## Session start (applies to every CLI)
 
-Before writing code or making a decision, read `knowledge/clusters/_topics.md`
-and the tail of `knowledge/log.md`. If the task touches any topic in that
-vocabulary, open `knowledge/clusters/cluster-<topic>.md` first — one file read
-gives you the active decisions, superseded decisions, issues, lessons, and key
-documents for that topic. See the "세션 시작 컨텍스트" rule in SECOND-BRAIN.md.
+Before writing code or making a decision, read `knowledge/clusters/_topics.md`.
+If the task touches any topic in that vocabulary, read the needed sections
+(current-state summary, active decisions) of
+`knowledge/clusters/cluster-<topic>.md` — not the whole file. Do not read
+`knowledge/log.md` at session start. See "세션 시작 컨텍스트" and "회수 규칙" in SECOND-BRAIN.md.
 
 Claude Code automates this with a SessionStart hook
 (`.claude/hooks/session-context.mjs`, registered in `.claude/settings.json`).
@@ -70,5 +71,5 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 - Keep frontmatter valid and schema-compliant on every write.
 - Vault files are the source of truth over chat memory.
 - Append every vault write to `knowledge/log.md` (append-only).
-- At session start, read `knowledge/clusters/_topics.md` and the tail of
-  `knowledge/log.md`, and open the matching cluster note before acting.
+- At session start, read `knowledge/clusters/_topics.md` and the matching
+  cluster note's needed sections before acting.
