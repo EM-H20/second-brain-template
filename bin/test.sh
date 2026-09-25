@@ -9,6 +9,10 @@ fail() { echo "FAIL: $1"; exit 1; }
 node "$ROOT/bin/changelog.js" --selfcheck || fail "changelog selfcheck 실패"
 echo "changelog selfcheck OK"
 
+# ── 볼트 코어 도구 단위 테스트 ──────────────────────────
+node --test "$ROOT"/test/*.test.mjs > "$TMP/unit.log" 2>&1 || { tail -40 "$TMP/unit.log"; fail "볼트 도구 단위 테스트 실패"; }
+echo "vault tool unit tests OK"
+
 # npm 패키지에 실리는 경로 가드 — files 누락은 로컬 설치 테스트로는 잡히지 않는다
 node -e '
 const files = require("'"$ROOT"'/package.json").files;
@@ -45,6 +49,11 @@ for n in 1 2 3 4 5 6 7 8 9; do
   grep -q "second-brain/workflows/W$n.md" SECOND-BRAIN.md || fail "SECOND-BRAIN.md 색인에 W$n 경로 없음"
 done
 grep -q '무결성 검사' second-brain/workflows/W2.md || fail "W2.md에 무결성 검사 없음"
+[ -f second-brain/tools/vault.mjs ] || fail "볼트 도구 미설치"
+[ -f second-brain/tools/lib/check.mjs ] || fail "볼트 도구 lib 미설치"
+node second-brain/tools/vault.mjs check > chk.log || { cat chk.log; fail "빈 골격에서 check 오류"; }
+grep -qx '무결성 이상 없음' chk.log || fail "빈 골격 check 결과가 깨끗하지 않음"
+node second-brain/tools/vault.mjs search 아무거나 | grep -q 'hits 0' || fail "빈 볼트 search 실패"
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "아웃바운드 게이트가 General rules에 없음"
 [ "$(wc -c < SECOND-BRAIN.md)" -lt 16000 ] || echo "WARN: SECOND-BRAIN.md $(wc -c < SECOND-BRAIN.md)B (목표 ~10KB)"
 grep -q '### 회수 규칙' SECOND-BRAIN.md || fail "회수 규칙 절 없음"
@@ -223,6 +232,7 @@ printf 'user log line\n' >> knowledge/log.md
 printf 'user-topic-slug\n' >> knowledge/clusters/_topics.md
 printf 'my-rule\n' > knowledge/.ignore
 printf 'stale workflow\n' >> second-brain/workflows/W1.md
+printf '// stale tool\n' >> second-brain/tools/lib/search.mjs
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "import 줄 중복"
 grep -q 'edited by user' knowledge/index.md || fail "사용자 수정 index.md 덮어씀"
@@ -236,6 +246,7 @@ grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
 grep -qx 'my-rule' knowledge/.ignore || fail "사용자 knowledge/.ignore 덮어씀"
 if grep -q 'stale workflow' second-brain/workflows/W1.md; then fail "워크플로우 파일이 재설치로 갱신 안 됨"; fi
+if grep -q 'stale tool' second-brain/tools/lib/search.mjs; then fail "볼트 도구가 재설치로 갱신 안 됨"; fi
 [ ! -f .claude/settings.json.bak ] || fail "이미 등록된 훅인데 settings .bak 재생성됨"
 
 # 멱등: 바뀐 게 없으면 .bak을 다시 만들지 않는다

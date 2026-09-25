@@ -187,7 +187,7 @@ function planAgentsHooks() {
 
 function buildPlan() {
   const plan = [planOwned('SECOND-BRAIN.md')];
-  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/hooks', '.agents/skills', 'second-brain/workflows']) {
+  for (const dir of ['.claude/hooks', '.claude/skills', '.agents/hooks', '.agents/skills', 'second-brain/workflows', 'second-brain/tools']) {
     for (const f of listFiles(path.join(SRC, dir))) plan.push(planOwned(path.relative(SRC, f)));
   }
   for (const f of listFiles(path.join(SRC, 'knowledge'))) {
