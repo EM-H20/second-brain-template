@@ -346,9 +346,20 @@ printf 'n\n' | node "$ROOT/bin/init.js" > out.log
 grep -q '취소' out.log || fail "n 입력 시 취소 메시지 없음"
 [ ! -f SECOND-BRAIN.md ] || fail "n 입력인데 설치됨"
 grep -q '신규 설치' out.log || fail "설치 전 분석 요약 미출력"
+grep -q '설치를 진행할까요' out.log || fail "신규 설치 질문 문구 없음"
 printf 'y\n' | node "$ROOT/bin/init.js" > out.log
 [ -f SECOND-BRAIN.md ] || fail "y 입력인데 설치 안 됨"
 [ -f knowledge/clusters/_topics.md ] || fail "y 입력 설치 불완전"
+# 이미 설치된 프로젝트: 업데이트로 묻고, n 이면 업데이트 취소
+printf 'n\n' | node "$ROOT/bin/init.js" > out.log
+grep -q '이미 설치된 프로젝트' out.log || fail "재실행인데 이미 설치 안내 없음"
+grep -q '이미 최신입니다' out.log || fail "같은 버전인데 최신 안내 없음"
+grep -q '업데이트를 취소했습니다' out.log || fail "업데이트 취소 메시지 없음"
+node -e 'const f="second-brain/state.json",fs=require("fs"),s=JSON.parse(fs.readFileSync(f)); s.installed="0.0.1"; fs.writeFileSync(f, JSON.stringify(s))'
+printf 'n\n' | node "$ROOT/bin/init.js" > out.log
+grep -q 'v0.0.1 → v' out.log || fail "업데이트 버전 안내 없음"
+grep -q '업데이트할까요' out.log || fail "업데이트 질문 문구 없음"
+if grep -q '설치를 진행할까요' out.log; then fail "업데이트인데 설치 질문"; fi
 echo "케이스 4 OK"
 
 # ── 케이스 5: 기존 SECOND-BRAIN.md 충돌 ─────────────────

@@ -252,11 +252,11 @@ function printAnalysis(plan) {
 
 // ── 2단계: 확인 후 적용 ────────────────────────────────────────────
 
-function confirm(cb) {
+function confirm(question, cb) {
   if (AUTO_YES) return cb(true);
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   let answered = false;
-  rl.question('\n설치를 진행할까요? (Y/n) ', (ans) => {
+  rl.question('\n' + question + ' (Y/n) ', (ans) => {
     answered = true;
     rl.close();
     const t = ans.trim().toLowerCase();
@@ -324,14 +324,22 @@ function readState() {
   catch (e) { return { state: null, broken: true }; }
 }
 const { state: OLD_STATE, broken: STATE_BROKEN } = readState();
+// 이미 설치된 프로젝트면 업데이트로 묻는다
+const CURRENT = OLD_STATE?.installed ?? null;
+const SAME = !FRESH && CURRENT === VERSION;
+if (!FRESH) {
+  console.log(SAME
+    ? `이미 설치된 프로젝트입니다 — 이미 최신입니다 (v${VERSION}).\n`
+    : `이미 설치된 프로젝트입니다 — ${CURRENT ? 'v' + CURRENT : '설치 버전 기록 없음'} → v${VERSION} 로 업데이트합니다.\n`);
+}
 printAnalysis(plan);
 if (plan.some((a) => a.rel === 'SECOND-BRAIN.md' && a.kind === 'warn')) {
   console.error('\n기존 SECOND-BRAIN.md와 충돌해 설치를 중단했습니다. 파일을 직접 병합한 뒤 다시 실행하세요.');
   process.exit(1);
 }
-confirm((ok) => {
+confirm(FRESH ? '설치를 진행할까요?' : SAME ? '파일을 다시 맞출까요?' : '업데이트할까요?', (ok) => {
   if (!ok) {
-    console.log('\n설치를 취소했습니다. 변경된 파일은 없습니다.');
+    console.log('\n' + (FRESH ? '설치' : '업데이트') + '를 취소했습니다. 변경된 파일은 없습니다.');
     return;
   }
   plan.forEach(applyAction);
