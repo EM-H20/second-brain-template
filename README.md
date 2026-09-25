@@ -12,8 +12,7 @@
 
 > **🔄 이미 설치한 프로젝트 업데이트하기**
 > 1. 그 프로젝트 루트에서 `npx github:EM-H20/second-brain-template`를 다시 실행하고 `y`를 누른다. 규칙·스킬·도구·훅만 최신으로 바뀌고, 노트·`log.md`·`_topics.md`는 그대로 남는다.
-> 2. `AGENTS.md`(Codex가 읽는 파일)는 처음 설치할 때 복사된 파일이라 자동으로 바뀌지 않는다. [최신 AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md)로 교체한다 — 직접 추가한 내용이 있으면 그 부분만 남긴다.
-> 3. Claude Code·Codex에서 **"정리해"** (`/maintain` · `$maintain`). 새 규칙으로 무결성 검사와 클러스터 재구성을 하고, 보고를 보여 준 뒤 승인한 것만 고친다. 볼트가 크면 "큰 클러스터부터 하나씩 해줘"라고 하면 된다.
+> 2. Claude Code·Codex에서 **"업데이트 반영해"** (`/update-vault` · `$update-vault`). `AGENTS.md` 갱신, 클러스터 형식 이관, 기존 문제 점검을 바뀔 모습을 먼저 보여 준 뒤 승인한 것만 적용한다. 할 일이 없으면 "반영할 변경 없음"으로 끝난다.
 
 <details>
 <summary><b>🇺🇸 Read in English</b></summary>
@@ -25,8 +24,7 @@
 
 > **🔄 Updating a project where it's already installed**
 > 1. From that project's root, re-run `npx github:EM-H20/second-brain-template` and answer `y`. Only rules, skills, tools, and hooks are refreshed — your notes, `log.md`, and `_topics.md` stay as they are.
-> 2. `AGENTS.md` (read by Codex) was copied at first install and is not updated automatically. Replace it with the [latest AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md), keeping any lines you added yourself.
-> 3. In Claude Code or Codex, say **"tidy the vault"** (`/maintain` · `$maintain`). It runs the integrity check and rebuilds clusters under the new rules, shows you the report, and fixes only what you approve. For a large vault, ask it to go "one cluster at a time, biggest first".
+> 2. In Claude Code or Codex, say **"apply the template update"** (`/update-vault` · `$update-vault`). It refreshes `AGENTS.md`, migrates clusters to the new format, and checks for existing problems — showing each change first and applying only what you approve. If nothing is needed it just says so.
 
 **Zero dependencies.** No API keys, no embeddings, no Python scripts. It runs on pure Markdown plus rules and skills for AI coding agents.
 Open the `knowledge/` folder in Obsidian and you can see how your knowledge connects in graph view.
@@ -47,7 +45,7 @@ flowchart LR
 
 > **3 core triggers** — plain language is enough, no slash needed:
 > **capture** (save it → meetings / docs / issues / lessons) · **recall** (pull the context brief) · **maintain** (tidy the vault).
-> All 13 workflows plus the umbrella router are directly invocable — **14 skills** via `/name` (Claude Code, Antigravity) · `$name` (Codex).
+> All 13 workflows, the umbrella router, and `update-vault` are directly invocable — **15 skills** via `/name` (Claude Code, Antigravity) · `$name` (Codex).
 
 ---
 
@@ -302,9 +300,9 @@ passes the baton to the harness workflow. It works fine with no harness at all.
 There is a single source of rules, `SECOND-BRAIN.md`, and `AGENTS.md` / `GEMINI.md` guide Codex,
 Antigravity (Gemini), and other CLIs to those rules. The supported interfaces are:
 
-- Claude Code: `.claude/skills/` — 14 skills (auto-detected, `/name` invocation)
-- Codex: `.agents/skills/` — 14 skills (auto-detected, `$name` or natural language)
-- Antigravity (Gemini): `.agents/skills/` — 14 skills (auto-detected, `/name` or natural language)
+- Claude Code: `.claude/skills/` — 15 skills (auto-detected, `/name` invocation)
+- Codex: `.agents/skills/` — 15 skills (auto-detected, `$name` or natural language)
+- Antigravity (Gemini): `.agents/skills/` — 15 skills (auto-detected, `/name` or natural language)
 
 It also works through natural language in CLIs that have no commands — because the workflows are
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
@@ -391,8 +389,7 @@ only when the repository is private and tracking them is intentional.
 
 > **🔄 更新已安装的项目**
 > 1. 在该项目根目录重新运行 `npx github:EM-H20/second-brain-template` 并输入 `y`。只会更新规则、技能、工具和钩子——笔记、`log.md`、`_topics.md` 保持不变。
-> 2. `AGENTS.md`（Codex 读取）是首次安装时复制的文件，不会自动更新。请替换为[最新 AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md)，保留你自己添加的内容。
-> 3. 在 Claude Code 或 Codex 中说 **"整理知识库"**（`/maintain` · `$maintain`）。它会按新规则做完整性检查并重建聚类，先展示报告，只修改你批准的部分。知识库较大时，可以说"从最大的聚类开始，一个一个来"。
+> 2. 在 Claude Code 或 Codex 中说 **"应用模板更新"**（`/update-vault` · `$update-vault`）。它会更新 `AGENTS.md`、把聚类迁移到新格式、检查已有问题——每项先展示变更，只应用你批准的部分。无需变更时会直接说明。
 
 **零依赖。** 无需 API 密钥、嵌入向量或 Python 脚本。仅靠纯 Markdown 加上 AI 编码代理的规则与技能即可运行。
 用 Obsidian 打开 `knowledge/` 文件夹，就能在图谱视图中直观地看到知识之间的连接。
@@ -413,7 +410,7 @@ flowchart LR
 
 > **3 个核心触发词** —— 无需斜杠，自然语言即可：
 > **"记下"** → `/capture`（存入 会议 / 文档 / 问题 / 教训）· **"取出"** → `/recall`（生成上下文简报）· **"整理"** → `/maintain`（维护知识库）。
-> 13 个工作流加上 umbrella 路由共 **14 个技能**，可通过 `/name`（Claude Code、Antigravity）· `$name`（Codex）直接调用。
+> 13 个工作流、umbrella 路由和 `update-vault` 共 **15 个技能**，可通过 `/name`（Claude Code、Antigravity）· `$name`（Codex）直接调用。
 
 ---
 
@@ -641,10 +638,10 @@ GEMINI.md         仅一行 @SECOND-BRAIN.md 导入 (Antigravity / Gemini)
 AGENTS.md         Agent 指南，指向 SECOND-BRAIN.md (Codex / Antigravity / Gemini)
 .claude/hooks/    会话启动钩子 —— 自动注入知识库主题（仅限 Claude Code）
 .claude/settings.json 钩子注册（文件已存在时只合并一个条目）
-.claude/skills/   Claude 仓库技能 14 个（自动识别，/名称 调用）
+.claude/skills/   Claude 仓库技能 15 个（自动识别，/名称 调用）
 .agents/hooks/    PreInvocation 会话启动钩子（Antigravity / Gemini）
 .agents/hooks.json Antigravity 钩子配置（自动识别）
-.agents/skills/   仓库技能 14 个（Codex 与 Antigravity 自动识别 —— 与 Claude 副本相同）
+.agents/skills/   仓库技能 15 个（Codex 与 Antigravity 自动识别 —— 与 Claude 副本相同）
 ```
 
 ## 🤝 与 harness 的关系
@@ -658,9 +655,9 @@ AGENTS.md         Agent 指南，指向 SECOND-BRAIN.md (Codex / Antigravity / G
 规则的唯一来源是 `SECOND-BRAIN.md`，而 `AGENTS.md` / `GEMINI.md` 引导 Codex、Antigravity (Gemini) 等其他 CLI
 遵循同一规则。支持的入口如下：
 
-- Claude Code：`.claude/skills/` —— 14 个技能（自动识别，`/名称` 调用）
-- Codex：`.agents/skills/` —— 14 个技能（自动识别，`$名称` 或自然语言）
-- Antigravity (Gemini)：`.agents/skills/` —— 14 个技能（自动识别，`/名称` 或自然语言）
+- Claude Code：`.claude/skills/` —— 15 个技能（自动识别，`/名称` 调用）
+- Codex：`.agents/skills/` —— 15 个技能（自动识别，`$名称` 或自然语言）
+- Antigravity (Gemini)：`.agents/skills/` —— 15 个技能（自动识别，`/名称` 或自然语言）
 
 在没有命令的 CLI 中也能用自然语言驱动 —— 因为工作流在 `SECOND-BRAIN.md` 中
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
@@ -740,8 +737,7 @@ supersede 链）。智能体不读取整个文件，而是自动调用内置的�
 
 > **🔄 インストール済みプロジェクトの更新**
 > 1. そのプロジェクトのルートで `npx github:EM-H20/second-brain-template` を再実行し `y` を押します。更新されるのはルール・スキル・ツール・フックだけで、ノート・`log.md`・`_topics.md` はそのままです。
-> 2. `AGENTS.md`（Codex が読むファイル）は初回インストール時にコピーされたもので、自動では更新されません。[最新の AGENTS.md](https://github.com/EM-H20/second-brain-template/blob/main/AGENTS.md) に置き換えてください。自分で追記した部分は残します。
-> 3. Claude Code か Codex で **「ボールトを整理して」**（`/maintain` · `$maintain`）。新しいルールで整合性検査とクラスタ再構成を行い、報告を見せてから承認したものだけを直します。大きなボールトなら「大きいクラスタから一つずつ」と頼めます。
+> 2. Claude Code か Codex で **「テンプレートの更新を反映して」**（`/update-vault` · `$update-vault`）。`AGENTS.md` の更新、クラスタの新形式への移行、既存の問題の点検を、変更内容を先に見せてから承認したものだけ適用します。必要がなければそう伝えて終わります。
 
 **依存ゼロ。** API キー、埋め込み、Python スクリプトは不要。純粋な Markdown と AI コーディングエージェント用のルール／スキルだけで動作します。
 Obsidian で `knowledge/` フォルダを開けば、グラフビューで知識のつながりを視覚的に確認できます。
@@ -762,7 +758,7 @@ flowchart LR
 
 > **3 つのコアトリガー** —— スラッシュ不要、自然言語で十分：
 > **「記録して」** → `/capture`（会議 / ドキュメント / 課題 / 教訓を保存）· **「呼び出して」** → `/recall`（コンテキストブリーフ）· **「整理して」** → `/maintain`（ボールト整備）。
-> 13 のワークフローとアンブレラルーターを合わせた **14 スキル** は `/name`（Claude Code、Antigravity）· `$name`（Codex）で直接呼び出せます。
+> 13 のワークフロー、アンブレラルーター、`update-vault` を合わせた **15 スキル** は `/name`（Claude Code、Antigravity）· `$name`（Codex）で直接呼び出せます。
 
 ---
 
@@ -996,10 +992,10 @@ GEMINI.md         @SECOND-BRAIN.md の import 1 行 (Antigravity / Gemini)
 AGENTS.md         エージェントガイド、SECOND-BRAIN.md への参照 (Codex / Antigravity / Gemini)
 .claude/hooks/    セッション開始フック — ボールトの主題を自動注入（Claude Code）
 .claude/settings.json フック登録（既存ファイルがあれば 1 項目だけマージ）
-.claude/skills/   Claude リポジトリスキル 14 個（自動認識、/名前 で呼び出し）
+.claude/skills/   Claude リポジトリスキル 15 個（自動認識、/名前 で呼び出し）
 .agents/hooks/    PreInvocation セッション開始フック（Antigravity / Gemini）
 .agents/hooks.json Antigravity フック設定（自動認識）
-.agents/skills/   リポジトリスキル 14 個（Codex と Antigravity が自動認識 — Claude コピーと同一）
+.agents/skills/   リポジトリスキル 15 個（Codex と Antigravity が自動認識 — Claude コピーと同一）
 ```
 
 ## 🤝 ハーネスとの関係
@@ -1014,9 +1010,9 @@ AGENTS.md         エージェントガイド、SECOND-BRAIN.md への参照 (Co
 ルールの原本は `SECOND-BRAIN.md` ひとつであり、`AGENTS.md` / `GEMINI.md` は Codex、
 Antigravity (Gemini) など他の CLI を同じルールへ導きます。対応インターフェースは次のとおりです：
 
-- Claude Code：`.claude/skills/` — スキル 14 個（自動認識、`/名前` で呼び出し）
-- Codex：`.agents/skills/` — スキル 14 個（自動認識、`$名前` または自然言語）
-- Antigravity (Gemini)：`.agents/skills/` — スキル 14 個（自動認識、`/名前` または自然言語）
+- Claude Code：`.claude/skills/` — スキル 15 個（自動認識、`/名前` で呼び出し）
+- Codex：`.agents/skills/` — スキル 15 個（自動認識、`$名前` または自然言語）
+- Antigravity (Gemini)：`.agents/skills/` — スキル 15 個（自動認識、`/名前` または自然言語）
 
 コマンドのない CLI でも自然言語で動作します —— ワークフローが `SECOND-BRAIN.md` に
 意図ベースで定義されているためです。（「この文字起こしをボールトに入れて」= W1 全体を実行）
@@ -1115,7 +1111,7 @@ flowchart LR
 
 > **핵심 트리거 3개** — 슬래시 없이 자연어면 충분:
 > **"기억해"** → `/capture` (회의 / 문서 / 이슈 / 교훈 저장) · **"꺼내줘"** → `/recall` (컨텍스트 브리프) · **"정리해"** → `/maintain` (볼트 정리).
-> 13개 워크플로우 + 엄브렐라 라우터, 총 **14개 스킬** — `/이름`(Claude Code, Antigravity) · `$이름`(Codex)으로 직접 호출도 가능.
+> 13개 워크플로우 + 엄브렐라 라우터 + `update-vault`, 총 **15개 스킬** — `/이름`(Claude Code, Antigravity) · `$이름`(Codex)으로 직접 호출도 가능.
 
 ---
 
@@ -1345,10 +1341,10 @@ GEMINI.md         @SECOND-BRAIN.md import 한 줄 (Antigravity / Gemini)
 AGENTS.md         에이전트 가이드, SECOND-BRAIN.md 참조 (Codex / Antigravity / Gemini)
 .claude/hooks/    세션 시작 훅 — 볼트 주제를 자동 주입 (Claude Code)
 .claude/settings.json 훅 등록 (기존 파일이 있으면 항목만 병합)
-.claude/skills/   Claude 저장소 스킬 14종 (자동 인식, /이름 호출)
+.claude/skills/   Claude 저장소 스킬 15종 (자동 인식, /이름 호출)
 .agents/hooks/    PreInvocation 세션 시작 훅 (Antigravity / Gemini)
 .agents/hooks.json Antigravity 훅 설정 (자동 인식)
-.agents/skills/   저장소 스킬 14종 (Codex 및 Antigravity 자동 인식 — Claude 사본과 동일)
+.agents/skills/   저장소 스킬 15종 (Codex 및 Antigravity 자동 인식 — Claude 사본과 동일)
 ```
 
 ## 🤝 하네스와의 관계
@@ -1363,9 +1359,9 @@ AGENTS.md         에이전트 가이드, SECOND-BRAIN.md 참조 (Codex / Antigr
 규칙 원본은 `SECOND-BRAIN.md` 하나이며, `AGENTS.md` / `GEMINI.md`는 Codex,
 Antigravity (Gemini) 등 다른 CLI를 같은 규칙으로 안내한다. 지원하는 인터페이스는 다음과 같다:
 
-- Claude Code: `.claude/skills/` 14종 (자동 인식, `/이름` 호출)
-- Codex: `.agents/skills/` 14종 (자동 인식, `$이름` 또는 자연어)
-- Antigravity (Gemini): `.agents/skills/` 14종 (자동 인식, `/이름` 또는 자연어)
+- Claude Code: `.claude/skills/` 15종 (자동 인식, `/이름` 호출)
+- Codex: `.agents/skills/` 15종 (자동 인식, `$이름` 또는 자연어)
+- Antigravity (Gemini): `.agents/skills/` 15종 (자동 인식, `/이름` 또는 자연어)
 
 커맨드가 없는 CLI에서도 자연어로 동작한다 — 워크플로우가 `SECOND-BRAIN.md`에
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)

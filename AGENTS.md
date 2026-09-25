@@ -17,9 +17,9 @@ It defines:
 ## Skill equivalents
 
 Every workflow is a repository skill, paired in `.claude/skills/<name>/`
-(Claude Code) and `.agents/skills/<name>/` (Codex / Antigravity / Gemini) — 14
-skills in all: the 13 workflows plus the `second-brain` umbrella router for
-ambiguous intents. Invoke as `/name` in Claude Code, `$name` or natural
+(Claude Code) and `.agents/skills/<name>/` (Codex / Antigravity / Gemini) — 15
+skills in all: the 13 workflows, the `second-brain` umbrella router for
+ambiguous intents, and `update-vault` (apply a template update to an existing vault). Invoke as `/name` in Claude Code, `$name` or natural
 language in Codex, or automatically / via skill in Antigravity (Gemini).
 Each pair's SKILL.md files are kept byte-identical (guarded by
 `bin/test.sh`). The legacy `.claude/commands/` and `.codex/prompts/`
@@ -65,6 +65,7 @@ automatic conflict detection — exactly as `/ingest-meeting` would.
 | Recall topic context | W3 + W4 + W6 + W8 |
 | Maintain the vault | W2 full (integrity check + re-cluster) + W8 |
 | File meeting outcomes as tracker issues | W9 (extraction is automatic in W1) |
+| Apply a template update to the existing vault | update-vault (`second-brain/workflows/update.md`) |
 
 ## Non-negotiables (repeated here for emphasis)
 

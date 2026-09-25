@@ -38,12 +38,12 @@ done
 A_SKILLS=$(ls "$ROOT/.agents/skills")
 C_SKILLS=$(ls "$ROOT/.claude/skills")
 [ "$A_SKILLS" = "$C_SKILLS" ] || fail "스킬 집합 불일치 (.agents/skills vs .claude/skills)"
-[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "14" ] || fail "스킬 수가 14가 아님"
+[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "15" ] || fail "스킬 수가 15가 아님"
 for s in $A_SKILLS; do
   diff -q "$ROOT/.claude/skills/$s/SKILL.md" "$ROOT/.agents/skills/$s/SKILL.md" > /dev/null \
     || fail "SKILL.md 사본 불일치: $s"
 done
-echo "skill parity OK (14)"
+echo "skill parity OK (15)"
 
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
@@ -158,7 +158,7 @@ grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
 grep -q '^# second-brain-template' .agents/skills/second-brain/agents/openai.yaml || fail "Codex skill YAML 마커가 주석이 아님"
-for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting issue-candidates maintain recall report setup-vault second-brain; do
+for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting issue-candidates maintain recall report setup-vault second-brain update-vault; do
   [ -f .claude/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.claude)"
   [ -f .agents/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.agents)"
 done
@@ -229,6 +229,11 @@ if (JSON.stringify(s.applied) !== JSON.stringify(ids)) throw new Error("신규 �
 ' "$ROOT/second-brain/migrations" "$ROOT/package.json" || fail "신규 설치 state.json 내용"
 grep -q '볼트 초기화' out.log || fail "신규 설치 안내 없음"
 if grep -q '최근 작업이' out.log; then fail "틀린 훅 안내 문구"; fi
+grep -q '업데이트 반영' .claude/skills/update-vault/SKILL.md || fail "update-vault 트리거 없음"
+[ -f second-brain/workflows/update.md ] || fail "update.md 미설치"
+grep -q 'second-brain/workflows/update.md' SECOND-BRAIN.md || fail "SECOND-BRAIN 색인에 update.md 없음"
+grep -q 'update-vault' AGENTS.md || fail "AGENTS.md 의도 표에 update-vault 없음"
+grep -q '두 번째 예외는 `update-vault`' SECOND-BRAIN.md || fail "볼트 밖 쓰기 예외에 update-vault 없음"
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
 [ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
