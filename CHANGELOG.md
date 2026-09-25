@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.12.0] — 2026-09-25
+
+### Features
+
+- update-vault — npx 업데이트 후 '업데이트 반영해' 한마디로 기존 볼트에 새 규칙 반영 (#14)
+
 ## [v1.11.0] — 2026-09-25
 
 ### Features
