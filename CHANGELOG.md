@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.11.0] — 2026-09-25
+
+### Features
+
+- 볼트 코어 도구 — search·section·check (에이전트가 자동 사용, 사용자는 자연어만) (#13)
+
 ## [v1.10.0] — 2026-09-25
 
 ### Features
