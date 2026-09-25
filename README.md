@@ -299,8 +299,8 @@ It also works through natural language in CLIs that have no commands — because
 defined in `SECOND-BRAIN.md` by intent. ("Put this transcript in the vault" = run all of W1.)
 
 **Check the vault at session start** is a rule in `SECOND-BRAIN.md`
-("세션 시작 컨텍스트") and it binds every CLI equally: read `clusters/_topics.md`
-and the tail of `log.md`, and if the task touches a listed topic, open that
+("세션 시작 컨텍스트") and it binds every CLI equally: read `clusters/_topics.md`,
+and if the task touches a listed topic, read the needed sections of that
 cluster note before writing code.
 
 **Claude Code and Antigravity (Gemini) automate it**:
@@ -647,8 +647,8 @@ AGENTS.md         Agent 指南，指向 SECOND-BRAIN.md (Codex / Antigravity / G
 以意图为基准定义。（"把这份记录存进知识库" = 执行完整的 W1）
 
 **会话开始时先看知识库**是 `SECOND-BRAIN.md` 中的规则（"세션 시작 컨텍스트"），
-对所有 CLI 一视同仁：读取 `clusters/_topics.md` 与 `log.md` 的末尾；若本次任务
-涉及词表中的某个主题，就在写代码之前先打开该主题的 cluster 笔记。
+对所有 CLI 一视同仁：读取 `clusters/_topics.md`；若本次任务
+涉及词表中的某个主题，就在写代码之前先读取该主题 cluster 笔记中需要的章节。
 
 **Claude Code 与 Antigravity (Gemini) 会自动完成这一步**：
 - Claude Code：会话启动钩子（`.claude/hooks/session-context.mjs`）注册于 `.claude/settings.json`。
@@ -996,8 +996,8 @@ Antigravity (Gemini) など他の CLI を同じルールへ導きます。対応
 
 **セッション開始時にまずボールトを見る**というルールは `SECOND-BRAIN.md` の
 「세션 시작 컨텍스트」にあり、すべての CLI に等しく適用される。`clusters/_topics.md`
-と `log.md` の末尾を読み、今回のタスクが語彙内の主題に触れるなら、コードを書く前に
-その cluster ノートを開く。
+を読み、今回のタスクが語彙内の主題に触れるなら、コードを書く前に
+その cluster ノートの必要な節を読む。
 
 **Claude Code と Antigravity (Gemini) はこれを自動化する**：
 - Claude Code：セッション開始フック（`.claude/hooks/session-context.mjs`）が `.claude/settings.json` に登録される。
@@ -1342,8 +1342,8 @@ Antigravity (Gemini) 등 다른 CLI를 같은 규칙으로 안내한다. 지원�
 의도 기준으로 정의되어 있기 때문. ("이 전사체 볼트에 넣어줘" = W1 전체 실행)
 
 **세션 시작에 볼트를 먼저 본다**는 규칙은 `SECOND-BRAIN.md`의 "세션 시작 컨텍스트"에
-있고 모든 CLI에 동일하게 적용된다: `clusters/_topics.md`와 `log.md` 꼬리를 읽고,
-걸리는 주제가 있으면 그 클러스터 노트를 코드보다 먼저 연다.
+있고 모든 CLI에 동일하게 적용된다: `clusters/_topics.md`를 읽고,
+걸리는 주제가 있으면 그 클러스터 노트의 필요한 절을 코드보다 먼저 읽는다.
 
 **Claude Code와 Antigravity (Gemini)는 이 읽기를 자동화한다**:
 - Claude Code: 세션 시작 훅(`.claude/hooks/session-context.mjs`)이 `.claude/settings.json`에 등록된다.

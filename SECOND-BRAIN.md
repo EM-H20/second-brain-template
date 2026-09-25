@@ -196,7 +196,8 @@ Everyday interaction — skill or natural language — routes through three verb
   lesson ingestion (W1 / W7 / W6 / W8). Ambiguous type → ask, never guess.
 - **recall** (꺼내줘): gather everything on a topic — active decisions, latest
   meeting context, relevant docs, open/resolved issues, relevant lessons,
-  conflicts — into a Context Brief (W3 + W4 + W6).
+  conflicts — into a Context Brief (W3 + W4 + W6). 단, 질문형은 「회수 규칙」 1
+  (답변 모드)을 따른다 — 풀 브리프는 구현 전 맥락 수집일 때만.
 - **maintain** (정리해): rebuild clusters and merge duplicate topics (W2 full),
   then sweep the session for candidate lessons (W8 on-demand).
 

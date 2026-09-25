@@ -57,6 +57,8 @@ grep -q 'cluster-<topic>--<sub>' second-brain/workflows/W2.md || fail "W2에 하
 grep -q '12KB' second-brain/workflows/W2.md || fail "W2 무결성 검사에 크기 경고 없음"
 grep -q '하위 클러스터' knowledge/_templates/cluster-index.md || fail "클러스터 템플릿에 하위 클러스터 절 없음"
 grep -q '제자리' knowledge/_templates/cluster-index.md || fail "클러스터 템플릿에 제자리 재작성 안내 없음"
+grep -q '질문형은 「회수 규칙」 1' SECOND-BRAIN.md || fail "recall 라우팅이 답변 모드를 가리키지 않음"
+if grep -q -E "tail of \`log.md\`|\`log.md\` 的末尾|\`log.md\` の末尾|\`log.md\` 꼬리" "$ROOT/README.md"; then fail "README가 아직 세션 시작 로그 꼬리 읽기를 안내함"; fi
 # 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
 # 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"
