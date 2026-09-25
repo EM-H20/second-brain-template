@@ -11,7 +11,7 @@ const MARKER = '<!-- second-brain-template -->';
 const IMPORT_LINE = '@SECOND-BRAIN.md';
 const AGENTS_POINTER = '**Second brain vault rules:** 볼트 작업 시 `SECOND-BRAIN.md`(핵심 규칙)를 읽고 그대로 따를 것.';
 // AGENTS.md 관리 블록 — 설치기는 이 마커 안만 바꾼다. 블록 밖은 사용자 소유.
-const BLOCK_RE = /<!-- second-brain-template:begin (full|pointer) -->\n[\s\S]*?\n<!-- second-brain-template:end -->/;
+const BLOCK_RE = /<!-- second-brain-template:begin (full|pointer) -->\r?\n[\s\S]*?\r?\n<!-- second-brain-template:end -->/;
 // 지금까지 설치기가 덧붙인 포인터 줄 — 마커 없이 이 줄이 있으면 pointer 블록으로 바꾼다
 const OLD_POINTERS = [
   '**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.',
@@ -158,7 +158,7 @@ function planAgentsMd() {
   if (!fs.existsSync(to)) return { kind: 'agents-create', rel: 'AGENTS.md', label: '신규' };
   const cur = fs.readFileSync(to, 'utf8');
   const m = cur.match(BLOCK_RE);
-  if (m) return cur.replace(BLOCK_RE, blockText(m[1])) === cur ? { kind: 'keep', rel: 'AGENTS.md' } : { kind: 'agents-block', rel: 'AGENTS.md', label: '관리 블록 갱신' };
+  if (m) return cur.replace(BLOCK_RE, () => blockText(m[1])) === cur ? { kind: 'keep', rel: 'AGENTS.md' } : { kind: 'agents-block', rel: 'AGENTS.md', label: '관리 블록 갱신' };
   if (cur.split('\n').some((l) => OLD_POINTERS.includes(l.trim()))) return { kind: 'agents-pointer', rel: 'AGENTS.md', label: '옛 포인터 → 관리 블록' };
   if (cur.includes('SECOND-BRAIN.md')) return { kind: 'keep', rel: 'AGENTS.md' };
   return { kind: 'agents-append', rel: 'AGENTS.md', label: '포인터 블록 추가' };
@@ -283,7 +283,8 @@ function applyAction(a) {
     write(to, blockText('full') + '\n');
   } else if (a.kind === 'agents-block') {
     const cur = fs.readFileSync(to, 'utf8');
-    write(to, cur.replace(BLOCK_RE, blockText(cur.match(BLOCK_RE)[1])));
+    // 함수 치환 — 문자열 치환은 본문의 $&·$' 를 패턴으로 해석해 파일을 망가뜨린다
+    write(to, cur.replace(BLOCK_RE, () => blockText(cur.match(BLOCK_RE)[1])));
   } else if (a.kind === 'agents-pointer') {
     const lines = fs.readFileSync(to, 'utf8').split('\n');
     const i = lines.findIndex((l) => OLD_POINTERS.includes(l.trim()));

@@ -234,6 +234,10 @@ grep -q '업데이트 반영' .claude/skills/update-vault/SKILL.md || fail "upda
 grep -q 'second-brain/workflows/update.md' SECOND-BRAIN.md || fail "SECOND-BRAIN 색인에 update.md 없음"
 grep -q 'update-vault' AGENTS.md || fail "AGENTS.md 의도 표에 update-vault 없음"
 grep -q '두 번째 예외는 `update-vault`' SECOND-BRAIN.md || fail "볼트 밖 쓰기 예외에 update-vault 없음"
+grep -q '불필요 판정' SECOND-BRAIN.md || fail "불필요 판정 기록 예외가 규칙에 없음"
+grep -q '# Agent Rules' second-brain/migrations/2026-09-25-agents-md-refresh.md || fail "이관 A 판별에 템플릿 사본 신호 없음"
+grep -q 'superseded' second-brain/migrations/2026-09-25-cluster-format.md || fail "이관 B가 대체된 결정 보호를 명시하지 않음"
+if grep -qE '14 (Claude )?repo skills' "$ROOT/README.md"; then fail "README에 14 skills 표기가 남음"; fi
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
 [ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
@@ -632,6 +636,22 @@ node "$ROOT/bin/init.js" -y > out.log || fail "깨진 state.json 에서 설치 �
 grep -q 'state.json' out.log || fail "깨진 state.json 경고 없음"
 node -e 'JSON.parse(require("fs").readFileSync("second-brain/state.json","utf8"))' || fail "state.json 을 다시 쓰지 않음"
 [ ! -e "$ROOT/second-brain/state.json" ] || fail "템플릿 저장소에 state.json 이 있음"
+# 10g. CRLF 관리 블록도 갱신된다
+old_install "$TMP/crlf"
+printf '# Mine\r\n<!-- second-brain-template:begin pointer -->\r\nstale\r\n<!-- second-brain-template:end -->\r\nafter\r\n' > AGENTS.md
+node "$ROOT/bin/init.js" -y > out.log
+if grep -q 'stale' AGENTS.md; then fail "CRLF 관리 블록이 갱신 안 됨"; fi
+grep -q 'after' AGENTS.md || fail "CRLF 블록 밖 내용 유실"
+# 10h. 템플릿 본문에 $& 같은 치환 패턴이 있어도 AGENTS.md 가 망가지지 않는다 (멱등)
+rm -rf "$TMP/tpl" && mkdir "$TMP/tpl" && (cd "$ROOT" && tar cf - --exclude=.git --exclude=.superpowers --exclude=docs .) | (cd "$TMP/tpl" && tar xf -)
+printf '\nUse `$&` and `$'"'"'` as literals.\n' >> "$TMP/tpl/AGENTS.md"
+old_install "$TMP/dollar"
+printf 'USER-BEFORE\n<!-- second-brain-template:begin full -->\nold\n<!-- second-brain-template:end -->\nUSER-AFTER\n' > AGENTS.md
+node "$TMP/tpl/bin/init.js" -y > out.log
+[ "$(grep -c 'USER-AFTER' AGENTS.md)" = "1" ] || fail "\$& 치환으로 AGENTS.md 가 복제됨"
+cp AGENTS.md AGENTS.before
+node "$TMP/tpl/bin/init.js" -y > out.log
+cmp -s AGENTS.md AGENTS.before || fail "\$ 패턴 본문에서 멱등 아님"
 echo "케이스 10 OK"
 
 echo "ALL PASS"

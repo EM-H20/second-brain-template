@@ -282,10 +282,10 @@ GEMINI.md         A single @SECOND-BRAIN.md import line (Antigravity / Gemini)
 AGENTS.md         Agent guidelines pointing to SECOND-BRAIN.md (Codex / Antigravity / Gemini)
 .claude/hooks/    session-start hook — auto-injects vault topics (Claude Code)
 .claude/settings.json hook registration (merges one entry if the file already exists)
-.claude/skills/   14 Claude repo skills (auto-detected, /name invocation)
+.claude/skills/   15 Claude repo skills (auto-detected, /name invocation)
 .agents/hooks/    PreInvocation session context hook (Antigravity / Gemini)
 .agents/hooks.json Antigravity hook configuration (auto-detected)
-.agents/skills/   14 repo skills (auto-detected by Codex & Antigravity — identical to the Claude copies)
+.agents/skills/   15 repo skills (auto-detected by Codex & Antigravity — identical to the Claude copies)
 ```
 
 ## 🤝 Relationship with harnesses

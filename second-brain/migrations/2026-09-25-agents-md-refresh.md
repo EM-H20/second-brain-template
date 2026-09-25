@@ -12,9 +12,11 @@ since: v1.12
 이후 업데이트는 설치기가 자동으로 한다.
 
 ## 필요한지 판별
-프로젝트 루트 `AGENTS.md`에 `<!-- second-brain-template:begin` 이 없고, 다음 중 하나라도 해당하면 필요하다:
+프로젝트 루트 `AGENTS.md`에 `<!-- second-brain-template:begin` 이 없고, 템플릿 사본이라는 신호(`# Agent Rules` 제목과
+"The single source of truth for all rules in this repository is `SECOND-BRAIN.md`" 문장)가 있으며, 다음 중 하나라도 해당하면 필요하다:
 "in full at the start of every session" 이 있다 / "tail of `knowledge/log.md`" 가 있다 /
-`second-brain/tools/vault.mjs` 언급이 없다. `AGENTS.md`가 없거나 관리 블록이 이미 있으면 불필요.
+`second-brain/tools/vault.mjs` 언급이 없다. `AGENTS.md`가 없거나 관리 블록이 이미 있으면 불필요. 템플릿 사본 신호가 없는 사용자 자신의 `AGENTS.md`라면
+전체 교체 대신 끝에 `pointer` 블록(`<!-- second-brain-template:begin pointer -->` / 포인터 한 줄 / end 마커)만 덧붙이자고 제안한다.
 
 ## 적용 방법
 `second-brain/AGENTS.template.md`(최신 템플릿 본문, 끝의 마커 주석 줄 제외)와 `AGENTS.md`를 비교한다.
