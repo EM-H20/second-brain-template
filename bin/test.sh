@@ -219,6 +219,16 @@ grep -qx '<!-- second-brain-template:end -->' AGENTS.md || fail "관리 블록 �
 [ -f second-brain/AGENTS.template.md ] || fail "AGENTS.template.md 미설치"
 grep -q 'vault.mjs search' second-brain/AGENTS.template.md || fail "AGENTS.template.md 가 최신 본문이 아님"
 [ "$(ls second-brain/migrations/*.md | wc -l | tr -d ' ')" -ge 3 ] || fail "이관 노트 미설치"
+[ -f second-brain/state.json ] || fail "state.json 없음"
+node -e '
+const s = require("./second-brain/state.json");
+const ids = require("fs").readdirSync(process.argv[1]).filter((f) => f.endsWith(".md")).map((f) => f.slice(0, -3)).sort();
+if (s.installed !== require(process.argv[2]).version) throw new Error("installed 불일치");
+if (s.previous !== null) throw new Error("신규 설치 previous 는 null");
+if (JSON.stringify(s.applied) !== JSON.stringify(ids)) throw new Error("신규 설치 applied 는 이관 전부");
+' "$ROOT/second-brain/migrations" "$ROOT/package.json" || fail "신규 설치 state.json 내용"
+grep -q '볼트 초기화' out.log || fail "신규 설치 안내 없음"
+if grep -q '최근 작업이' out.log; then fail "틀린 훅 안내 문구"; fi
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
 [ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
@@ -599,6 +609,24 @@ grep -q '볼트 작업 시' AGENTS.md && grep -q '^after$' AGENTS.md && grep -q 
 cp AGENTS.md AGENTS.before
 node "$ROOT/bin/init.js" -y > out.log
 cmp -s AGENTS.md AGENTS.before || fail "최신 블록인데 AGENTS.md가 바뀜"
+# 10d. 상태 기록 이전 설치본 업데이트 → previous null, applied [], 반영 안내
+cd "$TMP/legacy"
+N=$(ls "$ROOT"/second-brain/migrations/*.md | wc -l | tr -d ' ')
+node -e 'const s=require("./second-brain/state.json"); if (s.previous!==null||s.applied.length) throw new Error(JSON.stringify(s))' || fail "옛 설치본 state 초기값"
+grep -q "반영할 변경 ${N}개" out.log || fail "대기 이관 수 안내 없음"
+grep -q '업데이트 반영해' out.log || fail "업데이트 반영 안내 없음"
+if grep -q '볼트 초기화 —' out.log; then fail "업데이트인데 초기화 안내"; fi
+# 10e. 재실행: applied 보존, previous = 직전 installed, 다 적용됐으면 반영할 변경 없음
+node -e 'const f="./second-brain/state.json",fs=require("fs"),s=JSON.parse(fs.readFileSync(f)); s.applied=fs.readdirSync(process.argv[1]).filter(x=>x.endsWith(".md")).map(x=>x.slice(0,-3)); fs.writeFileSync(f, JSON.stringify(s))' "$ROOT/second-brain/migrations"
+node "$ROOT/bin/init.js" -y > out.log
+node -e 'const s=require("./second-brain/state.json"); if (s.previous!==require(process.argv[1]).version) throw new Error("previous"); if (!s.applied.length) throw new Error("applied 유실")' "$ROOT/package.json" || fail "재실행 state 보존"
+grep -q '반영할 변경 없음' out.log || fail "다 적용됐는데 반영 안내"
+# 10f. 깨진 state.json → 경고 후 새로 씀
+printf '{oops' > second-brain/state.json
+node "$ROOT/bin/init.js" -y > out.log || fail "깨진 state.json 에서 설치 실패"
+grep -q 'state.json' out.log || fail "깨진 state.json 경고 없음"
+node -e 'JSON.parse(require("fs").readFileSync("second-brain/state.json","utf8"))' || fail "state.json 을 다시 쓰지 않음"
+[ ! -e "$ROOT/second-brain/state.json" ] || fail "템플릿 저장소에 state.json 이 있음"
 echo "케이스 10 OK"
 
 echo "ALL PASS"

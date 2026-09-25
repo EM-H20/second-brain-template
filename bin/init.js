@@ -21,6 +21,12 @@ function blockText(mode) {
   const body = mode === 'full' ? fs.readFileSync(path.join(SRC, 'AGENTS.md'), 'utf8').trim() : AGENTS_POINTER;
   return `<!-- second-brain-template:begin ${mode} -->\n${body}\n<!-- second-brain-template:end -->`;
 }
+const STATE_REL = 'second-brain/state.json';
+const VERSION = require(path.join(SRC, 'package.json')).version;
+function migrationIds() {
+  try { return fs.readdirSync(path.join(SRC, 'second-brain', 'migrations')).filter((f) => f.endsWith('.md')).map((f) => f.slice(0, -3)).sort(); }
+  catch (e) { return []; }
+}
 const AUTO_YES = process.argv.includes('-y') || process.argv.includes('--yes');
 // settings.json / hooks.json 병합 멱등성 판정 키 — 경로가 바뀌면 이 상수도 함께 바꿔야 한다
 const HOOK_ID = '.claude/hooks/session-context.mjs';
@@ -308,6 +314,15 @@ function applyAction(a) {
 }
 
 const plan = buildPlan();
+const FRESH = plan.some((a) => a.rel === 'SECOND-BRAIN.md' && a.label === '신규');
+// 반환: { state, broken } — 없으면 state=null. 깨졌으면 broken (설치는 멈추지 않고 새로 쓴다)
+function readState() {
+  const p = target(STATE_REL);
+  if (!fs.existsSync(p)) return { state: null, broken: false };
+  try { return { state: JSON.parse(fs.readFileSync(p, 'utf8')), broken: false }; }
+  catch (e) { return { state: null, broken: true }; }
+}
+const { state: OLD_STATE, broken: STATE_BROKEN } = readState();
 printAnalysis(plan);
 if (plan.some((a) => a.rel === 'SECOND-BRAIN.md' && a.kind === 'warn')) {
   console.error('\n기존 SECOND-BRAIN.md와 충돌해 설치를 중단했습니다. 파일을 직접 병합한 뒤 다시 실행하세요.');
@@ -319,6 +334,11 @@ confirm((ok) => {
     return;
   }
   plan.forEach(applyAction);
+  // 설치 상태 — 신규 볼트는 이관할 것이 없으므로 이관 전부를 적용됨으로 둔다
+  const applied = FRESH ? migrationIds() : (Array.isArray(OLD_STATE?.applied) ? OLD_STATE.applied : []);
+  const previous = FRESH ? null : (OLD_STATE?.installed ?? null);
+  write(target(STATE_REL), JSON.stringify({ installed: VERSION, previous, applied }, null, 2) + '\n');
+  const pending = migrationIds().filter((id) => !applied.includes(id));
   // 은퇴로 비워진 디렉터리 정리 — 비어 있을 때만 성공한다. 사용자 파일이 남아 있으면 그대로 둔다.
   for (const d of ['.claude/commands', '.codex/prompts', '.codex']) {
     try { fs.rmdirSync(target(d)); } catch (e) {}
@@ -338,7 +358,7 @@ confirm((ok) => {
   const settings = plan.find((a) => a.rel === '.claude/settings.json');
   if (settings && (settings.kind === 'copy' || settings.kind === 'settings-merge')) {
     console.log('✓ Claude Code 세션 컨텍스트 훅 등록됨 (.claude/settings.json)\n');
-    console.log('  이제 Claude Code 세션을 시작하면 볼트의 주제 목록과 최근 작업이');
+    console.log('  이제 Claude Code 세션을 시작하면 볼트의 주제 목록이');
     console.log('  자동으로 주입됩니다. /recall 을 치지 않아도 관련 결정·이슈·교훈이');
     console.log('  코드를 쓰기 전에 먼저 떠오릅니다.\n');
     if (settings.kind === 'settings-merge') {
@@ -364,12 +384,20 @@ confirm((ok) => {
   }
   // 1~2는 clone 직후 1회 하는 초기 세팅이라 스킬 호출이 맞고,
   // 3부터가 일상 사용이다. 그 경계를 흐리면 Codex 사용자는 없는 커맨드를 찾게 된다.
+  if (FRESH) {
   console.log('다음 단계:');
   console.log('  1. 볼트 초기화 — /setup-vault   (Codex: $setup-vault, Antigravity: /setup-vault 또는 "볼트 초기화해줘")');
   console.log('  2. Obsidian → "보관함 폴더 열기" → knowledge/ 선택');
   console.log('  3. 이후엔 자연어면 충분:');
   console.log('       "이 회의록 기억해"  ·  "인증 관련 꺼내줘"  ·  "볼트 정리해"');
-  console.log('     (스킬 14개는 Claude: /이름, Codex: $이름, Antigravity: /이름 또는 자동 실행)\n');
+  console.log('     (스킬 15개는 Claude: /이름, Codex: $이름, Antigravity: /이름 또는 자동 실행)\n');
+  } else {
+    if (STATE_BROKEN) console.log('! second-brain/state.json 을 읽지 못해 새로 썼습니다 (이관 판별은 다시 실행해도 안전).\n');
+    console.log(`업데이트: ${previous ? 'v' + previous : '이전 버전 기록 없음'} → v${VERSION}`);
+    console.log(pending.length
+      ? `기존 볼트에 반영할 변경 ${pending.length}개 — Claude Code·Codex에서 "업데이트 반영해" (/update-vault · $update-vault)\n`
+      : '기존 볼트에 반영할 변경 없음\n');
+  }
   console.log('훅이 도는지 확인:');
   console.log('  - Claude Code: node .claude/hooks/session-context.mjs');
   console.log('  - Antigravity: node .agents/hooks/session-context.mjs');
