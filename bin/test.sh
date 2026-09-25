@@ -52,6 +52,11 @@ grep -q '답변 모드' SECOND-BRAIN.md || fail "답변 모드 규칙 없음"
 grep -q '부분 읽기는 전체 검토가 아니다' SECOND-BRAIN.md || fail "절단 읽기 규칙 없음"
 [ -f knowledge/.ignore ] || fail "knowledge/.ignore 미설치"
 grep -qx '_sources/' knowledge/.ignore || fail ".ignore에 _sources/ 없음"
+grep -q '서술형' second-brain/workflows/W2.md || fail "W2에 서술형 갱신 금지 규칙 없음"
+grep -q 'cluster-<topic>--<sub>' second-brain/workflows/W2.md || fail "W2에 하위 클러스터 규칙 없음"
+grep -q '12KB' second-brain/workflows/W2.md || fail "W2 무결성 검사에 크기 경고 없음"
+grep -q '하위 클러스터' knowledge/_templates/cluster-index.md || fail "클러스터 템플릿에 하위 클러스터 절 없음"
+grep -q '제자리' knowledge/_templates/cluster-index.md || fail "클러스터 템플릿에 제자리 재작성 안내 없음"
 # 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
 # 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"
