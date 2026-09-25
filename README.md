@@ -79,6 +79,11 @@ In non-interactive environments such as CI, pass the `-y` flag to skip the confi
 1. Clone this repository, or copy it with the **"Use this template"** button, and use it as your new project root
 2. Open Claude Code and run `/setup-vault` (once)
 
+### Option C — Update a project where it's already installed
+
+1. From that project's root, re-run `npx github:EM-H20/second-brain-template` (answer `y`)
+2. Open Claude Code or Codex and run `/update-vault` (Codex: `$update-vault`, or just say "apply the template update") — every time you update
+
 ### Common next steps
 
 1. **Connect Obsidian** (see the Obsidian section below) — open the `knowledge/` folder as a vault
@@ -444,6 +449,11 @@ npx github:EM-H20/second-brain-template
 1. clone 本仓库，或用 **"Use this template"** 按钮复制，作为新项目根目录
 2. 打开 Claude Code 并运行 `/setup-vault`（仅一次）
 
+### 方式 C — 更新已安装的项目
+
+1. 在该项目根目录重新运行 `npx github:EM-H20/second-brain-template`（输入 `y`）
+2. 打开 Claude Code 或 Codex 并运行 `/update-vault`（Codex：`$update-vault`，或直接说"应用模板更新"）—— 每次更新后都要执行
+
 ### 共同的后续步骤
 
 1. **连接 Obsidian**（见下方 Obsidian 章节）—— 将 `knowledge/` 文件夹作为库打开
@@ -794,6 +804,11 @@ CI などの非対話環境では `-y` フラグで確認をスキップでき�
 
 1. このリポジトリを clone するか、**"Use this template"** ボタンでコピーして新プロジェクトのルートとして使う
 2. Claude Code を開いて `/setup-vault` を実行（1 回のみ）
+
+### 方法 C — インストール済みプロジェクトを更新
+
+1. そのプロジェクトのルートで `npx github:EM-H20/second-brain-template` を再実行（`y` を押す）
+2. Claude Code か Codex を開いて `/update-vault` を実行（Codex：`$update-vault`、または「テンプレートの更新を反映して」）—— 更新のたびに
 
 ### 共通の次のステップ
 
@@ -1150,6 +1165,11 @@ CI 등 비대화형 환경에서는 `-y` 플래그로 확인을 건너뛴다.
 
 1. 이 저장소를 clone 하거나 **"Use this template"** 버튼으로 복사해 새 프로젝트 루트로 사용
 2. Claude Code를 열고 `/setup-vault` 실행 (1회)
+
+### 방법 C — 이미 설치한 프로젝트 업데이트
+
+1. 그 프로젝트 루트에서 `npx github:EM-H20/second-brain-template` 다시 실행 (`y`)
+2. Claude Code·Codex를 열고 `/update-vault` 실행 (Codex: `$update-vault`, 또는 "업데이트 반영해") — 업데이트할 때마다
 
 ### 공통 다음 단계
 
