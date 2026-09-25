@@ -2,6 +2,12 @@
 
 All notable feature/fix/perf changes, generated from git history by `bin/changelog.js`.
 
+## [v1.13.0] — 2026-09-25
+
+### Features
+
+- 이미 설치된 프로젝트면 업데이트로 묻기 (버전 표시) (#15)
+
 ## [v1.12.0] — 2026-09-25
 
 ### Features
