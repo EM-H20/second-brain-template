@@ -166,6 +166,26 @@ This file is what keeps clustering consistent as the vault grows.
 | W8 | `second-brain/workflows/W8.md` | 교훈 캡처와 적용 |
 | W9 | `second-brain/workflows/W9.md` | 회의 이슈 후보 → 트래커 이슈 |
 
+### 회수 규칙
+
+frontmatter 우선 검색(위 「Frontmatter schema」의 검색 순서)과 「Status 라이프사이클과
+회수 시맨틱」 표는 그대로 적용한다. 그 위에서:
+
+1. **답변 모드.** 질문형(왜·무엇·언제·현재 상태)은: 주제 식별(`_topics.md`) → frontmatter의
+   `topics`·`status`로 근거 결정 후보를 좁힌다 → 그 결정 노트 **본문**을 읽는다 →
+   status·supersede 체인으로 현재성 확인 → 같은 topic의 `open` 이슈 확인 → 하위 질문마다
+   답하고 id를 인용한다. W4·W6·W8 전체 수집은 구현 전 브리프(W3), 버그 질문(W6),
+   새 결정(W4)일 때만 한다.
+2. **클러스터는 절 단위로 읽는다.** 필요한 절(현재 상태 요약, 활성 결정 등)을 제목으로
+   찾아 그 줄 범위만 읽는다. 클러스터 한 줄은 포인터이고, 답의 근거는 노트 본문이다.
+3. 여러 파일을 한 명령으로 이어 붙여 읽지 않는다 — 긴 출력은 가운데가 잘린다.
+4. 출력이 잘렸으면 보지 못한 범위를 밝히고 "없음"·"충돌 없음"을 단정하지 않는다.
+   부분 읽기는 전체 검토가 아니다.
+5. 검색은 `_sources/`를 제외한다 (`knowledge/.ignore`가 rg에 적용된다).
+6. `log.md`는 회수 자료가 아니다. 특정 id·날짜·용어를 찾을 때만 검색한다.
+7. 답하기 전에 근거 결정의 「결과」·「영향 범위」를 확인하고, 질문의 하위 질문 중
+   빠진 것이 없는지 점검한다.
+
 ### Trigger routing (3 core verbs)
 
 The 13 workflows are individual repository skills, invocable directly

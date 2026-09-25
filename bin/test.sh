@@ -47,6 +47,11 @@ done
 grep -q '무결성 검사' second-brain/workflows/W2.md || fail "W2.md에 무결성 검사 없음"
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "아웃바운드 게이트가 General rules에 없음"
 [ "$(wc -c < SECOND-BRAIN.md)" -lt 16000 ] || echo "WARN: SECOND-BRAIN.md $(wc -c < SECOND-BRAIN.md)B (목표 ~10KB)"
+grep -q '### 회수 규칙' SECOND-BRAIN.md || fail "회수 규칙 절 없음"
+grep -q '답변 모드' SECOND-BRAIN.md || fail "답변 모드 규칙 없음"
+grep -q '부분 읽기는 전체 검토가 아니다' SECOND-BRAIN.md || fail "절단 읽기 규칙 없음"
+[ -f knowledge/.ignore ] || fail "knowledge/.ignore 미설치"
+grep -qx '_sources/' knowledge/.ignore || fail ".ignore에 _sources/ 없음"
 # 아웃바운드 쓰기 게이트는 W9 안이 아니라 General rules 에 있어야 한다 —
 # 다음에 추가될 아웃바운드 워크플로우가 이 게이트를 물려받아야 하기 때문이다.
 grep -q '볼트 밖으로 쓰는 행위' SECOND-BRAIN.md || fail "SECOND-BRAIN.md에 아웃바운드 쓰기 게이트 없음"
@@ -209,6 +214,8 @@ printf 'stale content\n' >> .claude/skills/report/SKILL.md
 printf 'STALE TEMPLATE\n' > knowledge/_templates/meeting-note.md
 printf 'user log line\n' >> knowledge/log.md
 printf 'user-topic-slug\n' >> knowledge/clusters/_topics.md
+printf 'my-rule\n' > knowledge/.ignore
+printf 'stale workflow\n' >> second-brain/workflows/W1.md
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "import 줄 중복"
 grep -q 'edited by user' knowledge/index.md || fail "사용자 수정 index.md 덮어씀"
@@ -220,6 +227,8 @@ diff -q knowledge/_templates/meeting-note.md "$ROOT/knowledge/_templates/meeting
 grep -q 'STALE TEMPLATE' knowledge/_templates/meeting-note.md.bak || fail ".bak에 이전 내용 없음"
 grep -q 'user log line' knowledge/log.md || fail "사용자 log.md 덮어씀"
 grep -q 'user-topic-slug' knowledge/clusters/_topics.md || fail "사용자 _topics.md 덮어씀"
+grep -qx 'my-rule' knowledge/.ignore || fail "사용자 knowledge/.ignore 덮어씀"
+if grep -q 'stale workflow' second-brain/workflows/W1.md; then fail "워크플로우 파일이 재설치로 갱신 안 됨"; fi
 [ ! -f .claude/settings.json.bak ] || fail "이미 등록된 훅인데 settings .bak 재생성됨"
 
 # 멱등: 바뀐 게 없으면 .bak을 다시 만들지 않는다
