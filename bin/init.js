@@ -10,6 +10,17 @@ const DEST = process.cwd();
 const MARKER = '<!-- second-brain-template -->';
 const IMPORT_LINE = '@SECOND-BRAIN.md';
 const AGENTS_POINTER = '**Second brain vault rules:** 볼트 작업 시 `SECOND-BRAIN.md`(핵심 규칙)를 읽고 그대로 따를 것.';
+// AGENTS.md 관리 블록 — 설치기는 이 마커 안만 바꾼다. 블록 밖은 사용자 소유.
+const BLOCK_RE = /<!-- second-brain-template:begin (full|pointer) -->\n[\s\S]*?\n<!-- second-brain-template:end -->/;
+// 지금까지 설치기가 덧붙인 포인터 줄 — 마커 없이 이 줄이 있으면 pointer 블록으로 바꾼다
+const OLD_POINTERS = [
+  '**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.',
+  AGENTS_POINTER,
+];
+function blockText(mode) {
+  const body = mode === 'full' ? fs.readFileSync(path.join(SRC, 'AGENTS.md'), 'utf8').trim() : AGENTS_POINTER;
+  return `<!-- second-brain-template:begin ${mode} -->\n${body}\n<!-- second-brain-template:end -->`;
+}
 const AUTO_YES = process.argv.includes('-y') || process.argv.includes('--yes');
 // settings.json / hooks.json 병합 멱등성 판정 키 — 경로가 바뀌면 이 상수도 함께 바꿔야 한다
 const HOOK_ID = '.claude/hooks/session-context.mjs';
@@ -134,12 +145,17 @@ function planClaudeMd() {
   return { kind: 'claude-append', rel: 'CLAUDE.md', label: 'import 한 줄 추가' };
 }
 
-// AGENTS.md: 없으면 템플릿 복사, 있으면 포인터 한 줄 추가 (멱등)
+// AGENTS.md: 없으면 full 블록으로 생성, 관리 블록이 있으면 그 안만 갱신, 옛 포인터 줄은 블록으로 교체,
+// 마커 없이 SECOND-BRAIN.md 를 언급하는 옛 사본은 건드리지 않음(update-vault 이관이 처리), 그 밖엔 pointer 블록 추가
 function planAgentsMd() {
   const to = target('AGENTS.md');
-  if (!fs.existsSync(to)) return { kind: 'agents-copy', rel: 'AGENTS.md', label: '신규' };
-  if (fs.readFileSync(to, 'utf8').includes('SECOND-BRAIN.md')) return { kind: 'keep', rel: 'AGENTS.md' };
-  return { kind: 'agents-append', rel: 'AGENTS.md', label: '포인터 한 줄 추가' };
+  if (!fs.existsSync(to)) return { kind: 'agents-create', rel: 'AGENTS.md', label: '신규' };
+  const cur = fs.readFileSync(to, 'utf8');
+  const m = cur.match(BLOCK_RE);
+  if (m) return cur.replace(BLOCK_RE, blockText(m[1])) === cur ? { kind: 'keep', rel: 'AGENTS.md' } : { kind: 'agents-block', rel: 'AGENTS.md', label: '관리 블록 갱신' };
+  if (cur.split('\n').some((l) => OLD_POINTERS.includes(l.trim()))) return { kind: 'agents-pointer', rel: 'AGENTS.md', label: '옛 포인터 → 관리 블록' };
+  if (cur.includes('SECOND-BRAIN.md')) return { kind: 'keep', rel: 'AGENTS.md' };
+  return { kind: 'agents-append', rel: 'AGENTS.md', label: '포인터 블록 추가' };
 }
 
 // GEMINI.md: 없으면 import 한 줄짜리 생성, 있으면 한 줄 추가 (멱등)
@@ -219,7 +235,7 @@ function printAnalysis(plan) {
   const retired = plan.filter((a) => a.kind === 'retire').length;
   if (retired) console.log('  정리(구버전 파일, 마커 확인됨): ' + retired + '개');
   if (keeps) console.log('  유지(기존 파일, 건드리지 않음): ' + keeps + '개');
-  plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append' || a.kind === 'gemini-append' || a.kind === 'settings-merge' || a.kind === 'agents-hooks-merge')
+  plan.filter((a) => a.kind === 'claude-append' || a.kind === 'agents-append' || a.kind === 'agents-block' || a.kind === 'agents-pointer' || a.kind === 'gemini-append' || a.kind === 'settings-merge' || a.kind === 'agents-hooks-merge')
     .forEach((a) => console.log('  ' + a.rel + ': ' + a.label));
   plan.filter((a) => a.kind === 'settings-unparsable' || a.kind === 'agents-hooks-unparsable')
     .forEach((a) => console.log('  ! ' + a.rel + ' — JSON 파싱 실패, 훅 등록을 건너뜁니다'));
@@ -247,7 +263,7 @@ function applyAction(a) {
   if (a.kind === 'owned') {
     const content = fs.readFileSync(path.join(SRC, a.rel), 'utf8');
     write(to, content.trimEnd() + '\n\n' + ownedMarker(a.rel) + '\n');
-  } else if (a.kind === 'copy' || a.kind === 'agents-copy') {
+  } else if (a.kind === 'copy') {
     write(to, fs.readFileSync(path.join(SRC, a.srcRel || a.rel)));
   } else if (a.kind === 'scaffold-update') {
     write(to + '.bak', fs.readFileSync(to));
@@ -256,8 +272,18 @@ function applyAction(a) {
     write(to, IMPORT_LINE + '\n');
   } else if (a.kind === 'claude-append' || a.kind === 'gemini-append') {
     write(to, fs.readFileSync(to, 'utf8').trimEnd() + '\n\n' + IMPORT_LINE + '\n');
+  } else if (a.kind === 'agents-create') {
+    write(to, blockText('full') + '\n');
+  } else if (a.kind === 'agents-block') {
+    const cur = fs.readFileSync(to, 'utf8');
+    write(to, cur.replace(BLOCK_RE, blockText(cur.match(BLOCK_RE)[1])));
+  } else if (a.kind === 'agents-pointer') {
+    const lines = fs.readFileSync(to, 'utf8').split('\n');
+    const i = lines.findIndex((l) => OLD_POINTERS.includes(l.trim()));
+    lines.splice(i, 1, ...blockText('pointer').split('\n'));
+    write(to, lines.join('\n'));
   } else if (a.kind === 'agents-append') {
-    write(to, fs.readFileSync(to, 'utf8').trimEnd() + '\n\n' + AGENTS_POINTER + '\n');
+    write(to, fs.readFileSync(to, 'utf8').trimEnd() + '\n\n' + blockText('pointer') + '\n');
   } else if (a.kind === 'settings-merge') {
     const raw = fs.readFileSync(to);
     const cur = JSON.parse(raw.toString('utf8'));

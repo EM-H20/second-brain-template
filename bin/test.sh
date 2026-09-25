@@ -202,6 +202,8 @@ git check-ignore -q --no-index knowledge/_sources/meetings/private.md || fail "_
 if git check-ignore -q --no-index knowledge/_sources/meetings/README.md; then fail "_sources README까지 gitignore됨"; fi
 grep -q 'path:_sources' knowledge/.obsidian/graph.json || fail "graph 필터에 _sources 제외 없음"
 [ -f AGENTS.md ] || fail "AGENTS.md 없음"
+head -1 AGENTS.md | grep -qx '<!-- second-brain-template:begin full -->' || fail "새 AGENTS.md가 full 관리 블록으로 시작하지 않음"
+grep -qx '<!-- second-brain-template:end -->' AGENTS.md || fail "관리 블록 끝 마커 없음"
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
 [ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
@@ -222,6 +224,7 @@ grep -q '@SECOND-BRAIN.md' GEMINI.md || fail "GEMINI import 줄 미추가"
 grep -q 'my own build command' .claude/commands/build.md || fail "사용자 커맨드 클로버됨"
 grep -q 'SECOND-BRAIN.md' AGENTS.md || fail "AGENTS.md 포인터 미추가"
 grep -q '# My agents doc' AGENTS.md || fail "기존 AGENTS.md 내용 유실"
+grep -qx '<!-- second-brain-template:begin pointer -->' AGENTS.md || fail "사용자 AGENTS.md에 pointer 블록 없음"
 [ -f .claude/skills/report/SKILL.md ] || fail "다른 스킬 미설치"
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "append 재실행 시 CLAUDE import 줄 중복"
@@ -554,5 +557,33 @@ if (o.hookSpecificOutput.hookEventName !== "SessionStart") throw new Error("hook
 if (!o.hookSpecificOutput.additionalContext.includes("esm-check")) throw new Error("ESM 대상에서 컨텍스트 누락");
 ' || fail "ESM 대상 프로젝트 훅 출력 검증 실패"
 echo "케이스 9 OK"
+
+# ── 케이스 10: 기존 설치본 업데이트 — AGENTS.md 관리 블록 ─────────
+old_install() { # $1 = 디렉터리. 상태 기록 이전 설치본 흉내: 마커 있는 SECOND-BRAIN.md
+  mkdir -p "$1" && cd "$1" && printf '# old rules\n\n<!-- second-brain-template -->\n' > SECOND-BRAIN.md
+}
+# 10a. 마커 없는 옛 템플릿 사본은 건드리지 않는다
+old_install "$TMP/legacy"
+printf '# Agent Rules\n\nRead `SECOND-BRAIN.md` in full at the start of every session.\n' > AGENTS.md
+cp AGENTS.md AGENTS.before
+node "$ROOT/bin/init.js" -y > out.log
+cmp -s AGENTS.md AGENTS.before || fail "마커 없는 옛 AGENTS.md를 설치기가 바꿈"
+# 10b. 옛 포인터 줄 → pointer 블록 (블록 밖 보존)
+old_install "$TMP/ptr"
+printf '# Mine\n\nmy rule\n\n**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.\n' > AGENTS.md
+node "$ROOT/bin/init.js" -y > out.log
+grep -qx '<!-- second-brain-template:begin pointer -->' AGENTS.md || fail "옛 포인터가 블록으로 안 바뀜"
+grep -q 'my rule' AGENTS.md || fail "블록 밖 사용자 내용 유실"
+if grep -q '전체 읽고' AGENTS.md; then fail "옛 포인터 문구가 남음"; fi
+# 10c. 낡은 블록 → 최신, 블록 밖 보존, 다시 실행하면 변화 없음
+old_install "$TMP/blk"
+printf '# Mine\n<!-- second-brain-template:begin pointer -->\nstale\n<!-- second-brain-template:end -->\nafter\n' > AGENTS.md
+node "$ROOT/bin/init.js" -y > out.log
+if grep -q '^stale$' AGENTS.md; then fail "낡은 블록 내용이 남음"; fi
+grep -q '볼트 작업 시' AGENTS.md && grep -q '^after$' AGENTS.md && grep -q '^# Mine$' AGENTS.md || fail "블록 갱신 또는 블록 밖 보존 실패"
+cp AGENTS.md AGENTS.before
+node "$ROOT/bin/init.js" -y > out.log
+cmp -s AGENTS.md AGENTS.before || fail "최신 블록인데 AGENTS.md가 바뀜"
+echo "케이스 10 OK"
 
 echo "ALL PASS"
