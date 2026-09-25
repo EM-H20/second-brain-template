@@ -22,16 +22,28 @@ for (const p of [".claude/hooks", ".claude/settings.json", ".claude/skills", ".a
 ' || fail "package.json files 누락"
 echo "packaging guard OK"
 
+# 이관 노트 형식 — frontmatter id = 파일명, 절 5개
+for f in "$ROOT"/second-brain/migrations/*.md; do
+  [ -f "$f" ] || continue
+  id=$(basename "$f" .md)
+  echo "$id" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+$' || fail "이관 id 형식: $id"
+  grep -qx "id: $id" "$f" || fail "이관 frontmatter id 불일치: $id"
+  for sec in '## 무엇이 바뀌었나' '## 필요한지 판별' '## 적용 방법' '## 승인 단위' '## 적용 후 확인'; do
+    grep -qx "$sec" "$f" || fail "이관 노트 절 누락: $id $sec"
+  done
+done
+[ "$(ls "$ROOT"/second-brain/migrations/*.md 2>/dev/null | wc -l | tr -d ' ')" -ge 3 ] || fail "이관 노트 3개 미만"
+
 # 두 스킬 트리는 항상 같은 스킬 집합의 바이트 동일 사본이어야 한다 — Claude와 Codex가 같은 스킬을 본다
 A_SKILLS=$(ls "$ROOT/.agents/skills")
 C_SKILLS=$(ls "$ROOT/.claude/skills")
 [ "$A_SKILLS" = "$C_SKILLS" ] || fail "스킬 집합 불일치 (.agents/skills vs .claude/skills)"
-[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "14" ] || fail "스킬 수가 14가 아님"
+[ "$(echo "$A_SKILLS" | wc -l | tr -d ' ')" = "15" ] || fail "스킬 수가 15가 아님"
 for s in $A_SKILLS; do
   diff -q "$ROOT/.claude/skills/$s/SKILL.md" "$ROOT/.agents/skills/$s/SKILL.md" > /dev/null \
     || fail "SKILL.md 사본 불일치: $s"
 done
-echo "skill parity OK (14)"
+echo "skill parity OK (15)"
 
 # ── 케이스 1: 빈 프로젝트 ──────────────────────────────
 mkdir "$TMP/fresh" && cd "$TMP/fresh"
@@ -146,7 +158,7 @@ grep -q 'Session start' AGENTS.md || fail "AGENTS.md에 세션 시작 섹션 없
 grep -q 'codex/hooks.json' AGENTS.md || fail "AGENTS.md에 Codex 훅 제약 설명 없음"
 [ -f .agents/skills/second-brain/agents/openai.yaml ] || fail "Codex skill UI metadata 없음"
 grep -q '^# second-brain-template' .agents/skills/second-brain/agents/openai.yaml || fail "Codex skill YAML 마커가 주석이 아님"
-for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting issue-candidates maintain recall report setup-vault second-brain; do
+for s in build capture check-conflict cluster find-similar-issue ingest-doc ingest-issue ingest-meeting issue-candidates maintain recall report setup-vault second-brain update-vault; do
   [ -f .claude/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.claude)"
   [ -f .agents/skills/$s/SKILL.md ] || fail "$s 스킬 미설치 (.agents)"
 done
@@ -202,6 +214,30 @@ git check-ignore -q --no-index knowledge/_sources/meetings/private.md || fail "_
 if git check-ignore -q --no-index knowledge/_sources/meetings/README.md; then fail "_sources README까지 gitignore됨"; fi
 grep -q 'path:_sources' knowledge/.obsidian/graph.json || fail "graph 필터에 _sources 제외 없음"
 [ -f AGENTS.md ] || fail "AGENTS.md 없음"
+head -1 AGENTS.md | grep -qx '<!-- second-brain-template:begin full -->' || fail "새 AGENTS.md가 full 관리 블록으로 시작하지 않음"
+grep -qx '<!-- second-brain-template:end -->' AGENTS.md || fail "관리 블록 끝 마커 없음"
+[ -f second-brain/AGENTS.template.md ] || fail "AGENTS.template.md 미설치"
+grep -q 'vault.mjs search' second-brain/AGENTS.template.md || fail "AGENTS.template.md 가 최신 본문이 아님"
+[ "$(ls second-brain/migrations/*.md | wc -l | tr -d ' ')" -ge 3 ] || fail "이관 노트 미설치"
+[ -f second-brain/state.json ] || fail "state.json 없음"
+node -e '
+const s = require("./second-brain/state.json");
+const ids = require("fs").readdirSync(process.argv[1]).filter((f) => f.endsWith(".md")).map((f) => f.slice(0, -3)).sort();
+if (s.installed !== require(process.argv[2]).version) throw new Error("installed 불일치");
+if (s.previous !== null) throw new Error("신규 설치 previous 는 null");
+if (JSON.stringify(s.applied) !== JSON.stringify(ids)) throw new Error("신규 설치 applied 는 이관 전부");
+' "$ROOT/second-brain/migrations" "$ROOT/package.json" || fail "신규 설치 state.json 내용"
+grep -q '볼트 초기화' out.log || fail "신규 설치 안내 없음"
+if grep -q '최근 작업이' out.log; then fail "틀린 훅 안내 문구"; fi
+grep -q '업데이트 반영' .claude/skills/update-vault/SKILL.md || fail "update-vault 트리거 없음"
+[ -f second-brain/workflows/update.md ] || fail "update.md 미설치"
+grep -q 'second-brain/workflows/update.md' SECOND-BRAIN.md || fail "SECOND-BRAIN 색인에 update.md 없음"
+grep -q 'update-vault' AGENTS.md || fail "AGENTS.md 의도 표에 update-vault 없음"
+grep -q '두 번째 예외는 `update-vault`' SECOND-BRAIN.md || fail "볼트 밖 쓰기 예외에 update-vault 없음"
+grep -q '불필요 판정' SECOND-BRAIN.md || fail "불필요 판정 기록 예외가 규칙에 없음"
+grep -q '# Agent Rules' second-brain/migrations/2026-09-25-agents-md-refresh.md || fail "이관 A 판별에 템플릿 사본 신호 없음"
+grep -q 'superseded' second-brain/migrations/2026-09-25-cluster-format.md || fail "이관 B가 대체된 결정 보호를 명시하지 않음"
+if grep -qE '14 (Claude )?repo skills' "$ROOT/README.md"; then fail "README에 14 skills 표기가 남음"; fi
 [ ! -f package.json ] || fail "installer 기계장치 유출 (package.json)"
 [ ! -f README.md ] || fail "README 유출"
 [ ! -f CHANGELOG.md ] || fail "CHANGELOG 유출"
@@ -222,6 +258,7 @@ grep -q '@SECOND-BRAIN.md' GEMINI.md || fail "GEMINI import 줄 미추가"
 grep -q 'my own build command' .claude/commands/build.md || fail "사용자 커맨드 클로버됨"
 grep -q 'SECOND-BRAIN.md' AGENTS.md || fail "AGENTS.md 포인터 미추가"
 grep -q '# My agents doc' AGENTS.md || fail "기존 AGENTS.md 내용 유실"
+grep -qx '<!-- second-brain-template:begin pointer -->' AGENTS.md || fail "사용자 AGENTS.md에 pointer 블록 없음"
 [ -f .claude/skills/report/SKILL.md ] || fail "다른 스킬 미설치"
 node "$ROOT/bin/init.js" -y > out2.log
 [ "$(grep -c '@SECOND-BRAIN.md' CLAUDE.md)" = "1" ] || fail "append 재실행 시 CLAUDE import 줄 중복"
@@ -554,5 +591,67 @@ if (o.hookSpecificOutput.hookEventName !== "SessionStart") throw new Error("hook
 if (!o.hookSpecificOutput.additionalContext.includes("esm-check")) throw new Error("ESM 대상에서 컨텍스트 누락");
 ' || fail "ESM 대상 프로젝트 훅 출력 검증 실패"
 echo "케이스 9 OK"
+
+# ── 케이스 10: 기존 설치본 업데이트 — AGENTS.md 관리 블록 ─────────
+old_install() { # $1 = 디렉터리. 상태 기록 이전 설치본 흉내: 마커 있는 SECOND-BRAIN.md
+  mkdir -p "$1" && cd "$1" && printf '# old rules\n\n<!-- second-brain-template -->\n' > SECOND-BRAIN.md
+}
+# 10a. 마커 없는 옛 템플릿 사본은 건드리지 않는다
+old_install "$TMP/legacy"
+printf '# Agent Rules\n\nRead `SECOND-BRAIN.md` in full at the start of every session.\n' > AGENTS.md
+cp AGENTS.md AGENTS.before
+node "$ROOT/bin/init.js" -y > out.log
+cmp -s AGENTS.md AGENTS.before || fail "마커 없는 옛 AGENTS.md를 설치기가 바꿈"
+# 10b. 옛 포인터 줄 → pointer 블록 (블록 밖 보존)
+old_install "$TMP/ptr"
+printf '# Mine\n\nmy rule\n\n**Second brain vault rules:** `SECOND-BRAIN.md`를 전체 읽고 그대로 따를 것.\n' > AGENTS.md
+node "$ROOT/bin/init.js" -y > out.log
+grep -qx '<!-- second-brain-template:begin pointer -->' AGENTS.md || fail "옛 포인터가 블록으로 안 바뀜"
+grep -q 'my rule' AGENTS.md || fail "블록 밖 사용자 내용 유실"
+if grep -q '전체 읽고' AGENTS.md; then fail "옛 포인터 문구가 남음"; fi
+# 10c. 낡은 블록 → 최신, 블록 밖 보존, 다시 실행하면 변화 없음
+old_install "$TMP/blk"
+printf '# Mine\n<!-- second-brain-template:begin pointer -->\nstale\n<!-- second-brain-template:end -->\nafter\n' > AGENTS.md
+node "$ROOT/bin/init.js" -y > out.log
+if grep -q '^stale$' AGENTS.md; then fail "낡은 블록 내용이 남음"; fi
+grep -q '볼트 작업 시' AGENTS.md && grep -q '^after$' AGENTS.md && grep -q '^# Mine$' AGENTS.md || fail "블록 갱신 또는 블록 밖 보존 실패"
+cp AGENTS.md AGENTS.before
+node "$ROOT/bin/init.js" -y > out.log
+cmp -s AGENTS.md AGENTS.before || fail "최신 블록인데 AGENTS.md가 바뀜"
+# 10d. 상태 기록 이전 설치본 업데이트 → previous null, applied [], 반영 안내
+cd "$TMP/legacy"
+N=$(ls "$ROOT"/second-brain/migrations/*.md | wc -l | tr -d ' ')
+node -e 'const s=require("./second-brain/state.json"); if (s.previous!==null||s.applied.length) throw new Error(JSON.stringify(s))' || fail "옛 설치본 state 초기값"
+grep -q "반영할 변경 ${N}개" out.log || fail "대기 이관 수 안내 없음"
+grep -q '업데이트 반영해' out.log || fail "업데이트 반영 안내 없음"
+if grep -q '볼트 초기화 —' out.log; then fail "업데이트인데 초기화 안내"; fi
+# 10e. 재실행: applied 보존, previous = 직전 installed, 다 적용됐으면 반영할 변경 없음
+node -e 'const f="./second-brain/state.json",fs=require("fs"),s=JSON.parse(fs.readFileSync(f)); s.applied=fs.readdirSync(process.argv[1]).filter(x=>x.endsWith(".md")).map(x=>x.slice(0,-3)); fs.writeFileSync(f, JSON.stringify(s))' "$ROOT/second-brain/migrations"
+node "$ROOT/bin/init.js" -y > out.log
+node -e 'const s=require("./second-brain/state.json"); if (s.previous!==require(process.argv[1]).version) throw new Error("previous"); if (!s.applied.length) throw new Error("applied 유실")' "$ROOT/package.json" || fail "재실행 state 보존"
+grep -q '반영할 변경 없음' out.log || fail "다 적용됐는데 반영 안내"
+# 10f. 깨진 state.json → 경고 후 새로 씀
+printf '{oops' > second-brain/state.json
+node "$ROOT/bin/init.js" -y > out.log || fail "깨진 state.json 에서 설치 실패"
+grep -q 'state.json' out.log || fail "깨진 state.json 경고 없음"
+node -e 'JSON.parse(require("fs").readFileSync("second-brain/state.json","utf8"))' || fail "state.json 을 다시 쓰지 않음"
+[ ! -e "$ROOT/second-brain/state.json" ] || fail "템플릿 저장소에 state.json 이 있음"
+# 10g. CRLF 관리 블록도 갱신된다
+old_install "$TMP/crlf"
+printf '# Mine\r\n<!-- second-brain-template:begin pointer -->\r\nstale\r\n<!-- second-brain-template:end -->\r\nafter\r\n' > AGENTS.md
+node "$ROOT/bin/init.js" -y > out.log
+if grep -q 'stale' AGENTS.md; then fail "CRLF 관리 블록이 갱신 안 됨"; fi
+grep -q 'after' AGENTS.md || fail "CRLF 블록 밖 내용 유실"
+# 10h. 템플릿 본문에 $& 같은 치환 패턴이 있어도 AGENTS.md 가 망가지지 않는다 (멱등)
+rm -rf "$TMP/tpl" && mkdir "$TMP/tpl" && (cd "$ROOT" && tar cf - --exclude=.git --exclude=.superpowers --exclude=docs .) | (cd "$TMP/tpl" && tar xf -)
+printf '\nUse `$&` and `$'"'"'` as literals.\n' >> "$TMP/tpl/AGENTS.md"
+old_install "$TMP/dollar"
+printf 'USER-BEFORE\n<!-- second-brain-template:begin full -->\nold\n<!-- second-brain-template:end -->\nUSER-AFTER\n' > AGENTS.md
+node "$TMP/tpl/bin/init.js" -y > out.log
+[ "$(grep -c 'USER-AFTER' AGENTS.md)" = "1" ] || fail "\$& 치환으로 AGENTS.md 가 복제됨"
+cp AGENTS.md AGENTS.before
+node "$TMP/tpl/bin/init.js" -y > out.log
+cmp -s AGENTS.md AGENTS.before || fail "\$ 패턴 본문에서 멱등 아님"
+echo "케이스 10 OK"
 
 echo "ALL PASS"
