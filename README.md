@@ -353,11 +353,13 @@ After uploading the repo, go to Settings → General → check **Template reposi
 From then on every new project can be created with the "Use this template" button, so you never
 need to clone and then cut the history.
 
-## ⚙️ How it works (without any scripts)
+## ⚙️ How it works (no embeddings, no dependencies)
 
 Every note's frontmatter follows a strict schema (`type`, `topics`, `symptoms`, `status`,
-supersede chains). Instead of reading whole files, Claude greps the frontmatter to narrow down
-candidates and then opens only the notes it needs. Clustering stays consistent because of
+supersede chains). Instead of reading whole files, the agent runs a small bundled tool
+(`second-brain/tools/vault.mjs`, zero-dependency Node) that filters by frontmatter first, ranks the
+candidates, and reads only the sections it needs — you never type it, the agent calls it on its own.
+The same tool checks vault integrity after every write. Clustering stays consistent because of
 `clusters/_topics.md` (a controlled vocabulary). Same philosophy as the Karpathy LLM Wiki pattern:
 **well-structured Markdown can be handled directly by an LLM, no embeddings required.**
 
@@ -697,11 +699,12 @@ macOS(APFS) 将 CJK 字符规范化为 NFD（分解形），而 git/Linux 使用
 此后每个新项目都能用 "Use this template" 按钮创建干净副本，
 无需 clone 之后再切断历史记录。
 
-## ⚙️ 工作原理（没有脚本是怎么做到的？）
+## ⚙️ 工作原理（无需嵌入向量，零依赖）
 
 所有笔记的 frontmatter 都遵循严格规格（`type`、`topics`、`symptoms`、`status`、
-supersede 链）。Claude 不是读取整个文件，而是 grep frontmatter 缩小候选范围，
-再只打开需要的笔记。聚类的一致性由 `clusters/_topics.md`（受控词汇表）来保证。
+supersede 链）。智能体不读取整个文件，而是自动调用内置的小工具
+（`second-brain/tools/vault.mjs`，零依赖 Node）：先按 frontmatter 筛选、再排序，只读取需要的章节。
+你无需输入任何命令。每次写入后同一工具还会检查知识库完整性。聚类的一致性由 `clusters/_topics.md`（受控词汇表）来保证。
 与 Karpathy LLM Wiki 模式相同的理念：
 **结构良好的 Markdown，无需嵌入向量，LLM 也能直接处理。**
 
@@ -965,7 +968,9 @@ knowledge/
 ├── _bases/       Obsidian Bases テーブルビュー (人が見る用。エージェントの検索経路ではない)
 ├── _templates/   ノートのテンプレート (frontmatter 規格を含む)
 └── _sources/     原文をそのまま (verbatim) 保存 (meetings/docs/issues のミラー)
-SECOND-BRAIN.md   ワークフロー規則 (W1〜W9) — システムの心臓部
+SECOND-BRAIN.md   コアルール + ワークフロー索引 — システムの心臓部
+second-brain/workflows/  W1〜W9 の手順 — そのワークフロー実行時のみ読む
+second-brain/tools/      エージェントが自動で使う検索・節読み・整合性検査ツール
 CLAUDE.md         @SECOND-BRAIN.md の import 1 行 (Claude Code)
 GEMINI.md         @SECOND-BRAIN.md の import 1 行 (Antigravity / Gemini)
 AGENTS.md         エージェントガイド、SECOND-BRAIN.md への参照 (Codex / Antigravity / Gemini)
@@ -1049,11 +1054,12 @@ macOS(APFS) は CJK 文字を NFD（分解形）に、git/Linux は NFC（合成
 以降は新しいプロジェクトごとに "Use this template" ボタンでクリーンなコピーを作れるので、
 clone した後に履歴を切る作業が不要になります。
 
-## ⚙️ 動作原理（スクリプトなしでどうやって？）
+## ⚙️ 動作原理（埋め込みなし・依存ゼロ）
 
 すべてのノートの frontmatter が厳格な規格（`type`、`topics`、`symptoms`、`status`、
-supersede チェーン）に従います。Claude はファイル全体を読む代わりに frontmatter を
-grep して候補を絞り込み、必要なノートだけを開きます。クラスタリングの一貫性は
+supersede チェーン）に従います。エージェントはファイル全体を読む代わりに、同梱の小さなツール
+（`second-brain/tools/vault.mjs`、依存ゼロの Node）を自動で呼び出し、frontmatter で先に絞り込んで
+順位付けし、必要な節だけを読みます。コマンドを入力する必要はありません。書き込みのたびに同じツールが整合性も検査します。クラスタリングの一貫性は
 `clusters/_topics.md`（統制語彙）が担保します。Karpathy の LLM Wiki パターンと
 同じ哲学です：**よく構造化された Markdown は、埋め込みなしでも LLM が直接扱える。**
 
@@ -1394,11 +1400,12 @@ macOS(APFS)는 한글을 NFD(자모 분리), git/Linux는 NFC(완성형)로 정�
 이후 새 프로젝트마다 "Use this template" 버튼으로 깨끗한 사본을 만들 수
 있어 clone 후 히스토리 끊는 작업이 필요 없다.
 
-## ⚙️ 동작 원리 (스크립트 없이 어떻게?)
+## ⚙️ 동작 원리 (임베딩 없이, 의존성 없이)
 
 모든 노트의 frontmatter가 엄격한 규격(type, topics, symptoms, status,
-supersedes 체인)을 따른다. Claude는 전체 파일을 읽는 대신 frontmatter를
-grep해서 후보를 좁힌 뒤 필요한 노트만 연다. 클러스터링 일관성은
+supersedes 체인)을 따른다. 에이전트는 전체 파일을 읽는 대신 내장된 작은 도구
+(`second-brain/tools/vault.mjs`, 의존성 없는 Node)를 알아서 불러 frontmatter로 먼저 거르고 순위를 매긴 뒤
+필요한 절만 읽는다. 사용자가 명령을 칠 필요는 없다. 쓰기 직후에는 같은 도구로 무결성을 검사한다. 클러스터링 일관성은
 `clusters/_topics.md`(통제 어휘)가 잡아준다. Karpathy LLM Wiki 패턴과
 같은 철학: **잘 구조화된 마크다운은 임베딩 없이도 LLM이 직접 다룰 수 있다.**
 
